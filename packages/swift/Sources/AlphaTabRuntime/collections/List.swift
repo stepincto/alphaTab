@@ -24,6 +24,11 @@ public final class List<T>: Sequence {
         _data = Swift.Array(items)
     }
 
+    /// `Array.from(iterator)` / `new Array(...iterator)`: drains the iterator (e.g. `IOHelper.iterateCodepoints`).
+    public init(_ iterator: some IteratorProtocol<T>) {
+        _data = Swift.Array(IteratorSequence(iterator))
+    }
+
     /// JS `new Array<T>(length)`: JS fills holes with `undefined` (Kotlin: unchecked `null`);
     /// Swift needs a value, so elements start at `JsArrayHole.hole`. Generated code fills or
     /// writes every slot before reading it.
@@ -187,6 +192,20 @@ public final class List<T>: Sequence {
         let removed = List(contentsOf: _data[s..<(s + count)])
         _data.replaceSubrange(s..<(s + count), with: items)
         return removed
+    }
+
+    /// JS `concat` with array arguments: a new list, the originals unchanged.
+    public func concat(_ others: List<T>...) -> List<T> {
+        let out = List(contentsOf: _data)
+        for o in others {
+            out._data.append(contentsOf: o._data)
+        }
+        return out
+    }
+
+    /// TS `filter(v => v !== undefined)` narrowed to the non-optional type (Kotlin's `filterNotNull`).
+    public func filterNotNull<U>() -> List<U> where T == U? {
+        return List<U>(contentsOf: _data.compactMap { $0 })
     }
 
     public func join(_ separator: String) -> String {

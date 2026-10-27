@@ -42,6 +42,27 @@ import Testing
         #expect(a.has(1))
     }
 
+    /// JS Set compares objects by identity; model classes (Staff, SustainPedalMarker) are not Hashable.
+    @Test func holdsNonHashableObjectsByIdentity() {
+        final class Node {
+            let v: Int
+            init(_ v: Int) { self.v = v }
+        }
+        let a = Node(1)
+        let b = Node(1)
+        let s = AlphaTabRuntime.Set<Node>()
+        s.add(a)
+        s.add(a)
+        s.add(b)
+        #expect(s.size == 2)
+        #expect(s.has(a))
+        #expect(!s.has(Node(1)))
+        #expect(s.delete(a))
+        #expect(!s.has(a))
+        s.add(a)
+        #expect(Swift.Array(s).map { ObjectIdentifier($0) } == [ObjectIdentifier(b), ObjectIdentifier(a)])
+    }
+
     @Test func unqualifiedSetIsTheRuntimeSet() {
         let s: Set<Double> = Set<Double>(nil as [Double]?)
         s.add(1)

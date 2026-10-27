@@ -77,4 +77,23 @@ import Testing
         #expect(false.toString() == "false")
         #expect("k".toString() == "k")
     }
+
+    @Test func fromCodePointBuildsAstralAndBmp() {
+        #expect(String.fromCodePoint(65) == "A")
+        #expect(String.fromCodePoint(0x1F600) == "\u{1F600}")
+        #expect(String.fromCodePoint(0x1F600).length == 2)
+        // The lexer spreads a codepoint slice: String.fromCodePoint(...list).
+        #expect(String.fromCodePoint(List<Double>(contentsOf: [49, 46, 53])) == "1.5")
+        #expect(String.fromCodePoint(List<Double>()) == "")
+    }
+
+    @Test func padStartRepeatsAndTruncatesPad() {
+        #expect("7".padStart(3, "0") == "007")
+        #expect("123".padStart(3, "0") == "123")
+        #expect("1234".padStart(3, "0") == "1234")
+        #expect("abc".padStart(10, "123") == "1231231abc")
+        #expect("abc".padStart(6, "") == "abc")
+        #expect("abc".padStart(Double.nan, "0") == "abc")
+        #expect("5".padStart(3) == "  5")
+    }
 }

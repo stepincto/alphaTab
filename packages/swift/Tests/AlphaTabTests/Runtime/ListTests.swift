@@ -54,4 +54,26 @@ import Testing
     @Test func expectToThrowOnAClosureThatReturnsAValue() {
         TestGlobals.expect({ () throws -> Double in throw JsError("x") }).toThrow()
     }
+
+    @Test func filterNotNullDropsUndefined() {
+        let l = List<Double?>(1, nil, 3)
+        let out: List<Double> = l.filterNotNull()
+        #expect(out.join(",") == "1,3")
+    }
+
+    @Test func concatReturnsNewListAndLeavesOriginals() {
+        let a = List<String>("a", "b")
+        let b = List<String>("c")
+        let c = a.concat(b)
+        #expect(c.join(",") == "a,b,c")
+        #expect(a.length == 2)
+        c.push("d")
+        #expect(a.length == 2)
+    }
+
+    @Test func initFromIteratorDrainsIt() {
+        let it: any IteratorProtocol<Double> = [65.0, 66.0].makeIterator()
+        let l = List<Double>(it)
+        #expect(l.join(",") == "65,66")
+    }
 }

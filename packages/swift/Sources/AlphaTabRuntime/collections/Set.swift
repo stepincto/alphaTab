@@ -7,8 +7,10 @@
 
 /// JS `Set<T>`, as Kotlin's `alphaTab.core.ecmaScript.Set`: a reference type that iterates in
 /// insertion order. Shadows `Swift.Set` for code that imports AlphaTabRuntime.
-public final class Set<T: Hashable>: Sequence {
-    private let _storage = Map<T, Bool>()
+/// Elements that are `Hashable` compare by value; other class instances (model types such as
+/// `Staff`) compare by identity, as JS does for objects.
+public final class Set<T>: Sequence {
+    private let _storage = Map<AnyHashable, T>()
 
     public init() {}
 
@@ -20,26 +22,37 @@ public final class Set<T: Hashable>: Sequence {
         }
     }
 
+    private static func key(_ item: T) -> AnyHashable {
+        if let h = item as? AnyHashable {
+            return h
+        }
+        precondition(T.self is AnyClass, "Set element must be Hashable or a class: \(T.self)")
+        return ObjectIdentifier(item as AnyObject)
+    }
+
     public var size: Double {
         return _storage.size
     }
 
     public func add(_ item: T) {
-        _storage.set(item, true)
+        let k = Self.key(item)
+        if !_storage.has(k) {
+            _storage.set(k, item)
+        }
     }
 
     public func has(_ item: T) -> Bool {
-        return _storage.has(item)
+        return _storage.has(Self.key(item))
     }
 
     @discardableResult
     public func delete(_ item: T) -> Bool {
-        return _storage.delete(item)
+        return _storage.delete(Self.key(item))
     }
 
     public func forEach(_ action: (T) -> Void) {
-        for (k, _) in _storage {
-            action(k)
+        for (_, v) in _storage {
+            action(v)
         }
     }
 
@@ -48,6 +61,6 @@ public final class Set<T: Hashable>: Sequence {
     }
 
     public func makeIterator() -> some IteratorProtocol<T> {
-        return _storage.lazy.map { $0.0 }.makeIterator()
+        return _storage.lazy.map { $0.1 }.makeIterator()
     }
 }

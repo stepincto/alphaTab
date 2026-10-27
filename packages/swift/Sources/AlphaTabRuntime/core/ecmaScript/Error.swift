@@ -20,4 +20,9 @@ open class JsError: Swift.Error, @unchecked Sendable, CustomStringConvertible {
     open var description: String {
         return message.isEmpty ? "Error" : "Error: \(message)"
     }
+
+    /// JS `Error.prototype.toString`: same text as `description`.
+    public func toString() -> String {
+        return description
+    }
 }

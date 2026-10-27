@@ -30,4 +30,12 @@ import Testing
         let copy = Map<String, Double>(m)
         #expect(copy.get("a") == 2)
     }
+
+    @Test func entriesArePairsInInsertionOrder() {
+        let m = Map<Double, String>((2, "b"), (1, "a"))
+        let e = Array.from(m.entries())
+        #expect(e.length == 2)
+        #expect(e[0].0 == 2 && e[0].1 == "b")
+        #expect(e[1].0 == 1 && e[1].1 == "a")
+    }
 }

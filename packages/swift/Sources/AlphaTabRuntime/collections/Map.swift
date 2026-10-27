@@ -96,6 +96,11 @@ open class Map<TKey: Hashable, TValue>: Sequence {
         return List(contentsOf: _entries.lazy.compactMap { $0?.value })
     }
 
+    /// JS `entries()`: `(key, value)` tuples in insertion order (a snapshot, not a live iterator).
+    public func entries() -> List<(TKey, TValue)> {
+        return List(contentsOf: self)
+    }
+
     /// Yields `(key, value)` tuples, as JS yields `[key, value]` arrays, so `for (k, v) in m` destructures.
     public func makeIterator() -> some IteratorProtocol<(TKey, TValue)> {
         return _entries.lazy.compactMap { $0.map { ($0.key, $0.value) } }.makeIterator()

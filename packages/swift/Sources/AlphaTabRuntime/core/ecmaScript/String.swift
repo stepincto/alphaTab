@@ -95,6 +95,30 @@ extension String {
         return String._fromU16([UInt16(m < 0 ? m + 65536 : m)][...])
     }
 
+    /// `String.fromCodePoint(c)`. shortcut: JS throws RangeError on a non-integer or out-of-range
+    /// code and keeps lone surrogates; both become U+FFFD here (call sites cannot `try`, and
+    /// Swift strings hold no lone surrogate). alphaTab passes codepoints read from a string.
+    public static func fromCodePoint(_ code: Double) -> String {
+        let scalar = code == code.rounded(.towardZero) && code >= 0 && code <= 0x10FFFF
+            ? Unicode.Scalar(UInt32(code)) : nil
+        return String(Character(scalar ?? "\u{FFFD}"))
+    }
+
+    /// `String.fromCodePoint(...codes)`: the transpiler passes the spread list as one argument.
+    public static func fromCodePoint(_ codes: List<Double>) -> String {
+        return codes.map { String.fromCodePoint($0) }.joined()
+    }
+
+    /// JS `padStart`: repeats `pad` and truncates it to fill up to `length` UTF-16 units.
+    public func padStart(_ length: Double, _ pad: String = " ") -> String {
+        let p = pad._u16
+        let fill = String._clamp(length, Int.max) - self.utf16.count
+        if fill <= 0 || p.isEmpty {
+            return self
+        }
+        return String._fromU16((0..<fill).map { p[$0 % p.count] }[...]) + self
+    }
+
     public func splitBy(_ separator: String) -> List<String> {
         let u = self._u16
         let sep = separator._u16
