@@ -48,7 +48,16 @@ const sources = [
     '/alphatab/src/platform/ICanvas.ts',
     '/alphatab/src/rendering/utils/BeamDirection.ts',
     '/alphatab/src/synth/SynthConstants.ts',
-    '/alphatab/src/util/Lazy.ts'
+    '/alphatab/src/util/Lazy.ts',
+    // tier "io-alphatex": all of io/, the alphaTex importer and its tests. ScoreLoader is left out: it
+    // pulls Environment (the whole library). GeneralMidi and UnsupportedFormatError are in the closure.
+    '/alphatab/src/io/',
+    '/alphatab/src/importer/AlphaTexImporter.ts',
+    '/alphatab/src/importer/alphaTex/',
+    '/alphatab/src/importer/ScoreImporter.ts',
+    '/alphatab/src/importer/UnsupportedFormatError.ts',
+    '/alphatab/src/midi/GeneralMidi.ts',
+    '/alphatab/test/importer/AlphaTex'
 ];
 // tier "model": tests whose bodies need modules left out above (importers via ScoreLoader/GpxImporter,
 // test/TestPlatform file IO, Settings/SettingsSerializer, AccidentalHelper, TabBarRendererFactory).
