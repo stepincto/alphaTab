@@ -95,7 +95,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - Bitwise on enums works on `rawValue` and must give a `number`: `c | Color.Green` -> `Double(c.rawValue | Color.Green.rawValue)`.
 - No flag enums. An enum combined with a bit operator into an enum-typed slot (a `return` of an enum-returning method, an enum-typed variable, `e &= E.X` on an enum) is refused with a Swift-only diagnostic (`errors/swift-flag-enum/`): a Swift enum holds only its declared cases, and `Flags.Read ^ Flags.Write` may be none (`fromValue` would trap at run time). Enums stay plain Swift enums rather than `OptionSet`, because alphaTab's own source keeps bit flags in plain numbers: a type-checked scan of `packages/alphatab/src` (529 files, 2026-10-27) found no enum operand of `& | ^ << >> >>>` or their compound forms outside enum initializers. Write such flags as `number`.
 - `classes/enums` keeps Kotlin's `toggleFlag(f): Flags { return f ^ Flags.Read }`, so the Swift target reports that refusal there too, pinned in `classes/enums/errors.swift.txt`; its `expected.swift` still pins the rest of the file (the refused method prints as `Flags.fromValue(Double(...))`, which no build ships since the emit fails).
-- `n as E` (number to enum) -> `E.fromValue(n)`; enum to number -> `Double(e.rawValue)`.
+- `n as E` (number to enum) -> `E.fromValue(n)`; enum to number -> `Double(e.rawValue)`, once (an enum operand the transformer already converted is not converted again); an optional enum -> `e.map { Double($0.rawValue) }`.
 
 ## Expressions
 
