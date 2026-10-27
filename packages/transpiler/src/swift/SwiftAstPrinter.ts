@@ -1900,8 +1900,10 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         if (!isEmpty) {
             // enum to number: Kotlin's `e.toDouble()` -> `Double(e.rawValue)` (see writeInvocationExpression)
             this.writeExpression(expr.expression);
-            // `x!?.m`: the `!` already unwrapped it
-            this.write(expr.nullSafe && !this._isUnwrapped(expr.expression) ? '?.' : '.');
+            // `x!?.m`: the `!` already unwrapped it; `a?.b?.c` with a non-optional `b` continues the chain with `.`
+            this.write(
+                expr.nullSafe && !this._isUnwrapped(expr.expression) && !this._isDeclaredNonNullable(expr.expression) ? '?.' : '.'
+            );
         }
         // the shared transform spells tuple `x[0]` as Kotlin's `x.v0`; a Swift tuple reads `x.0`
         const tsNode = expr.tsNode;
@@ -2292,12 +2294,18 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     /** Declared without `null`/`undefined` (TS `!` on a non-optional field, call result or local): nothing to unwrap. */
     private _isDeclaredNonNullable(e: cs.Expression): boolean {
         const tsNode = this._unwrapParens(e).tsNode;
-        if (!tsNode || !(ts.isPropertyAccessExpression(tsNode) || ts.isIdentifier(tsNode) || ts.isCallExpression(tsNode))) {
+        const checker = this._context.typeChecker;
+        if (tsNode && ts.isElementAccessExpression(tsNode)) {
+            // a list subscript returns a non-optional element (a tuple element is typed per position)
+            const target = checker.getNonNullableType(checker.getTypeAtLocation(tsNode.expression));
+            if (!checker.isArrayType(target)) {
+                return false;
+            }
+        } else if (!tsNode || !(ts.isPropertyAccessExpression(tsNode) || ts.isIdentifier(tsNode) || ts.isCallExpression(tsNode))) {
             return false;
         }
-        const checker = this._context.typeChecker;
         let t: ts.Type;
-        if (ts.isCallExpression(tsNode)) {
+        if (ts.isCallExpression(tsNode) || ts.isElementAccessExpression(tsNode)) {
             t = checker.getTypeAtLocation(tsNode);
         } else {
             const symbol = checker.getSymbolAtLocation(ts.isPropertyAccessExpression(tsNode) ? tsNode.name : tsNode);
@@ -2317,7 +2325,33 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         return !parts.some(u => !!(u.flags & loose));
     }
 
+    private _flattenedMapGets = new Set<cs.InvocationExpression>();
+
+    /** `m.get(k)` on a map whose values may be null: Swift's `get` returns `V??`. */
+    private _isOptionalValueMapGet(expr: cs.InvocationExpression): boolean {
+        const tsNode = expr.tsNode;
+        if (!tsNode || !ts.isCallExpression(tsNode) || !ts.isPropertyAccessExpression(tsNode.expression) || tsNode.expression.name.text !== 'get' || tsNode.arguments.length !== 1) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const mapType = checker.getNonNullableType(checker.getTypeAtLocation(tsNode.expression.expression));
+        if (mapType.symbol?.name !== 'Map') {
+            return false;
+        }
+        const value = checker.getTypeArguments(mapType as ts.TypeReference)[1];
+        const parts = value ? (value.isUnion() ? value.types : [value]) : [];
+        return parts.some(u => !!(u.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined)));
+    }
+
     protected override writeInvocationExpression(expr: cs.InvocationExpression): void {
+        if (!this._flattenedMapGets.has(expr) && this._isOptionalValueMapGet(expr)) {
+            // JS returns undefined for a missing key and for a stored null alike: flatten `V??` to `V?`
+            this._flattenedMapGets.add(expr);
+            this.write('(');
+            this.writeInvocationExpression(expr);
+            this.write(' ?? nil)');
+            return;
+        }
         // Kotlin's enum-to-number lowering: `e.toDouble()` -> `Double(e.rawValue)`
         if (
             expr.arguments.length === 0 &&
