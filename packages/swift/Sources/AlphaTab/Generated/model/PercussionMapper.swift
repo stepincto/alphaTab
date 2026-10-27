@@ -26,8 +26,8 @@ internal final class PercussionMapper {
         return 38.0
     }
 
-    public static func getArticulationName(_ n: Note) -> String {
-        let articulation: InstrumentArticulation? = PercussionMapper.getArticulation(n)
+    public static func getArticulationName(_ n: Note) throws -> String {
+        let articulation: InstrumentArticulation? = try PercussionMapper.getArticulation(n)
         if TypeHelper.isTruthy(articulation) {
             let uniqueId: String = articulation!.uniqueId
             for (name, value) in PercussionMapper.instrumentArticulationNames {
@@ -46,7 +46,7 @@ internal final class PercussionMapper {
         return "Snare (hit)"
     }
 
-    public static func getArticulation(_ n: Note) -> InstrumentArticulation? {
+    public static func getArticulation(_ n: Note) throws -> InstrumentArticulation? {
         let articulationIndex: Double = n.percussionArticulation
         if articulationIndex < 0 {
             return nil
@@ -55,7 +55,7 @@ internal final class PercussionMapper {
         if articulationIndex < trackArticulations.length {
             return trackArticulations[(articulationIndex).toInt()]
         }
-        return PercussionMapper.getArticulationById(articulationIndex)
+        return try PercussionMapper.getArticulationById(articulationIndex)
     }
 
     nonisolated(unsafe) private static var _instrumentArticulationsById: Map<Double, InstrumentArticulation>? = nil
@@ -77,13 +77,13 @@ internal final class PercussionMapper {
         return lookup.keys()
     }
 
-    public static func getArticulationById(_ id: Double) -> InstrumentArticulation? {
+    public static func getArticulationById(_ id: Double) throws -> InstrumentArticulation? {
         let lookup: Map<Double, InstrumentArticulation> = PercussionMapper._initArticulationsById()
-        return lookup.has(id) ? lookup.get(id)! : nil
+        return try lookup.has(id) ? jsNonNull(lookup.get(id)) : nil
     }
 
-    public static func getElementAndVariation(_ n: Note) -> List<Double> {
-        let articulation: InstrumentArticulation? = PercussionMapper.getArticulation(n)
+    public static func getElementAndVariation(_ n: Note) throws -> List<Double> {
+        let articulation: InstrumentArticulation? = try PercussionMapper.getArticulation(n)
         if !TypeHelper.isTruthy(articulation) {
             return List<Double>(-1.0, -1.0)
         }
@@ -94,7 +94,7 @@ internal final class PercussionMapper {
                 do {
                     var variation: Double = 0.0
                     while variation < variations.length {
-                        let gp6Articulation: InstrumentArticulation? = PercussionMapper.getArticulationById(variations[(variation).toInt()])
+                        let gp6Articulation: InstrumentArticulation? = try PercussionMapper.getArticulationById(variations[(variation).toInt()])
                         if gp6Articulation?.outputMidiNumber == articulation!.outputMidiNumber {
                             return List<Double>(element, variation)
                         }
@@ -125,7 +125,7 @@ internal final class PercussionMapper {
 
     nonisolated(unsafe) private static var _articulationsByOutputNumber: Map<Double, InstrumentArticulation>? = nil
 
-    public static func tryMatchKnownArticulation(_ articulation: InstrumentArticulation) -> Double {
+    public static func tryMatchKnownArticulation(_ articulation: InstrumentArticulation) throws -> Double {
         var articulationsByOutputNumber: Map<Double, InstrumentArticulation>? = PercussionMapper._articulationsByOutputNumber
         if !TypeHelper.isTruthy(articulationsByOutputNumber) {
             articulationsByOutputNumber = Map<Double, InstrumentArticulation>()
@@ -136,12 +136,12 @@ internal final class PercussionMapper {
             }
             PercussionMapper._articulationsByOutputNumber = articulationsByOutputNumber!
         }
-        return articulationsByOutputNumber!.has(articulation.outputMidiNumber) ? articulationsByOutputNumber!.get(articulation.outputMidiNumber)!.id : Number.NaN
+        return try articulationsByOutputNumber!.has(articulation.outputMidiNumber) ? jsNonNull(articulationsByOutputNumber!.get(articulation.outputMidiNumber)).id : Number.NaN
     }
 
     nonisolated(unsafe) private static var _instrumentArticulationsByUniqueId: Map<String, InstrumentArticulation>? = nil
 
-    public static func getInstrumentArticulationByUniqueId(_ uniqueId: String) -> InstrumentArticulation? {
+    public static func getInstrumentArticulationByUniqueId(_ uniqueId: String) throws -> InstrumentArticulation? {
         var lookup: Map<String, InstrumentArticulation>? = PercussionMapper._instrumentArticulationsByUniqueId
         if !TypeHelper.isTruthy(lookup) {
             lookup = Map<String, InstrumentArticulation>()
@@ -150,7 +150,7 @@ internal final class PercussionMapper {
             }
             PercussionMapper._instrumentArticulationsByUniqueId = lookup!
         }
-        return lookup!.has(uniqueId) ? lookup!.get(uniqueId)! : nil
+        return try lookup!.has(uniqueId) ? jsNonNull(lookup!.get(uniqueId)) : nil
     }
 
     public init() {}

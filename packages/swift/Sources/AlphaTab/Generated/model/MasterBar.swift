@@ -279,16 +279,16 @@ public final class MasterBar {
     /**
      * Gets the fermata for a given beat.
      */
-    public func getFermata(_ beat: Beat) -> Fermata? {
+    public func getFermata(_ beat: Beat) throws -> Fermata? {
         let fermataMap: Map<Double, Fermata>? = self.fermata
         if fermataMap == nil {
             return nil
         }
         if fermataMap!.has(beat.playbackStart) {
-            return fermataMap!.get(beat.playbackStart)!
+            return try jsNonNull(fermataMap!.get(beat.playbackStart))
         }
         if beat.index == 0.0 && fermataMap!.has(0.0) {
-            return fermataMap!.get(0.0)!
+            return try jsNonNull(fermataMap!.get(0.0))
         }
         return nil
     }
@@ -303,7 +303,7 @@ public final class MasterBar {
         self.syncPoints!.push(syncPoint)
     }
 
-    public func finish(_ sharedDataBag: Map<String, Any?>) {
+    public func finish(_ sharedDataBag: Map<String, Any?>) throws {
         var beamingRules: BeamingRules? = self.beamingRules
         if TypeHelper.isTruthy(beamingRules) {
             beamingRules!.timeSignatureNumerator = self.timeSignatureNumerator
@@ -311,8 +311,8 @@ public final class MasterBar {
             beamingRules!.finish()
         }
         if self.index > 0 {
-            self.start = self.previousMasterBar!.start + self.previousMasterBar!.calculateDuration()
-            let previousRules: BeamingRules? = sharedDataBag.has("beamingRules") ? (sharedDataBag.get("beamingRules")! as! BeamingRules) : nil
+            try self.start = jsNonNull(self.previousMasterBar).start + jsNonNull(self.previousMasterBar).calculateDuration()
+            let previousRules: BeamingRules? = try sharedDataBag.has("beamingRules") ? (jsCast(sharedDataBag.get("beamingRules")!, BeamingRules.self)) : nil
             if TypeHelper.isTruthy(TypeHelper.isTruthy(previousRules) && previousRules!.uniqueId == beamingRules?.uniqueId) {
                 self.beamingRules = nil
                 beamingRules = previousRules!
@@ -357,10 +357,10 @@ public final class BeamingRules {
         return r
     }
 
-    internal func findRule(_ shortestDuration: Duration) -> (Duration, List<Double>) {
+    internal func findRule(_ shortestDuration: Duration) throws -> (Duration, List<Double>) {
         let singleGroupKey: Duration? = self._singleGroupKey
         if TypeHelper.isTruthy(singleGroupKey) {
-            return (singleGroupKey!, self.groups.get(singleGroupKey!)!)
+            return try (singleGroupKey!, jsNonNull(self.groups.get(singleGroupKey!)))
         }
         if shortestDuration < Duration.Quarter {
             return (shortestDuration, List<Double>())
@@ -369,7 +369,7 @@ public final class BeamingRules {
         repeat {
             let duration: Duration = Duration.fromValue(durationValue)
             if self.groups.has(duration) {
-                return (duration, self.groups.get(duration)!)
+                return try (duration, jsNonNull(self.groups.get(duration)))
             }
             durationValue = durationValue * 2.0
         } while durationValue <= (Double(Duration.TwoHundredFiftySixth.rawValue))
@@ -377,7 +377,7 @@ public final class BeamingRules {
         repeat {
             let duration: Duration = Duration.fromValue(durationValue)
             if self.groups.has(duration) {
-                return (duration, self.groups.get(duration)!)
+                return try (duration, jsNonNull(self.groups.get(duration)))
             }
             durationValue = durationValue / 2.0
         } while durationValue > (Double(Duration.Half.rawValue))

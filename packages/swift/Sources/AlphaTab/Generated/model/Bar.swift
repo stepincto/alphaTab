@@ -266,7 +266,7 @@ public final class Bar {
         self.voices.push(voice)
     }
 
-    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) {
+    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) throws {
         self._filledVoices.clear()
         self._filledVoices.add(0.0)
         self._isEmpty = true
@@ -277,7 +277,7 @@ public final class Bar {
             var j: Double = self.voices.length
             while i < j {
                 let voice: Voice = self.voices[(i).toInt()]
-                voice.finish(settings, sharedDataBag)
+                try voice.finish(settings, sharedDataBag)
                 if !voice.isEmpty {
                     self._isEmpty = false
                     self._filledVoices.add(i)

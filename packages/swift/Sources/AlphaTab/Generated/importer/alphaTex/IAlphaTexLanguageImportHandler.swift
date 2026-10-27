@@ -7,19 +7,19 @@
 import AlphaTabRuntime
 
 internal protocol IAlphaTexLanguageImportHandler: AnyObject {
-    func applyStructuralMetaData(_ importer: any IAlphaTexImporter, _ metaData: AlphaTexMetaDataNode) -> ApplyStructuralMetaDataResult
+    func applyStructuralMetaData(_ importer: any IAlphaTexImporter, _ metaData: AlphaTexMetaDataNode) throws -> ApplyStructuralMetaDataResult
 
-    func applyScoreMetaData(_ importer: any IAlphaTexImporter, _ score: Score, _ metaData: AlphaTexMetaDataNode) -> ApplyNodeResult
+    func applyScoreMetaData(_ importer: any IAlphaTexImporter, _ score: Score, _ metaData: AlphaTexMetaDataNode) throws -> ApplyNodeResult
 
-    func applyStaffMetaData(_ importer: any IAlphaTexImporter, _ staff: Staff, _ metaData: AlphaTexMetaDataNode) -> ApplyNodeResult
+    func applyStaffMetaData(_ importer: any IAlphaTexImporter, _ staff: Staff, _ metaData: AlphaTexMetaDataNode) throws -> ApplyNodeResult
 
-    func applyBarMetaData(_ importer: any IAlphaTexImporter, _ bar: Bar, _ metaData: AlphaTexMetaDataNode) -> ApplyNodeResult
+    func applyBarMetaData(_ importer: any IAlphaTexImporter, _ bar: Bar, _ metaData: AlphaTexMetaDataNode) throws -> ApplyNodeResult
 
-    func applyBeatDurationProperty(_ importer: any IAlphaTexImporter, _ property: AlphaTexPropertyNode) -> ApplyNodeResult
+    func applyBeatDurationProperty(_ importer: any IAlphaTexImporter, _ property: AlphaTexPropertyNode) throws -> ApplyNodeResult
 
-    func applyBeatProperty(_ importer: any IAlphaTexImporter, _ beat: Beat, _ property: AlphaTexPropertyNode) -> ApplyNodeResult
+    func applyBeatProperty(_ importer: any IAlphaTexImporter, _ beat: Beat, _ property: AlphaTexPropertyNode) throws -> ApplyNodeResult
 
-    func applyNoteProperty(_ importer: any IAlphaTexImporter, _ note: Note, _ p: AlphaTexPropertyNode) -> ApplyNodeResult
+    func applyNoteProperty(_ importer: any IAlphaTexImporter, _ note: Note, _ p: AlphaTexPropertyNode) throws -> ApplyNodeResult
 
     var allKnownMetaDataTags: Set<String> { get }
 
@@ -37,15 +37,15 @@ internal protocol IAlphaTexLanguageImportHandler: AnyObject {
 
     var knownNoteProperties: Set<String> { get }
 
-    func buildScoreMetaDataNodes(_ score: Score) -> List<AlphaTexMetaDataNode>
+    func buildScoreMetaDataNodes(_ score: Score) throws -> List<AlphaTexMetaDataNode>
 
-    func buildBarMetaDataNodes(_ staff: Staff, _ bar: Bar?, _ voice: Double, _ isMultiVoice: Bool) -> List<AlphaTexMetaDataNode>
+    func buildBarMetaDataNodes(_ staff: Staff, _ bar: Bar?, _ voice: Double, _ isMultiVoice: Bool) throws -> List<AlphaTexMetaDataNode>
 
-    func buildSyncPointNodes(_ score: Score) -> List<AlphaTexMetaDataNode>
+    func buildSyncPointNodes(_ score: Score) throws -> List<AlphaTexMetaDataNode>
 
-    func buildBeatEffects(_ beat: Beat) -> List<AlphaTexPropertyNode>
+    func buildBeatEffects(_ beat: Beat) throws -> List<AlphaTexPropertyNode>
 
-    func buildNoteEffects(_ data: Note) -> List<AlphaTexPropertyNode>
+    func buildNoteEffects(_ data: Note) throws -> List<AlphaTexPropertyNode>
 }
 
 internal enum ApplyNodeResult: Int, IAlphaTabEnum, CaseIterable {

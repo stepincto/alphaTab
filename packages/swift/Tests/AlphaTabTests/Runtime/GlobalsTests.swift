@@ -36,21 +36,30 @@ private enum SampleEnum: Int, IAlphaTabEnum, CaseIterable {
         #expect((1e21).toInvariantString(36.0) == "5v1j4f4ds7c000")
     }
 
-    @Test func lazyComputesOnceAndCachesNull() {
+    @Test func lazyComputesOnceAndCachesNull() throws {
         var calls = 0
         let lazy = Lazy<Double?>({ () -> Double? in
             calls += 1
             return nil
         })
         #expect(!lazy.hasValue)
-        #expect(lazy.value == nil)
-        #expect(lazy.value == nil)
+        #expect(try lazy.value == nil)
+        #expect(try lazy.value == nil)
         #expect(calls == 1)
         #expect(lazy.hasValue)
         lazy.reset()
         #expect(!lazy.hasValue)
-        _ = lazy.value
+        _ = try lazy.value
         #expect(calls == 2)
+    }
+
+    /// A throwing factory reaches the reader (JS lets the error propagate out of the getter) and caches nothing.
+    @Test func lazyFactoryErrorReachesTheReader() {
+        let lazy = Lazy<Double>({ () throws -> Double in
+            throw JsError("factory failed")
+        })
+        #expect(throws: JsError.self) { try lazy.value }
+        #expect(!lazy.hasValue)
     }
 
     @Test func objectValuesOfEnumGivesNumbersInDeclarationOrder() {

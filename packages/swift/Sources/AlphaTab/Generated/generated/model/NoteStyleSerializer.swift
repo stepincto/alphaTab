@@ -44,7 +44,7 @@ internal final class NoteStyleSerializer {
         case "colors":
             obj.colors = Map<NoteSubElement, Color?>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try (obj.colors as! Map<NoteSubElement, Color?>).set(JsonHelperPartials.parseEnum(k, NoteSubElement.self)!, Color.fromJson(v))
+                try (obj.colors as! Map<NoteSubElement, Color?>).set(jsNonNull(JsonHelperPartials.parseEnum(k, NoteSubElement.self)), Color.fromJson(v))
             })
             return true
         default:

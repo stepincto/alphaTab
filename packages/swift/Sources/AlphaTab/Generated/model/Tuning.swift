@@ -39,10 +39,10 @@ public final class Tuning {
     /**
      * Gets the default tuning for the given string count.
      */
-    public static func getDefaultTuningFor(_ stringCount: Double) -> Tuning? {
+    public static func getDefaultTuningFor(_ stringCount: Double) throws -> Tuning? {
         Self._staticInit()
         if Tuning._defaultTunings.has(stringCount) {
-            let d: Tuning = Tuning._defaultTunings.get(stringCount)!
+            let d: Tuning = try jsNonNull(Tuning._defaultTunings.get(stringCount))
             return Tuning(d.name, d.tunings, d.isStandard)
         }
         return nil
@@ -68,12 +68,12 @@ public final class Tuning {
         return List<Tuning>()
     }
 
-    public static func initialize() {
+    public static func initialize() throws {
         Self._staticInit()
         Tuning._defaultTunings.set(7.0, Tuning("Guitar 7 strings", List<Double>(64.0, 59.0, 55.0, 50.0, 45.0, 40.0, 35.0), true))
-        Tuning._sevenStrings.push(Tuning._defaultTunings.get(7.0)!)
+        try Tuning._sevenStrings.push(jsNonNull(Tuning._defaultTunings.get(7.0)))
         Tuning._defaultTunings.set(6.0, Tuning("Guitar Standard Tuning", List<Double>(64.0, 59.0, 55.0, 50.0, 45.0, 40.0), true))
-        Tuning._sixStrings.push(Tuning._defaultTunings.get(6.0)!)
+        try Tuning._sixStrings.push(jsNonNull(Tuning._defaultTunings.get(6.0)))
         Tuning._sixStrings.push(Tuning("Guitar Tune down ½ step", List<Double>(63.0, 58.0, 54.0, 49.0, 44.0, 39.0), false))
         Tuning._sixStrings.push(Tuning("Guitar Tune down 1 step", List<Double>(62.0, 57.0, 53.0, 48.0, 43.0, 38.0), false))
         Tuning._sixStrings.push(Tuning("Guitar Tune down 2 step", List<Double>(60.0, 55.0, 51.0, 46.0, 41.0, 36.0), false))
@@ -105,14 +105,14 @@ public final class Tuning {
         Tuning._sixStrings.push(Tuning("Bass 6 Strings Tuning", List<Double>(48.0, 43.0, 38.0, 33.0, 28.0, 23.0), false))
         Tuning._sixStrings.push(Tuning("Lute or Vihuela Tuning", List<Double>(64.0, 59.0, 54.0, 50.0, 45.0, 40.0), false))
         Tuning._defaultTunings.set(5.0, Tuning("Bass 5 Strings Tuning", List<Double>(43.0, 38.0, 33.0, 28.0, 23.0), true))
-        Tuning._fiveStrings.push(Tuning._defaultTunings.get(5.0)!)
+        try Tuning._fiveStrings.push(jsNonNull(Tuning._defaultTunings.get(5.0)))
         Tuning._fiveStrings.push(Tuning("Banjo Dropped C Tuning", List<Double>(62.0, 59.0, 55.0, 48.0, 67.0), false))
         Tuning._fiveStrings.push(Tuning("Banjo Open D Tuning", List<Double>(62.0, 57.0, 54.0, 50.0, 69.0), false))
         Tuning._fiveStrings.push(Tuning("Banjo Open G Tuning", List<Double>(62.0, 59.0, 55.0, 50.0, 67.0), false))
         Tuning._fiveStrings.push(Tuning("Banjo G Minor Tuning", List<Double>(62.0, 58.0, 55.0, 50.0, 67.0), false))
         Tuning._fiveStrings.push(Tuning("Banjo G Modal Tuning", List<Double>(62.0, 57.0, 55.0, 50.0, 67.0), false))
         Tuning._defaultTunings.set(4.0, Tuning("Bass Standard Tuning", List<Double>(43.0, 38.0, 33.0, 28.0), true))
-        Tuning._fourStrings.push(Tuning._defaultTunings.get(4.0)!)
+        try Tuning._fourStrings.push(jsNonNull(Tuning._defaultTunings.get(4.0)))
         Tuning._fourStrings.push(Tuning("Bass Tune down ½ step", List<Double>(42.0, 37.0, 32.0, 27.0), false))
         Tuning._fourStrings.push(Tuning("Bass Tune down 1 step", List<Double>(41.0, 36.0, 31.0, 26.0), false))
         Tuning._fourStrings.push(Tuning("Bass Tune down 2 step", List<Double>(39.0, 34.0, 29.0, 24.0), false))
@@ -208,7 +208,7 @@ public final class Tuning {
                 return
             }
             Self._staticInitDone = true
-            Tuning.initialize()
+            try! Tuning.initialize()
         }
     }
 }

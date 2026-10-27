@@ -14,8 +14,8 @@ final class QuarterToneAccidentalsTests {
     func usesNaturalQuarterToneWhenNoKeySignatureOffsetIsRequired() async throws {
         let ks: KeySignature = KeySignature.C
         let noteValue: Double = 60.0
-        let spelling: ResolvedSpelling = ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.Default)
-        let accidental: AccidentalType = ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.Default, spelling, true, nil)
+        let spelling: ResolvedSpelling = try ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.Default)
+        let accidental: AccidentalType = try ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.Default, spelling, true, nil)
         TestGlobals.expect(accidental).toBe(AccidentalType.NaturalQuarterNoteUp)
     }
 
@@ -23,8 +23,8 @@ final class QuarterToneAccidentalsTests {
     func usesSharpQuarterToneForPositiveOffset() async throws {
         let ks: KeySignature = KeySignature.C
         let noteValue: Double = 61.0
-        let spelling: ResolvedSpelling = ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.ForceSharp)
-        let accidental: AccidentalType = ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.ForceSharp, spelling, true, nil)
+        let spelling: ResolvedSpelling = try ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.ForceSharp)
+        let accidental: AccidentalType = try ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.ForceSharp, spelling, true, nil)
         TestGlobals.expect(accidental).toBe(AccidentalType.SharpQuarterNoteUp)
     }
 
@@ -32,8 +32,8 @@ final class QuarterToneAccidentalsTests {
     func usesFlatQuarterToneForNegativeOffset() async throws {
         let ks: KeySignature = KeySignature.C
         let noteValue: Double = 61.0
-        let spelling: ResolvedSpelling = ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.ForceFlat)
-        let accidental: AccidentalType = ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.ForceFlat, spelling, true, nil)
+        let spelling: ResolvedSpelling = try ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.ForceFlat)
+        let accidental: AccidentalType = try ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.ForceFlat, spelling, true, nil)
         TestGlobals.expect(accidental).toBe(AccidentalType.FlatQuarterNoteUp)
     }
 

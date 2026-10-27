@@ -52,7 +52,7 @@ internal final class FingeringAssigner {
     /**
      * Assigns `(string, fret)` to notes that don't already carry both.
      */
-    public func assign(_ beat: Beat) {
+    public func assign(_ beat: Beat) throws {
         let notes: List<Note> = beat.notes
         let K: Double = notes.length
         if K == 0.0 {
@@ -72,7 +72,7 @@ internal final class FingeringAssigner {
                     continue
                 }
                 if note.isPercussion {
-                    let art: InstrumentArticulation? = PercussionMapper.getArticulation(note)
+                    let art: InstrumentArticulation? = try PercussionMapper.getArticulation(note)
                     if art != nil {
                         if Number.isNaN(note.string) {
                             note.string = Math.max(1.0, Math.min(6.0, 7.0 - art!.staffLine))
@@ -93,7 +93,7 @@ internal final class FingeringAssigner {
                 }
                 var j: Double = n
                 let noteValue: Double = note.realValue
-                while j > 0 && notes[(sortedIdx[(j - 1.0).toInt()]).toInt()].realValue > noteValue {
+                while try j > 0 && notes.jsElement((sortedIdx[(j - 1.0).toInt()]).toInt()).realValue > noteValue {
                     sortedIdx[(j).toInt()] = sortedIdx[(j - 1.0).toInt()]
                     j -= 1
                 }

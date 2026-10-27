@@ -50,7 +50,7 @@ final class PercussionTablature {
             staff.isPercussion = true
             staff.showTablature = true
             staff.stringTuning = Tuning("", List<Double>(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), false)
-            staff.finish(Settings())
+            try staff.finish(Settings())
             TestGlobals.expect(staff.showTablature).toBe(true)
             TestGlobals.expect(staff.tuning.length).toBe(6.0)
             TestGlobals.expect(staff.displayTranspositionPitch).toBe(0.0)
@@ -62,7 +62,7 @@ final class PercussionTablature {
             staff.isPercussion = true
             staff.showTablature = true
             staff.stringTuning = Tuning("", List<Double>(), false)
-            staff.finish(Settings())
+            try staff.finish(Settings())
             TestGlobals.expect(staff.showTablature).toBe(true)
             TestGlobals.expect(staff.tuning.length).toBe(6.0)
         }
@@ -73,7 +73,7 @@ final class PercussionTablature {
             staff.isPercussion = true
             staff.displayTranspositionPitch = 12.0
             staff.stringTuning = Tuning("", List<Double>(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), false)
-            staff.finish(Settings())
+            try staff.finish(Settings())
             TestGlobals.expect(staff.displayTranspositionPitch).toBe(0.0)
         }
 
@@ -83,7 +83,7 @@ final class PercussionTablature {
             staff.isPercussion = false
             staff.showTablature = true
             staff.stringTuning = Tuning("", List<Double>(64.0, 59.0, 55.0, 50.0, 45.0, 40.0), false)
-            staff.finish(Settings())
+            try staff.finish(Settings())
             TestGlobals.expect(staff.showTablature).toBe(true)
             TestGlobals.expect(staff.tuning.length).toBe(6.0)
         }

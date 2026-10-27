@@ -79,10 +79,10 @@ internal final class MasterBarSerializer {
             obj.customBarNumber = (v as? Double)
             return true
         case "keysignature":
-            try obj.keySignature = JsonHelperPartials.parseEnum(v, KeySignature.self)!
+            try obj.keySignature = jsNonNull(JsonHelperPartials.parseEnum(v, KeySignature.self))
             return true
         case "keysignaturetype":
-            try obj.keySignatureType = JsonHelperPartials.parseEnum(v, KeySignatureType.self)!
+            try obj.keySignatureType = jsNonNull(JsonHelperPartials.parseEnum(v, KeySignatureType.self))
             return true
         case "isdoublebar":
             obj.isDoubleBar = (v! as! Bool)
@@ -114,7 +114,7 @@ internal final class MasterBarSerializer {
             obj.isFreeTime = (v! as! Bool)
             return true
         case "tripletfeel":
-            try obj.tripletFeel = JsonHelperPartials.parseEnum(v, TripletFeel.self)!
+            try obj.tripletFeel = jsNonNull(JsonHelperPartials.parseEnum(v, TripletFeel.self))
             return true
         case "section":
             if TypeHelper.isTruthy(v) {
@@ -164,7 +164,7 @@ internal final class MasterBarSerializer {
             return true
         case "directions":
             for i in (TypeHelper.unknownToList(v, Double.self)) {
-                try obj.addDirection(JsonHelperPartials.parseEnum(i, Direction.self)!)
+                try obj.addDirection(jsNonNull(JsonHelperPartials.parseEnum(i, Direction.self)))
             }
             return true
         default:

@@ -32,7 +32,7 @@ internal final class SustainPedalMarkerSerializer {
             obj.ratioPosition = TypeHelper.unknownToNumber(v)
             return true
         case "pedaltype":
-            try obj.pedalType = JsonHelperPartials.parseEnum(v, SustainPedalMarkerType.self)!
+            try obj.pedalType = jsNonNull(JsonHelperPartials.parseEnum(v, SustainPedalMarkerType.self))
             return true
         default:
             break

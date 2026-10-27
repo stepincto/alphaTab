@@ -62,8 +62,8 @@ public final class StaffSystemBounds {
     /**
      * Adds a new master bar to this lookup.
      */
-    public func addBar(_ bounds: MasterBarBounds) {
-        self.boundsLookup.addMasterBar(bounds)
+    public func addBar(_ bounds: MasterBarBounds) throws {
+        try self.boundsLookup.addMasterBar(bounds)
         bounds.staffSystemBounds = self
         self.bars.push(bounds)
     }

@@ -173,15 +173,15 @@ internal final class MusicXmlSpanTracker {
     /**
      * Processes the span events of a single element (e.g. direction) written at the given placement.
      */
-    public func process(_ events: List<MusicXmlSpanEvent>, _ placement: MusicXmlSpanPlacement) {
+    public func process(_ events: List<MusicXmlSpanEvent>, _ placement: MusicXmlSpanPlacement) throws {
         for e in events {
             if e.action == MusicXmlSpanAction.Stop {
-                self._stop(e, placement)
+                try self._stop(e, placement)
             }
         }
         for e in events {
-            if e.action == MusicXmlSpanAction.Start || (e.action == MusicXmlSpanAction.Continue && e.kind != MusicXmlSpanKind.None && MusicXmlSpanTracker._bestMatch(self._open, e, placement) == -1.0) {
-                self._start(e, placement)
+            if try e.action == MusicXmlSpanAction.Start || (e.action == MusicXmlSpanAction.Continue && e.kind != MusicXmlSpanKind.None && MusicXmlSpanTracker._bestMatch(self._open, e, placement) == -1.0) {
+                try self._start(e, placement)
             }
         }
     }
@@ -203,8 +203,8 @@ internal final class MusicXmlSpanTracker {
         return spans
     }
 
-    private func _stop(_ e: MusicXmlSpanEvent, _ placement: MusicXmlSpanPlacement) {
-        let index: Double = MusicXmlSpanTracker._bestMatch(self._open, e, placement)
+    private func _stop(_ e: MusicXmlSpanEvent, _ placement: MusicXmlSpanPlacement) throws {
+        let index: Double = try MusicXmlSpanTracker._bestMatch(self._open, e, placement)
         if index == -1.0 {
             self._parkedStops.push(MusicXmlSpan(element: e.element, kind: e.kind, number: e.number, start: nil, end: placement))
             return
@@ -218,8 +218,8 @@ internal final class MusicXmlSpanTracker {
         self._close(span)
     }
 
-    private func _start(_ e: MusicXmlSpanEvent, _ placement: MusicXmlSpanPlacement) {
-        let parked: Double = MusicXmlSpanTracker._bestMatch(self._parkedStops, e, placement)
+    private func _start(_ e: MusicXmlSpanEvent, _ placement: MusicXmlSpanPlacement) throws {
+        let parked: Double = try MusicXmlSpanTracker._bestMatch(self._parkedStops, e, placement)
         if parked != -1.0 {
             let span: MusicXmlSpan = self._parkedStops[(parked).toInt()]
             self._parkedStops.splice(parked, 1.0)
@@ -230,8 +230,8 @@ internal final class MusicXmlSpanTracker {
             self._close(span)
             return
         }
-        let restarted: Double = MusicXmlSpanTracker._bestMatch(self._open, e, placement)
-        if restarted != -1.0 && MusicXmlSpanTracker._isSame(self._open[(restarted).toInt()], e, placement) {
+        let restarted: Double = try MusicXmlSpanTracker._bestMatch(self._open, e, placement)
+        if try restarted != -1.0 && MusicXmlSpanTracker._isSame(self._open[(restarted).toInt()], e, placement) {
             let span: MusicXmlSpan = self._open[(restarted).toInt()]
             self._open.splice(restarted, 1.0)
             span.end = placement
@@ -249,7 +249,7 @@ internal final class MusicXmlSpanTracker {
     /**
      * The best matching span for the event, -1 if none matches. Parked stops only match if they are after the start.
      */
-    private static func _bestMatch(_ spans: List<MusicXmlSpan>, _ e: MusicXmlSpanEvent, _ placement: MusicXmlSpanPlacement) -> Double {
+    private static func _bestMatch(_ spans: List<MusicXmlSpan>, _ e: MusicXmlSpanEvent, _ placement: MusicXmlSpanPlacement) throws -> Double {
         var best: Double = -1.0
         var bestScore: Double = -1.0
         do {
@@ -260,12 +260,12 @@ internal final class MusicXmlSpanTracker {
                     i += 1
                     continue
                 }
-                let other: MusicXmlSpanPlacement = span.start != nil ? span.start! : span.end!
+                let other: MusicXmlSpanPlacement = try span.start != nil ? span.start! : jsNonNull(span.end)
                 if other.staffIndex != -1.0 && placement.staffIndex != -1.0 && other.staffIndex != placement.staffIndex {
                     i += 1
                     continue
                 }
-                if span.start == nil && !MusicXmlSpanTracker._isBefore(placement.position, span.end!.position) {
+                if try span.start == nil && !MusicXmlSpanTracker._isBefore(placement.position, jsNonNull(span.end).position) {
                     i += 1
                     continue
                 }
@@ -294,8 +294,8 @@ internal final class MusicXmlSpanTracker {
         return score
     }
 
-    private static func _isSame(_ span: MusicXmlSpan, _ e: MusicXmlSpanEvent, _ placement: MusicXmlSpanPlacement) -> Bool {
-        return (span.start!.staffIndex == placement.staffIndex && span.start!.voice == placement.voice && (!MusicXmlSpanTracker._isIdentifiedByWords(span.element) || span.kind == e.kind))
+    private static func _isSame(_ span: MusicXmlSpan, _ e: MusicXmlSpanEvent, _ placement: MusicXmlSpanPlacement) throws -> Bool {
+        return try (jsNonNull(span.start).staffIndex == placement.staffIndex && jsNonNull(span.start).voice == placement.voice && (!MusicXmlSpanTracker._isIdentifiedByWords(span.element) || span.kind == e.kind))
     }
 
     private static func _isIdentifiedByWords(_ element: MusicXmlSpanElement) -> Bool {
@@ -316,14 +316,14 @@ internal final class MusicXmlSpanReader {
     /**
      * Reads a `<dashes>` or `<bracket>` element.
      */
-    public static func readLine(_ element: XmlNode, _ words: String, _ events: List<MusicXmlSpanEvent>) {
+    public static func readLine(_ element: XmlNode, _ words: String, _ events: List<MusicXmlSpanEvent>) throws {
         let lineElement: MusicXmlSpanElement = element.localName == "bracket" ? MusicXmlSpanElement.Bracket : MusicXmlSpanElement.Dashes
-        let type: String = element.getAttribute("type", "start")
+        let type: String = try element.getAttribute("type", "start")
         if type != "start" && type != "stop" && type != "continue" {
             return
         }
         let action: MusicXmlSpanAction = type == "stop" ? MusicXmlSpanAction.Stop : type == "continue" ? MusicXmlSpanAction.Continue : MusicXmlSpanAction.Start
-        MusicXmlSpanReader._push(events, (lineElement as! MusicXmlSpanElement), (action as! MusicXmlSpanAction), MusicXmlSpanReader.lineKind(words), element)
+        try MusicXmlSpanReader._push(events, (lineElement as! MusicXmlSpanElement), (action as! MusicXmlSpanAction), MusicXmlSpanReader.lineKind(words), element)
     }
 
     /**
@@ -340,26 +340,26 @@ internal final class MusicXmlSpanReader {
         }
     }
 
-    public static func readWedge(_ element: XmlNode, _ events: List<MusicXmlSpanEvent>) {
-        switch element.getAttribute("type") {
+    public static func readWedge(_ element: XmlNode, _ events: List<MusicXmlSpanEvent>) throws {
+        switch try element.getAttribute("type") {
         case "crescendo":
-            MusicXmlSpanReader._start(events, MusicXmlSpanElement.Wedge, MusicXmlSpanKind.Crescendo, element)
+            try MusicXmlSpanReader._start(events, MusicXmlSpanElement.Wedge, MusicXmlSpanKind.Crescendo, element)
         case "diminuendo":
-            MusicXmlSpanReader._start(events, MusicXmlSpanElement.Wedge, MusicXmlSpanKind.Decrescendo, element)
+            try MusicXmlSpanReader._start(events, MusicXmlSpanElement.Wedge, MusicXmlSpanKind.Decrescendo, element)
         case "stop":
-            MusicXmlSpanReader._stop(events, MusicXmlSpanElement.Wedge, element)
+            try MusicXmlSpanReader._stop(events, MusicXmlSpanElement.Wedge, element)
         default:
             break
         }
     }
 
-    public static func readOctaveShift(_ element: XmlNode, _ events: List<MusicXmlSpanEvent>) {
-        let type: String = element.getAttribute("type")
+    public static func readOctaveShift(_ element: XmlNode, _ events: List<MusicXmlSpanEvent>) throws {
+        let type: String = try element.getAttribute("type")
         if type == "stop" {
-            MusicXmlSpanReader._stop(events, MusicXmlSpanElement.OctaveShift, element)
+            try MusicXmlSpanReader._stop(events, MusicXmlSpanElement.OctaveShift, element)
         } else if type == "down" || type == "up" {
             var kind: MusicXmlSpanKind = MusicXmlSpanKind.None
-            switch element.getAttribute("size", "8") {
+            switch try element.getAttribute("size", "8") {
             case "8":
                 kind = type == "down" ? MusicXmlSpanKind.Ottava8va : MusicXmlSpanKind.Ottava8vb
             case "15":
@@ -367,21 +367,21 @@ internal final class MusicXmlSpanReader {
             default:
                 break
             }
-            MusicXmlSpanReader._start(events, MusicXmlSpanElement.OctaveShift, kind, element)
+            try MusicXmlSpanReader._start(events, MusicXmlSpanElement.OctaveShift, kind, element)
         }
     }
 
-    public static func readPedal(_ element: XmlNode, _ events: List<MusicXmlSpanEvent>) {
-        switch element.getAttribute("type") {
+    public static func readPedal(_ element: XmlNode, _ events: List<MusicXmlSpanEvent>) throws {
+        switch try element.getAttribute("type") {
         case "change":
-            MusicXmlSpanReader._stop(events, MusicXmlSpanElement.Pedal, element)
-            MusicXmlSpanReader._start(events, MusicXmlSpanElement.Pedal, MusicXmlSpanKind.SustainPedal, element)
+            try MusicXmlSpanReader._stop(events, MusicXmlSpanElement.Pedal, element)
+            try MusicXmlSpanReader._start(events, MusicXmlSpanElement.Pedal, MusicXmlSpanKind.SustainPedal, element)
         case "start", "resume":
-            MusicXmlSpanReader._start(events, MusicXmlSpanElement.Pedal, MusicXmlSpanKind.SustainPedal, element)
+            try MusicXmlSpanReader._start(events, MusicXmlSpanElement.Pedal, MusicXmlSpanKind.SustainPedal, element)
         case "stop", "discontinue":
-            MusicXmlSpanReader._stop(events, MusicXmlSpanElement.Pedal, element)
+            try MusicXmlSpanReader._stop(events, MusicXmlSpanElement.Pedal, element)
         case "continue":
-            MusicXmlSpanReader._push(events, MusicXmlSpanElement.Pedal, MusicXmlSpanAction.Continue, MusicXmlSpanKind.SustainPedal, element)
+            try MusicXmlSpanReader._push(events, MusicXmlSpanElement.Pedal, MusicXmlSpanAction.Continue, MusicXmlSpanKind.SustainPedal, element)
         default:
             break
         }
@@ -390,29 +390,29 @@ internal final class MusicXmlSpanReader {
     /**
      * Reads a `<measure-style>` element.
      */
-    public static func readMeasureStyle(_ element: XmlNode, _ midBar: Bool, _ events: List<MusicXmlSpanEvent>) {
+    public static func readMeasureStyle(_ element: XmlNode, _ midBar: Bool, _ events: List<MusicXmlSpanEvent>) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "measure-repeat":
                 if midBar {
                     break
                 }
-                switch c.getAttribute("type") {
+                switch try c.getAttribute("type") {
                 case "start":
-                    let slashes: String = c.getAttribute("slashes", "1")
+                    let slashes: String = try c.getAttribute("slashes", "1")
                     let kind: MusicXmlSpanKind = slashes == "1" ? MusicXmlSpanKind.SimileSimple : slashes == "2" ? MusicXmlSpanKind.SimileDouble : MusicXmlSpanKind.None
-                    MusicXmlSpanReader._start(events, MusicXmlSpanElement.MeasureRepeat, (kind as! MusicXmlSpanKind), c)
+                    try MusicXmlSpanReader._start(events, MusicXmlSpanElement.MeasureRepeat, (kind as! MusicXmlSpanKind), c)
                 case "stop":
-                    MusicXmlSpanReader._stop(events, MusicXmlSpanElement.MeasureRepeat, c)
+                    try MusicXmlSpanReader._stop(events, MusicXmlSpanElement.MeasureRepeat, c)
                 default:
                     break
                 }
             case "slash":
-                switch c.getAttribute("type") {
+                switch try c.getAttribute("type") {
                 case "start":
-                    MusicXmlSpanReader._start(events, MusicXmlSpanElement.Slash, MusicXmlSpanKind.Slash, c)
+                    try MusicXmlSpanReader._start(events, MusicXmlSpanElement.Slash, MusicXmlSpanKind.Slash, c)
                 case "stop":
-                    MusicXmlSpanReader._stop(events, MusicXmlSpanElement.Slash, c)
+                    try MusicXmlSpanReader._stop(events, MusicXmlSpanElement.Slash, c)
                 default:
                     break
                 }
@@ -422,16 +422,16 @@ internal final class MusicXmlSpanReader {
         }
     }
 
-    private static func _start(_ events: List<MusicXmlSpanEvent>, _ element: MusicXmlSpanElement, _ kind: MusicXmlSpanKind, _ node: XmlNode) {
-        MusicXmlSpanReader._push(events, element, MusicXmlSpanAction.Start, kind, node)
+    private static func _start(_ events: List<MusicXmlSpanEvent>, _ element: MusicXmlSpanElement, _ kind: MusicXmlSpanKind, _ node: XmlNode) throws {
+        try MusicXmlSpanReader._push(events, element, MusicXmlSpanAction.Start, kind, node)
     }
 
-    private static func _stop(_ events: List<MusicXmlSpanEvent>, _ element: MusicXmlSpanElement, _ node: XmlNode) {
-        MusicXmlSpanReader._push(events, element, MusicXmlSpanAction.Stop, MusicXmlSpanKind.None, node)
+    private static func _stop(_ events: List<MusicXmlSpanEvent>, _ element: MusicXmlSpanElement, _ node: XmlNode) throws {
+        try MusicXmlSpanReader._push(events, element, MusicXmlSpanAction.Stop, MusicXmlSpanKind.None, node)
     }
 
-    private static func _push(_ events: List<MusicXmlSpanEvent>, _ element: MusicXmlSpanElement, _ action: MusicXmlSpanAction, _ kind: MusicXmlSpanKind, _ node: XmlNode) {
-        events.push(MusicXmlSpanEvent(element: element, action: action, kind: kind, number: node.getAttribute("number", "1")))
+    private static func _push(_ events: List<MusicXmlSpanEvent>, _ element: MusicXmlSpanElement, _ action: MusicXmlSpanAction, _ kind: MusicXmlSpanKind, _ node: XmlNode) throws {
+        try events.push(MusicXmlSpanEvent(element: element, action: action, kind: kind, number: node.getAttribute("number", "1")))
     }
 
     public init() {}

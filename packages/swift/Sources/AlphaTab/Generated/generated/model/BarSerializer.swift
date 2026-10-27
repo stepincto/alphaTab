@@ -62,10 +62,10 @@ internal final class BarSerializer {
             obj.id = TypeHelper.unknownToNumber(v)
             return true
         case "clef":
-            try obj.clef = JsonHelperPartials.parseEnum(v, Clef.self)!
+            try obj.clef = jsNonNull(JsonHelperPartials.parseEnum(v, Clef.self))
             return true
         case "clefottava":
-            try obj.clefOttava = JsonHelperPartials.parseEnum(v, Ottavia.self)!
+            try obj.clefOttava = jsNonNull(JsonHelperPartials.parseEnum(v, Ottavia.self))
             return true
         case "voices":
             obj.voices = List<Voice>()
@@ -76,7 +76,7 @@ internal final class BarSerializer {
             }
             return true
         case "similemark":
-            try obj.simileMark = JsonHelperPartials.parseEnum(v, SimileMark.self)!
+            try obj.simileMark = jsNonNull(JsonHelperPartials.parseEnum(v, SimileMark.self))
             return true
         case "displayscale":
             obj.displayScale = TypeHelper.unknownToNumber(v)
@@ -93,16 +93,16 @@ internal final class BarSerializer {
             }
             return true
         case "barlineleft":
-            try obj.barLineLeft = JsonHelperPartials.parseEnum(v, BarLineStyle.self)!
+            try obj.barLineLeft = jsNonNull(JsonHelperPartials.parseEnum(v, BarLineStyle.self))
             return true
         case "barlineright":
-            try obj.barLineRight = JsonHelperPartials.parseEnum(v, BarLineStyle.self)!
+            try obj.barLineRight = jsNonNull(JsonHelperPartials.parseEnum(v, BarLineStyle.self))
             return true
         case "keysignature":
-            try obj.keySignature = JsonHelperPartials.parseEnum(v, KeySignature.self)!
+            try obj.keySignature = jsNonNull(JsonHelperPartials.parseEnum(v, KeySignature.self))
             return true
         case "keysignaturetype":
-            try obj.keySignatureType = JsonHelperPartials.parseEnum(v, KeySignatureType.self)!
+            try obj.keySignatureType = jsNonNull(JsonHelperPartials.parseEnum(v, KeySignatureType.self))
             return true
         case "barnumberdisplay":
             try obj.barNumberDisplay = JsonHelperPartials.parseEnum(v, BarNumberDisplay.self)

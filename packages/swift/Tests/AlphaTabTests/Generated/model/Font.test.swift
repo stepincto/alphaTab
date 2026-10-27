@@ -12,12 +12,12 @@ import AlphaTabRuntime
 final class FontTests {
     private static func parseText(_ text: String, _ expected: Font) throws {
         let font: Font? = try Font.fromJson(text)
-        TestGlobals.expect(font!.families.join(", ")).toBe(expected.families.join(", "))
-        TestGlobals.expect(font!.isBold).toBe(expected.isBold)
-        TestGlobals.expect(font!.isItalic).toBe(expected.isItalic)
-        TestGlobals.expect(font!.size).toBe(expected.size)
-        TestGlobals.expect(font!.style).toBe(expected.style)
-        TestGlobals.expect(font!.weight).toBe(expected.weight)
+        try TestGlobals.expect(jsNonNull(font).families.join(", ")).toBe(expected.families.join(", "))
+        try TestGlobals.expect(jsNonNull(font).isBold).toBe(expected.isBold)
+        try TestGlobals.expect(jsNonNull(font).isItalic).toBe(expected.isItalic)
+        try TestGlobals.expect(jsNonNull(font).size).toBe(expected.size)
+        try TestGlobals.expect(jsNonNull(font).style).toBe(expected.style)
+        try TestGlobals.expect(jsNonNull(font).weight).toBe(expected.weight)
     }
 
     @Test("parses-full")

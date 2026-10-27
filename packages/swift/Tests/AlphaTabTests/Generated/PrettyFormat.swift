@@ -260,13 +260,13 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
         var value: String? = nil
         switch node.nodeType {
         case AlphaTexNodeType.Ident:
-            value = (node as! AlphaTexIdentifier).text
+            try value = (jsCast(node, AlphaTexIdentifier.self)).text
         case AlphaTexNodeType.Tag:
-            value = (node as! AlphaTexMetaDataTagNode).tag.text
+            try value = (jsCast(node, AlphaTexMetaDataTagNode.self)).tag.text
         case AlphaTexNodeType.Number:
-            value = (node as! AlphaTexNumberLiteral).value.toInvariantString()
+            try value = (jsCast(node, AlphaTexNumberLiteral.self)).value.toInvariantString()
         case AlphaTexNodeType.String:
-            value = (node as! AlphaTexStringLiteral).text
+            try value = (jsCast(node, AlphaTexStringLiteral.self)).text
         default:
             break
         }
@@ -301,7 +301,7 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
                 children.push(("parameterIndices", arg.parameterIndices!))
             }
         case AlphaTexNodeType.Tag:
-            let tag: AlphaTexMetaDataTagNode = (node as! AlphaTexMetaDataTagNode)
+            let tag: AlphaTexMetaDataTagNode = try jsCast(node, AlphaTexMetaDataTagNode.self)
             if TypeHelper.isTruthy(tag.prefix) {
                 children.push(("prefix", tag.prefix!))
             }
@@ -309,7 +309,7 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
                 children.push(("tag", tag.tag))
             }
         case AlphaTexNodeType.Meta:
-            let metaData: AlphaTexMetaDataNode = (node as! AlphaTexMetaDataNode)
+            let metaData: AlphaTexMetaDataNode = try jsCast(node, AlphaTexMetaDataNode.self)
             if TypeHelper.isTruthy(metaData.tag) {
                 children.push(("tag", metaData.tag))
             }
@@ -320,7 +320,7 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
                 children.push(("properties", metaData.properties!))
             }
         case AlphaTexNodeType.Arguments:
-            let valueList: AlphaTexArgumentList = (node as! AlphaTexArgumentList)
+            let valueList: AlphaTexArgumentList = try jsCast(node, AlphaTexArgumentList.self)
             if TypeHelper.isTruthy(valueList.openParenthesis) {
                 children.push(("openParenthesis", valueList.openParenthesis!))
             }
@@ -337,7 +337,7 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
                 children.push(("validated", valueList.validated))
             }
         case AlphaTexNodeType.Props:
-            let properties: AlphaTexPropertiesNode = (node as! AlphaTexPropertiesNode)
+            let properties: AlphaTexPropertiesNode = try jsCast(node, AlphaTexPropertiesNode.self)
             if TypeHelper.isTruthy(properties.openBrace) {
                 children.push(("openBrace", properties.openBrace!))
             }
@@ -348,7 +348,7 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
                 children.push(("closeBrace", properties.closeBrace!))
             }
         case AlphaTexNodeType.Prop:
-            let property: AlphaTexPropertyNode = (node as! AlphaTexPropertyNode)
+            let property: AlphaTexPropertyNode = try jsCast(node, AlphaTexPropertyNode.self)
             if TypeHelper.isTruthy(property.property) {
                 children.push(("property", property.property))
             }
@@ -356,12 +356,12 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
                 children.push(("properties", property.arguments!))
             }
         case AlphaTexNodeType.Score:
-            let score: AlphaTexScoreNode = (node as! AlphaTexScoreNode)
+            let score: AlphaTexScoreNode = try jsCast(node, AlphaTexScoreNode.self)
             if TypeHelper.isTruthy(score.bars) && score.bars.length > 0 {
                 children.push(("bars", score.bars))
             }
         case AlphaTexNodeType.Bar:
-            let bar: AlphaTexBarNode = (node as! AlphaTexBarNode)
+            let bar: AlphaTexBarNode = try jsCast(node, AlphaTexBarNode.self)
             if TypeHelper.isTruthy(bar.metaData) && bar.metaData.length > 0 {
                 children.push(("metaData", bar.metaData))
             }
@@ -372,7 +372,7 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
                 children.push(("pipe", bar.pipe!))
             }
         case AlphaTexNodeType.Beat:
-            let beat: AlphaTexBeatNode = (node as! AlphaTexBeatNode)
+            let beat: AlphaTexBeatNode = try jsCast(node, AlphaTexBeatNode.self)
             if TypeHelper.isTruthy(beat.durationChange) {
                 children.push(("durationChange", beat.durationChange!))
             }
@@ -398,7 +398,7 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
                 children.push(("beatEffects", beat.beatEffects!))
             }
         case AlphaTexNodeType.Duration:
-            let beatDurationChange: AlphaTexBeatDurationChangeNode = (node as! AlphaTexBeatDurationChangeNode)
+            let beatDurationChange: AlphaTexBeatDurationChangeNode = try jsCast(node, AlphaTexBeatDurationChangeNode.self)
             if TypeHelper.isTruthy(beatDurationChange.colon) {
                 children.push(("colon", beatDurationChange.colon))
             }
@@ -409,7 +409,7 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
                 children.push(("properties", beatDurationChange.properties!))
             }
         case AlphaTexNodeType.NoteList:
-            let noteList: AlphaTexNoteListNode = (node as! AlphaTexNoteListNode)
+            let noteList: AlphaTexNoteListNode = try jsCast(node, AlphaTexNoteListNode.self)
             if TypeHelper.isTruthy(noteList.openParenthesis) {
                 children.push(("openParenthesis", noteList.openParenthesis!))
             }
@@ -420,7 +420,7 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
                 children.push(("closeParenthesis", noteList.closeParenthesis!))
             }
         case AlphaTexNodeType.Note:
-            let note: AlphaTexNoteNode = (node as! AlphaTexNoteNode)
+            let note: AlphaTexNoteNode = try jsCast(node, AlphaTexNoteNode.self)
             if TypeHelper.isTruthy(note.noteValue) {
                 children.push(("noteValue", note.noteValue))
             }
@@ -498,7 +498,7 @@ internal final class MidiEventSerializerPlugin: PrettyFormatNewPlugin {
     nonisolated(unsafe) public static let instance: MidiEventSerializerPlugin = MidiEventSerializerPlugin()
 
     public func serialize(_ val: Any?, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter) throws -> String {
-        let json: Map<String, Any?> = JsonConverter.midiEventToJsObject((val as! MidiEvent))
+        let json: Map<String, Any?> = try JsonConverter.midiEventToJsObject((val as! MidiEvent))
         return try printer(json, config, indentation, depth, refs)
     }
 
@@ -513,7 +513,7 @@ internal final class MidiEventSerializerPlugin: PrettyFormatNewPlugin {
  * A serializer plugin for pretty-format for creating simple Score model snapshots
  */
 internal final class ScoreSerializerPlugin: PrettyFormatNewPlugin {
-    nonisolated(unsafe) public static let instance: ScoreSerializerPlugin = ScoreSerializerPlugin()
+    nonisolated(unsafe) public static let instance: ScoreSerializerPlugin = try! ScoreSerializerPlugin()
 
     private var _defaultScoreJson: Map<String, Any?>!
 
@@ -531,7 +531,7 @@ internal final class ScoreSerializerPlugin: PrettyFormatNewPlugin {
 
     private var _defaultNoteJson: Map<String, Any?>!
 
-    private init() {
+    private init() throws {
         let defaultScore: Score = Score()
         let defaultMasterBar: MasterBar = MasterBar()
         defaultMasterBar.index = -1.0
@@ -551,19 +551,19 @@ internal final class ScoreSerializerPlugin: PrettyFormatNewPlugin {
         let defaultNote: Note = Note()
         defaultNote.id = -1.0
         defaultNote.index = -1.0
-        self._defaultScoreJson = ScoreSerializer.toJson(defaultScore)!
-        self._defaultMasterBarJson = MasterBarSerializer.toJson(defaultMasterBar)!
-        self._defaultTrackJson = TrackSerializer.toJson(defaultTrack)!
-        self._defaultStaffJson = StaffSerializer.toJson(defaultStaff)!
-        self._defaultBarJson = BarSerializer.toJson(defaultBar)!
-        self._defaultVoiceJson = VoiceSerializer.toJson(defaultVoice)!
-        self._defaultBeatJson = BeatSerializer.toJson(defaultBeat)!
-        self._defaultNoteJson = NoteSerializer.toJson(defaultNote)!
+        try self._defaultScoreJson = jsNonNull(ScoreSerializer.toJson(defaultScore))
+        try self._defaultMasterBarJson = jsNonNull(MasterBarSerializer.toJson(defaultMasterBar))
+        try self._defaultTrackJson = jsNonNull(TrackSerializer.toJson(defaultTrack))
+        try self._defaultStaffJson = jsNonNull(StaffSerializer.toJson(defaultStaff))
+        try self._defaultBarJson = jsNonNull(BarSerializer.toJson(defaultBar))
+        try self._defaultVoiceJson = jsNonNull(VoiceSerializer.toJson(defaultVoice))
+        try self._defaultBeatJson = jsNonNull(BeatSerializer.toJson(defaultBeat))
+        try self._defaultNoteJson = jsNonNull(NoteSerializer.toJson(defaultNote))
     }
 
     public func serialize(_ val: Any?, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter) throws -> String {
-        let json: Map<String, Any?>? = JsonConverter.scoreToJsObject((val as! Score))
-        try self._filterOutDefaultValues((json as! Map<String, Any?>))
+        let json: Map<String, Any?>? = try JsonConverter.scoreToJsObject((val as! Score))
+        try self._filterOutDefaultValues(jsCast(json, Map<String, Any?>.self))
         return try printer(json, config, indentation, depth, refs)
     }
 
@@ -711,7 +711,7 @@ internal final class SnapshotFile {
         do {
             var i: Double = 0.0
             while i < lines {
-                if actual[(i).toInt()].trimEnd() != expected![(i).toInt()].trimEnd() {
+                if try actual.jsElement((i).toInt()).trimEnd() != expected!.jsElement((i).toInt()).trimEnd() {
                     errors.push("Error on line \((i + 1.0).toTemplate()): ")
                     errors.push("+ \((actual[(i).toInt()]).toTemplate())")
                     errors.push("- \((expected![(i).toInt()]).toTemplate())")
@@ -740,16 +740,16 @@ internal final class SnapshotFile {
         let lines: List<String> = content.splitBy("\n")
         var i: Double = 0.0
         while i < lines.length {
-            if lines[(i).toInt()].startsWith("exports[`") {
-                let endOfName: Double = lines[(i).toInt()].indexOfInDouble("`]", 9.0)
+            if try lines.jsElement((i).toInt()).startsWith("exports[`") {
+                let endOfName: Double = try lines.jsElement((i).toInt()).indexOfInDouble("`]", 9.0)
                 if endOfName == -1.0 {
                     throw JsError("Failed to parse snapshot file, missing `] on line \((i + 1.0).toTemplate())")
                 }
-                let name: String = lines[(i).toInt()].substring(9.0, endOfName)
-                if lines[(i).toInt()].trimEnd().endsWith("`;") {
-                    let startOfValue: Double = lines[(i).toInt()].indexOfInDouble("`", endOfName + 2.0) + 1.0
-                    let endOfValue: Double = lines[(i).toInt()].indexOfInDouble("`;", startOfValue + 1.0)
-                    self.snapshots.set(name, lines[(i).toInt()].substring(startOfValue, endOfValue))
+                let name: String = try lines.jsElement((i).toInt()).substring(9.0, endOfName)
+                if try lines.jsElement((i).toInt()).trimEnd().endsWith("`;") {
+                    let startOfValue: Double = try lines.jsElement((i).toInt()).indexOfInDouble("`", endOfName + 2.0) + 1.0
+                    let endOfValue: Double = try lines.jsElement((i).toInt()).indexOfInDouble("`;", startOfValue + 1.0)
+                    try self.snapshots.set(name, lines.jsElement((i).toInt()).substring(startOfValue, endOfValue))
                     i += 1
                     continue
                 }

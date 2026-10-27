@@ -36,7 +36,7 @@ internal final class BeamingRulesSerializer {
         case "groups":
             obj.groups = Map<Duration, List<Double>>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try obj.groups.set(JsonHelperPartials.parseEnum(k, Duration.self)!, TypeHelper.unknownToList(v, Double.self))
+                try obj.groups.set(jsNonNull(JsonHelperPartials.parseEnum(k, Duration.self)), TypeHelper.unknownToList(v, Double.self))
             })
             return true
         default:

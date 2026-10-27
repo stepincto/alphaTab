@@ -36,7 +36,7 @@ internal final class TrackStyleSerializer {
         case "colors":
             obj.colors = Map<TrackSubElement, Color?>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try (obj.colors as! Map<TrackSubElement, Color?>).set(JsonHelperPartials.parseEnum(k, TrackSubElement.self)!, Color.fromJson(v))
+                try (obj.colors as! Map<TrackSubElement, Color?>).set(jsNonNull(JsonHelperPartials.parseEnum(k, TrackSubElement.self)), Color.fromJson(v))
             })
             return true
         default:

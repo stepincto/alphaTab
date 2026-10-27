@@ -13,15 +13,15 @@ internal final class Wrapper {
 
     public var pool: SkylineSegmentPool!
 
-    public init(_ xMin: Double = 0.0, _ xMax: Double = 100.0) {
+    public init(_ xMin: Double = 0.0, _ xMax: Double = 100.0) throws {
         self.pool = SkylineSegmentPool()
-        self.bar = BarLocalSkyline(xMin, xMax, self.pool)
+        try self.bar = BarLocalSkyline(xMin, xMax, self.pool)
     }
 }
 
 internal final class BarLocalSkylineFixtures {
-    public static func newWrapper(_ xMin: Double = 0.0, _ xMax: Double = 100.0) -> Wrapper {
-        return Wrapper(xMin, xMax)
+    public static func newWrapper(_ xMin: Double = 0.0, _ xMax: Double = 100.0) throws -> Wrapper {
+        return try Wrapper(xMin, xMax)
     }
 
     public init() {}
@@ -31,7 +31,7 @@ internal final class BarLocalSkylineFixtures {
 final class BarLocalSkyline_Construction {
     @Test("builds two flat skylines over the bar x-range")
     func buildsTwoFlatSkylinesOverTheBarXRange() async throws {
-        let w: Wrapper = BarLocalSkylineFixtures.newWrapper(0.0, 50.0)
+        let w: Wrapper = try BarLocalSkylineFixtures.newWrapper(0.0, 50.0)
         TestGlobals.expect(w.bar.upSky.xMin).toBe(0.0)
         TestGlobals.expect(w.bar.upSky.xMax).toBe(50.0)
         TestGlobals.expect(w.bar.downSky.xMin).toBe(0.0)
@@ -47,25 +47,25 @@ final class BarLocalSkyline_Construction {
 final class BarLocalSkyline_SideAwareRouting {
     @Test("insertPlaced(Top) only affects upSky")
     func insertPlaced_Top_OnlyAffectsUpSky() async throws {
-        let w: Wrapper = BarLocalSkylineFixtures.newWrapper()
-        w.bar.insertPlaced(StaffSide.Top, 10.0, 30.0, 5.0, 0.0)
+        let w: Wrapper = try BarLocalSkylineFixtures.newWrapper()
+        try w.bar.insertPlaced(StaffSide.Top, 10.0, 30.0, 5.0, 0.0)
         TestGlobals.expect(w.bar.upSky.maxHeight()).toBe(5.0)
         TestGlobals.expect(w.bar.downSky.maxHeight()).toBe(0.0)
     }
 
     @Test("insertPlaced(Bottom) only affects downSky")
     func insertPlaced_Bottom_OnlyAffectsDownSky() async throws {
-        let w: Wrapper = BarLocalSkylineFixtures.newWrapper()
-        w.bar.insertPlaced(StaffSide.Bottom, 10.0, 30.0, 4.0, 0.0)
+        let w: Wrapper = try BarLocalSkylineFixtures.newWrapper()
+        try w.bar.insertPlaced(StaffSide.Bottom, 10.0, 30.0, 4.0, 0.0)
         TestGlobals.expect(w.bar.downSky.maxHeight()).toBe(4.0)
         TestGlobals.expect(w.bar.upSky.maxHeight()).toBe(0.0)
     }
 
     @Test("top and bottom are mutually independent")
     func topAndBottomAreMutuallyIndependent() async throws {
-        let w: Wrapper = BarLocalSkylineFixtures.newWrapper()
-        w.bar.insertPlaced(StaffSide.Top, 20.0, 60.0, 7.0, 0.0)
-        w.bar.insertPlaced(StaffSide.Bottom, 20.0, 60.0, 2.0, 0.0)
+        let w: Wrapper = try BarLocalSkylineFixtures.newWrapper()
+        try w.bar.insertPlaced(StaffSide.Top, 20.0, 60.0, 7.0, 0.0)
+        try w.bar.insertPlaced(StaffSide.Bottom, 20.0, 60.0, 2.0, 0.0)
         TestGlobals.expect(w.bar.upSky.placeAbove(30.0, 50.0, 1.0, 0.0)).toBe(7.0)
         TestGlobals.expect(w.bar.downSky.placeBelow(30.0, 50.0, 1.0, 0.0)).toBe(2.0)
     }
@@ -77,14 +77,14 @@ final class BarLocalSkyline_SideAwareRouting {
 final class BarLocalSkyline_Reset {
     @Test("returns child Skylines to baseline + reuses pool segments")
     func returnsChildSkylinesToBaseline_ReusesPoolSegments() async throws {
-        let w: Wrapper = BarLocalSkylineFixtures.newWrapper()
-        w.bar.insertPlaced(StaffSide.Top, 10.0, 30.0, 4.0, 0.0)
-        w.bar.insertPlaced(StaffSide.Bottom, 50.0, 70.0, 3.0, 0.0)
+        let w: Wrapper = try BarLocalSkylineFixtures.newWrapper()
+        try w.bar.insertPlaced(StaffSide.Top, 10.0, 30.0, 4.0, 0.0)
+        try w.bar.insertPlaced(StaffSide.Bottom, 50.0, 70.0, 3.0, 0.0)
         let grownBefore: Double = w.pool.grownCount
-        w.bar.reset()
+        try w.bar.reset()
         TestGlobals.expect(w.bar.upSky.maxHeight()).toBe(0.0)
         TestGlobals.expect(w.bar.downSky.maxHeight()).toBe(0.0)
-        w.bar.insertPlaced(StaffSide.Top, 20.0, 80.0, 6.0, 0.0)
+        try w.bar.insertPlaced(StaffSide.Top, 20.0, 80.0, 6.0, 0.0)
         TestGlobals.expect(w.bar.upSky.placeAbove(40.0, 60.0, 1.0, 0.0)).toBe(6.0)
         TestGlobals.expect(w.pool.grownCount).toBe(grownBefore)
     }

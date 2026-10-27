@@ -86,10 +86,10 @@ internal class XmlNode {
     /**
      * Gets the value of the attribute with the given name or the default value if the attribute is not set.
      */
-    public func getAttribute(_ name: String, _ defaultValue: String = "") -> String {
+    public func getAttribute(_ name: String, _ defaultValue: String = "") throws -> String {
         let attributes: Map<String, String>? = self._attributes
         if attributes != nil && attributes!.has(name) {
-            return attributes!.get(name)!
+            return try jsNonNull(attributes!.get(name))
         }
         return defaultValue
     }

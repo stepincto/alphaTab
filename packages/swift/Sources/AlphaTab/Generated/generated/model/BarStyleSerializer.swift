@@ -36,7 +36,7 @@ internal final class BarStyleSerializer {
         case "colors":
             obj.colors = Map<BarSubElement, Color?>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try (obj.colors as! Map<BarSubElement, Color?>).set(JsonHelperPartials.parseEnum(k, BarSubElement.self)!, Color.fromJson(v))
+                try (obj.colors as! Map<BarSubElement, Color?>).set(jsNonNull(JsonHelperPartials.parseEnum(k, BarSubElement.self)), Color.fromJson(v))
             })
             return true
         default:

@@ -192,7 +192,7 @@ public final class RenderingResources {
         }
     }
 
-    internal func getFontForElement(_ element: ScoreSubElement) -> Font {
+    internal func getFontForElement(_ element: ScoreSubElement) throws -> Font {
         var notationElement: NotationElement = NotationElement.ScoreWords
         switch element {
         case ScoreSubElement.Title:
@@ -214,10 +214,10 @@ public final class RenderingResources {
         default:
             notationElement = NotationElement.ScoreWords
         }
-        return self.getFontForNotationElement(notationElement)
+        return try self.getFontForNotationElement(notationElement)
     }
 
-    internal func getFontForNotationElement(_ notationElement: NotationElement) -> Font {
-        return self.elementFonts.has(notationElement) ? self.elementFonts.get(notationElement)! : RenderingResources.defaultFonts.get(notationElement)!
+    internal func getFontForNotationElement(_ notationElement: NotationElement) throws -> Font {
+        return try self.elementFonts.has(notationElement) ? jsNonNull(self.elementFonts.get(notationElement)) : jsNonNull(RenderingResources.defaultFonts.get(notationElement))
     }
 }

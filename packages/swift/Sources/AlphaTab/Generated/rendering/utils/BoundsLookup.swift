@@ -63,7 +63,7 @@ public final class BoundsLookup {
         return json
     }
 
-    public static func fromJson(_ json: Map<String, Any?>?, _ score: Score) -> BoundsLookup? {
+    public static func fromJson(_ json: Map<String, Any?>?, _ score: Score) throws -> BoundsLookup? {
         if json == nil {
             return nil
         }
@@ -81,7 +81,7 @@ public final class BoundsLookup {
                 mb.lineAlignedBounds = BoundsLookup._boundsFromJson((masterBar.get("lineAlignedBounds") as! Map<String, Any?>))
                 mb.visualBounds = BoundsLookup._boundsFromJson((masterBar.get("visualBounds") as! Map<String, Any?>))
                 mb.realBounds = BoundsLookup._boundsFromJson((masterBar.get("realBounds") as! Map<String, Any?>))
-                lookup.addMasterBar(mb)
+                try lookup.addMasterBar(mb)
                 for bar in TypeHelper.unknownToList(masterBar.get("bars"), Map<String, Any?>.self) {
                     let b: BarBounds = BarBounds()
                     b.visualBounds = BoundsLookup._boundsFromJson((bar.get("visualBounds") as! Map<String, Any?>))
@@ -92,7 +92,7 @@ public final class BoundsLookup {
                         bb.visualBounds = BoundsLookup._boundsFromJson((beat.get("visualBounds") as! Map<String, Any?>))
                         bb.realBounds = BoundsLookup._boundsFromJson((beat.get("realBounds") as! Map<String, Any?>))
                         bb.onNotesX = TypeHelper.unknownToNumber(beat.get("onNotesX"))
-                        bb.beat = score.tracks[(TypeHelper.unknownToNumber(beat.get("trackIndex"))).toInt()].staves[(TypeHelper.unknownToNumber(beat.get("staffIndex"))).toInt()].bars[(TypeHelper.unknownToNumber(beat.get("barIndex"))).toInt()].voices[(TypeHelper.unknownToNumber(beat.get("voiceIndex"))).toInt()].beats[(TypeHelper.unknownToNumber(beat.get("beatIndex"))).toInt()]
+                        try bb.beat = score.tracks.jsElement((TypeHelper.unknownToNumber(beat.get("trackIndex"))).toInt()).staves.jsElement((TypeHelper.unknownToNumber(beat.get("staffIndex"))).toInt()).bars.jsElement((TypeHelper.unknownToNumber(beat.get("barIndex"))).toInt()).voices.jsElement((TypeHelper.unknownToNumber(beat.get("voiceIndex"))).toInt()).beats[(TypeHelper.unknownToNumber(beat.get("beatIndex"))).toInt()]
                         if beat.has("notes") {
                             bb.notes = List<NoteBounds>()
                             for note in TypeHelper.unknownToList(beat.get("notes"), Map<String, Any?>.self) {
@@ -102,7 +102,7 @@ public final class BoundsLookup {
                                 bb.addNote(n)
                             }
                         }
-                        b.addBeat(bb)
+                        try b.addBeat(bb)
                     }
                 }
             }
@@ -172,13 +172,13 @@ public final class BoundsLookup {
      * system to clear starts exactly at `masterBarIndex`. Caller is responsible for passing
      * the first master-bar-index of the first re-layouted system.
      */
-    internal func clearFromMasterBar(_ masterBarIndex: Double) {
+    internal func clearFromMasterBar(_ masterBarIndex: Double) throws {
         var firstRemovedSystem: Double = -1.0
         do {
             var i: Double = 0.0
             while i < self.staffSystems.length {
-                let systemBars: List<MasterBarBounds> = self.staffSystems[(i).toInt()].bars
-                if systemBars.length > 0 && systemBars[0].index >= masterBarIndex {
+                let systemBars: List<MasterBarBounds> = try self.staffSystems.jsElement((i).toInt()).bars
+                if try systemBars.length > 0 && systemBars.jsElement(0).index >= masterBarIndex {
                     firstRemovedSystem = i
                     break
                 }
@@ -194,7 +194,7 @@ public final class BoundsLookup {
             }
         }
         for key in Array.from(self._beatLookup.keys()) {
-            let list: List<BeatBounds> = self._beatLookup.get(key)!
+            let list: List<BeatBounds> = try jsNonNull(self._beatLookup.get(key))
             let filtered: List<BeatBounds> = list.filter({ (b: BeatBounds) -> Bool in
                 return b.beat.voice.bar.index < masterBarIndex
             })
@@ -220,11 +220,11 @@ public final class BoundsLookup {
     /**
      * Adds a new master bar to the lookup.
      */
-    public func addMasterBar(_ bounds: MasterBarBounds) {
+    public func addMasterBar(_ bounds: MasterBarBounds) throws {
         if !TypeHelper.isTruthy(bounds.staffSystemBounds) {
-            bounds.staffSystemBounds = self._currentStaffSystem!
+            try bounds.staffSystemBounds = jsNonNull(self._currentStaffSystem)
             self._masterBarLookup.set(bounds.index, bounds)
-            self._currentStaffSystem!.addBar(bounds)
+            try jsNonNull(self._currentStaffSystem).addBar(bounds)
         } else {
             self._masterBarLookup.set(bounds.index, bounds)
         }
@@ -243,9 +243,9 @@ public final class BoundsLookup {
     /**
      * Tries to find the master bar bounds by a given index.
      */
-    public func findMasterBarByIndex(_ index: Double) -> MasterBarBounds? {
+    public func findMasterBarByIndex(_ index: Double) throws -> MasterBarBounds? {
         if self._masterBarLookup.has(index) {
-            return self._masterBarLookup.get(index)!
+            return try jsNonNull(self._masterBarLookup.get(index))
         }
         return nil
     }
@@ -253,10 +253,10 @@ public final class BoundsLookup {
     /**
      * Tries to find the master bar bounds by a given master bar.
      */
-    public func findMasterBar(_ bar: MasterBar) -> MasterBarBounds? {
+    public func findMasterBar(_ bar: MasterBar) throws -> MasterBarBounds? {
         let id: Double = bar.index
         if self._masterBarLookup.has(id) {
-            return self._masterBarLookup.get(id)!
+            return try jsNonNull(self._masterBarLookup.get(id))
         }
         return nil
     }
@@ -264,18 +264,18 @@ public final class BoundsLookup {
     /**
      * Tries to find the bounds of a given beat.
      */
-    public func findBeat(_ beat: Beat) -> BeatBounds? {
-        let all: List<BeatBounds>? = self.findBeats(beat)
+    public func findBeat(_ beat: Beat) throws -> BeatBounds? {
+        let all: List<BeatBounds>? = try self.findBeats(beat)
         return TypeHelper.isTruthy(all) ? all![0] : nil
     }
 
     /**
      * Tries to find the bounds of a given beat.
      */
-    public func findBeats(_ beat: Beat) -> List<BeatBounds>? {
+    public func findBeats(_ beat: Beat) throws -> List<BeatBounds>? {
         let id: Double = beat.id
         if self._beatLookup.has(id) {
-            return self._beatLookup.get(id)!
+            return try jsNonNull(self._beatLookup.get(id))
         }
         return nil
     }
@@ -315,8 +315,8 @@ public final class BoundsLookup {
      * Tries to find the note at the given position using the given beat for fast access.
      * Use  to find a beat for a given position first.
      */
-    public func getNoteAtPos(_ beat: Beat, _ x: Double, _ y: Double) -> Note? {
-        let beatBounds: List<BeatBounds>? = self.findBeats(beat)
+    public func getNoteAtPos(_ beat: Beat, _ x: Double, _ y: Double) throws -> Note? {
+        let beatBounds: List<BeatBounds>? = try self.findBeats(beat)
         if TypeHelper.isTruthy(beatBounds) {
             for b in beatBounds! {
                 let note: Note? = b.findNoteAtPos(x, y)

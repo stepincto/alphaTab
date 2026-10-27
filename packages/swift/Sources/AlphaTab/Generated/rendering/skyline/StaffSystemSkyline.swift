@@ -19,23 +19,23 @@ internal final class StaffSystemSkyline {
 
     public var downSky: Skyline!
 
-    public init(_ staffIndex: Double, _ systemIndex: Double, _ xMin: Double, _ xMax: Double, _ pool: SkylineSegmentPool) {
+    public init(_ staffIndex: Double, _ systemIndex: Double, _ xMin: Double, _ xMax: Double, _ pool: SkylineSegmentPool) throws {
         self.staffIndex = staffIndex
         self.systemIndex = systemIndex
-        self.upSky = Skyline(xMin, xMax, pool)
-        self.downSky = Skyline(xMin, xMax, pool)
+        try self.upSky = Skyline(xMin, xMax, pool)
+        try self.downSky = Skyline(xMin, xMax, pool)
     }
 
-    public func insertPlaced(_ side: StaffSide, _ xStart: Double, _ xEnd: Double, _ outerEdgeHeight: Double, _ pad: Double) {
+    public func insertPlaced(_ side: StaffSide, _ xStart: Double, _ xEnd: Double, _ outerEdgeHeight: Double, _ pad: Double) throws {
         if side == StaffSide.Top {
-            self.upSky.insert(xStart, xEnd, outerEdgeHeight, pad)
+            try self.upSky.insert(xStart, xEnd, outerEdgeHeight, pad)
         } else {
-            self.downSky.insert(xStart, xEnd, outerEdgeHeight, pad)
+            try self.downSky.insert(xStart, xEnd, outerEdgeHeight, pad)
         }
     }
 
-    public func reset() {
-        self.upSky.reset()
-        self.downSky.reset()
+    public func reset() throws {
+        try self.upSky.reset()
+        try self.downSky.reset()
     }
 }

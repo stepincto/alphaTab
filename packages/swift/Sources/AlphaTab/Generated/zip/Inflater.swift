@@ -88,8 +88,8 @@ internal final class Inflater {
                 } else {
                     throw Inflater._invalid()
                 }
-                let literals: Int32Array = self._literals!
-                let distances: Int32Array = self._distances!
+                let literals: Int32Array = try jsNonNull(self._literals)
+                let distances: Int32Array = try jsNonNull(self._distances)
                 while true {
                     var symbol: Double = try self._decodeSymbol(literals)
                     if symbol < 256 {

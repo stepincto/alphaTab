@@ -43,11 +43,11 @@ public final class AlphaTexExporter: ScoreExporter {
             try self._track(score, t)
         }
         if score.bars.length == 0.0 {
-            score.bars.push(AlphaTexBarNode(nodeType: (AlphaTexNodeType.Bar as! AlphaTexNodeType), metaData: self._handler.buildScoreMetaDataNodes(data), beats: List<AlphaTexBeatNode>()))
+            try score.bars.push(AlphaTexBarNode(nodeType: (AlphaTexNodeType.Bar as! AlphaTexNodeType), metaData: self._handler.buildScoreMetaDataNodes(data), beats: List<AlphaTexBeatNode>()))
         } else {
-            score.bars[0].metaData = self._handler.buildScoreMetaDataNodes(data).concat((score.bars[0].metaData as! List<AlphaTexMetaDataNode>))
+            try score.bars[0].metaData = self._handler.buildScoreMetaDataNodes(data).concat((score.bars.jsElement(0).metaData as! List<AlphaTexMetaDataNode>))
         }
-        score.bars.push(AlphaTexBarNode(nodeType: (AlphaTexNodeType.Bar as! AlphaTexNodeType), metaData: self._handler.buildSyncPointNodes(data), beats: List<AlphaTexBeatNode>()))
+        try score.bars.push(AlphaTexBarNode(nodeType: (AlphaTexNodeType.Bar as! AlphaTexNodeType), metaData: self._handler.buildSyncPointNodes(data), beats: List<AlphaTexBeatNode>()))
         return score
     }
 
@@ -60,7 +60,7 @@ public final class AlphaTexExporter: ScoreExporter {
     private func _staff(_ score: AlphaTexScoreNode, _ data: Staff) throws {
         let voiceCount: Double = Math.max(data.filledVoices) + 1.0
         if data.bars.length == 0.0 {
-            let bar: AlphaTexBarNode = AlphaTexBarNode(nodeType: (AlphaTexNodeType.Bar as! AlphaTexNodeType), metaData: self._handler.buildBarMetaDataNodes(data, nil, 0.0, false), beats: List<AlphaTexBeatNode>(), pipe: nil)
+            let bar: AlphaTexBarNode = try AlphaTexBarNode(nodeType: (AlphaTexNodeType.Bar as! AlphaTexNodeType), metaData: self._handler.buildBarMetaDataNodes(data, nil, 0.0, false), beats: List<AlphaTexBeatNode>(), pipe: nil)
             score.bars.push(bar)
         } else {
             do {
@@ -80,7 +80,7 @@ public final class AlphaTexExporter: ScoreExporter {
     }
 
     private func _bar(_ score: AlphaTexScoreNode, _ data: Bar, _ voiceIndex: Double, _ isMultiVoice: Bool) throws {
-        let bar: AlphaTexBarNode = AlphaTexBarNode(nodeType: (AlphaTexNodeType.Bar as! AlphaTexNodeType), metaData: self._handler.buildBarMetaDataNodes(data.staff, data, voiceIndex, isMultiVoice), beats: List<AlphaTexBeatNode>(), pipe: nil)
+        let bar: AlphaTexBarNode = try AlphaTexBarNode(nodeType: (AlphaTexNodeType.Bar as! AlphaTexNodeType), metaData: self._handler.buildBarMetaDataNodes(data.staff, data, voiceIndex, isMultiVoice), beats: List<AlphaTexBeatNode>(), pipe: nil)
         if !data.isEmpty {
             let voice: Voice = data.voices[(voiceIndex).toInt()]
             if voice.isEmpty {
@@ -91,7 +91,7 @@ public final class AlphaTexExporter: ScoreExporter {
                 }
                 if bar.beats.length > 0 {
                     bar.beats[0].leadingComments = bar.beats[0].leadingComments ?? List<AlphaTexComment>()
-                    bar.beats[0].leadingComments!.unshift(AlphaTexComment(multiLine: false, text: "Bar \((data.index + 1.0).toTemplate()) / Voice \((voiceIndex + 1.0).toTemplate()) contents"))
+                    try bar.beats.jsElement(0).leadingComments!.unshift(AlphaTexComment(multiLine: false, text: "Bar \((data.index + 1.0).toTemplate()) / Voice \((voiceIndex + 1.0).toTemplate()) contents"))
                 }
             }
         } else {
@@ -112,12 +112,12 @@ public final class AlphaTexExporter: ScoreExporter {
         }
         beat.durationDot = AlphaTexDotTokenNode(nodeType: (AlphaTexNodeType.Dot as! AlphaTexNodeType))
         beat.durationValue = AlphaTexNumberLiteral(nodeType: (AlphaTexNodeType.Number as! AlphaTexNodeType), value: Double(data.duration.rawValue))
-        beat.beatEffects = self._beatEffects(data)
+        try beat.beatEffects = self._beatEffects(data)
         return beat
     }
 
-    private func _beatEffects(_ data: Beat) -> AlphaTexPropertiesNode? {
-        let properties: List<AlphaTexPropertyNode> = self._handler.buildBeatEffects(data)
+    private func _beatEffects(_ data: Beat) throws -> AlphaTexPropertiesNode? {
+        let properties: List<AlphaTexPropertyNode> = try self._handler.buildBeatEffects(data)
         return properties.length > 0 ? AlphaTexPropertiesNode(nodeType: (AlphaTexNodeType.Props as! AlphaTexNodeType), properties: properties, openBrace: AlphaTexBraceOpenTokenNode(nodeType: (AlphaTexNodeType.LBrace as! AlphaTexNodeType)), closeBrace: AlphaTexBraceCloseTokenNode(nodeType: (AlphaTexNodeType.RBrace as! AlphaTexNodeType))) : nil
     }
 
@@ -136,7 +136,7 @@ public final class AlphaTexExporter: ScoreExporter {
     private func _note(_ data: Note) throws -> AlphaTexNoteNode {
         let note: AlphaTexNoteNode = AlphaTexNoteNode(nodeType: (AlphaTexNodeType.Note as! AlphaTexNodeType), noteValue: (AlphaTexIdentifier(nodeType: (AlphaTexNodeType.Ident as! AlphaTexNodeType), text: "") as AlphaTexIdentifier))
         if data.isPercussion {
-            note.noteValue = (AlphaTexStringLiteral(nodeType: (AlphaTexNodeType.String as! AlphaTexNodeType), text: PercussionMapper.getArticulationName(data)) as AlphaTexStringLiteral)
+            try note.noteValue = (AlphaTexStringLiteral(nodeType: (AlphaTexNodeType.String as! AlphaTexNodeType), text: PercussionMapper.getArticulationName(data)) as AlphaTexStringLiteral)
             if !Number.isNaN(data.string) {
                 note.noteStringSeparator = (AlphaTexAtTokenNode(nodeType: (AlphaTexNodeType.At as! AlphaTexNodeType)) as AlphaTexAtTokenNode)
                 let stringNumber: Double = data.beat.voice.bar.staff.tuning.length - data.string + 1.0
@@ -152,12 +152,12 @@ public final class AlphaTexExporter: ScoreExporter {
         } else {
             throw JsError("What kind of note")
         }
-        note.noteEffects = self._noteEffects(data)
+        try note.noteEffects = self._noteEffects(data)
         return note
     }
 
-    private func _noteEffects(_ data: Note) -> AlphaTexPropertiesNode? {
-        let properties: List<AlphaTexPropertyNode> = self._handler.buildNoteEffects(data)
+    private func _noteEffects(_ data: Note) throws -> AlphaTexPropertiesNode? {
+        let properties: List<AlphaTexPropertyNode> = try self._handler.buildNoteEffects(data)
         return properties.length > 0 ? AlphaTexPropertiesNode(nodeType: (AlphaTexNodeType.Props as! AlphaTexNodeType), properties: properties, openBrace: AlphaTexBraceOpenTokenNode(nodeType: (AlphaTexNodeType.LBrace as! AlphaTexNodeType)), closeBrace: AlphaTexBraceCloseTokenNode(nodeType: (AlphaTexNodeType.RBrace as! AlphaTexNodeType))) : nil
     }
 
@@ -248,48 +248,48 @@ internal final class AlphaTexPrinter {
         self._writer = writer
     }
 
-    public func writeScoreNode(_ node: AlphaTexScoreNode) {
+    public func writeScoreNode(_ node: AlphaTexScoreNode) throws {
         self._writeComments(node.leadingComments)
         for b in node.bars {
-            self._writeBar(b)
+            try self._writeBar(b)
         }
         self._writeComments(node.trailingComments)
     }
 
-    private func _writeBar(_ bar: AlphaTexBarNode) {
+    private func _writeBar(_ bar: AlphaTexBarNode) throws {
         self._writeComments(bar.leadingComments)
-        self._writeMetaDataList(bar.metaData)
+        try self._writeMetaDataList(bar.metaData)
         self._writer.indent()
         for beat in bar.beats {
-            self._writeBeat(beat)
+            try self._writeBeat(beat)
         }
         self._writer.outdent()
         self._writeComments(bar.trailingComments)
         self._writeToken(bar.pipe, true)
     }
 
-    private func _writeBeat(_ beat: AlphaTexBeatNode) {
+    private func _writeBeat(_ beat: AlphaTexBeatNode) throws {
         self._writeComments(beat.leadingComments)
         if TypeHelper.isTruthy(beat.durationChange) {
-            self._writeDurationChange(beat.durationChange!)
+            try self._writeDurationChange(beat.durationChange!)
         }
         if TypeHelper.isTruthy(beat.rest) {
-            self._writeValue(beat.rest!)
+            try self._writeValue(beat.rest!)
         } else if TypeHelper.isTruthy(beat.notes) {
-            self._writeNotes(beat.notes!)
+            try self._writeNotes(beat.notes!)
         }
         self._writeToken(beat.durationDot, false)
-        self._writeValue(beat.durationValue)
+        try self._writeValue(beat.durationValue)
         self._writeToken(beat.beatMultiplier, false)
-        self._writeValue(beat.beatMultiplierValue)
+        try self._writeValue(beat.beatMultiplierValue)
         if TypeHelper.isTruthy(beat.beatEffects) {
-            self._writeProperties(beat.beatEffects!, false)
+            try self._writeProperties(beat.beatEffects!, false)
         }
         self._writeComments(beat.trailingComments)
         self._writer.writeLine()
     }
 
-    private func _writeNotes(_ notes: AlphaTexNoteListNode) {
+    private func _writeNotes(_ notes: AlphaTexNoteListNode) throws {
         self._writeComments(notes.leadingComments)
         self._writeToken(notes.openParenthesis, false)
         var first: Bool = true
@@ -297,39 +297,39 @@ internal final class AlphaTexPrinter {
             if !first {
                 self._writer.write(" ")
             }
-            self._writeNote(n)
+            try self._writeNote(n)
             first = false
         }
         self._writeToken(notes.closeParenthesis, false)
         self._writeComments(notes.trailingComments)
     }
 
-    private func _writeNote(_ n: AlphaTexNoteNode) {
+    private func _writeNote(_ n: AlphaTexNoteNode) throws {
         self._writeComments(n.leadingComments)
-        self._writeValue(n.noteValue)
+        try self._writeValue(n.noteValue)
         self._writeToken(n.noteStringSeparator, false)
-        self._writeValue(n.noteString)
+        try self._writeValue(n.noteString)
         if TypeHelper.isTruthy(n.noteEffects) {
-            self._writeProperties(n.noteEffects!, false)
+            try self._writeProperties(n.noteEffects!, false)
         }
         self._writeComments(n.trailingComments)
     }
 
-    private func _writeDurationChange(_ durationChange: AlphaTexBeatDurationChangeNode) {
+    private func _writeDurationChange(_ durationChange: AlphaTexBeatDurationChangeNode) throws {
         self._writeComments(durationChange.leadingComments)
         self._writeToken(durationChange.colon, false)
-        self._writeValue(durationChange.value)
+        try self._writeValue(durationChange.value)
         if TypeHelper.isTruthy(durationChange.properties) {
             self._writer.write(" ")
-            self._writeProperties(durationChange.properties!, false)
+            try self._writeProperties(durationChange.properties!, false)
         }
         self._writeComments(durationChange.trailingComments)
         self._writer.write(" ")
     }
 
-    private func _writeMetaDataList(_ metaData: List<AlphaTexMetaDataNode>) {
+    private func _writeMetaDataList(_ metaData: List<AlphaTexMetaDataNode>) throws {
         for m in metaData {
-            self._writeMetaData(m)
+            try self._writeMetaData(m)
         }
     }
 
@@ -339,7 +339,7 @@ internal final class AlphaTexPrinter {
 
     private var _voiceIndex: Double = 0.0
 
-    private func _writeMetaData(_ m: AlphaTexMetaDataNode) {
+    private func _writeMetaData(_ m: AlphaTexMetaDataNode) throws {
         switch m.tag.tag.text {
         case "track":
             if self._staffIndex > 0 {
@@ -361,25 +361,25 @@ internal final class AlphaTexPrinter {
         }
         self._writeComments(m.leadingComments)
         self._writeToken(m.tag.prefix, false)
-        self._writeValue(m.tag.tag)
+        try self._writeValue(m.tag.tag)
         var newLineAfterMeta: Bool = true
         if m.propertiesBeforeArguments {
             if TypeHelper.isTruthy(m.properties) {
                 self._writer.write(" ")
-                self._writeProperties(m.properties!, false)
+                try self._writeProperties(m.properties!, false)
             }
             if TypeHelper.isTruthy(m.arguments) {
                 self._writer.write(" ")
-                self._writeValues(m.arguments!)
+                try self._writeValues(m.arguments!)
             }
         } else {
             if TypeHelper.isTruthy(m.arguments) {
                 self._writer.write(" ")
-                self._writeValues(m.arguments!)
+                try self._writeValues(m.arguments!)
             }
             if TypeHelper.isTruthy(m.properties) {
                 self._writer.write(" ")
-                self._writeProperties(m.properties!, true)
+                try self._writeProperties(m.properties!, true)
                 newLineAfterMeta = false
             }
         }
@@ -408,7 +408,7 @@ internal final class AlphaTexPrinter {
         }
     }
 
-    private func _writeProperties(_ properties: AlphaTexPropertiesNode, _ indent: Bool) {
+    private func _writeProperties(_ properties: AlphaTexPropertiesNode, _ indent: Bool) throws {
         self._writeComments(properties.leadingComments)
         self._writeToken(properties.openBrace, indent)
         if indent {
@@ -419,7 +419,7 @@ internal final class AlphaTexPrinter {
             if !first && !indent {
                 self._writer.write(" ")
             }
-            self._writeProperty(p)
+            try self._writeProperty(p)
             first = false
             if indent {
                 self._writer.writeLine()
@@ -432,17 +432,17 @@ internal final class AlphaTexPrinter {
         self._writeComments(properties.trailingComments)
     }
 
-    private func _writeProperty(_ p: AlphaTexPropertyNode) {
+    private func _writeProperty(_ p: AlphaTexPropertyNode) throws {
         self._writeComments(p.leadingComments)
-        self._writeValue(p.property)
+        try self._writeValue(p.property)
         if TypeHelper.isTruthy(p.arguments) {
             self._writer.write(" ")
-            self._writeValues(p.arguments!)
+            try self._writeValues(p.arguments!)
         }
         self._writeComments(p.trailingComments)
     }
 
-    private func _writeValues(_ values: AlphaTexArgumentList) {
+    private func _writeValues(_ values: AlphaTexArgumentList) throws {
         self._writeComments(values.leadingComments)
         self._writeToken(values.openParenthesis, false)
         var first: Bool = true
@@ -450,27 +450,27 @@ internal final class AlphaTexPrinter {
             if !first {
                 self._writer.write(" ")
             }
-            self._writeValue(v)
+            try self._writeValue(v)
             first = false
         }
         self._writeToken(values.closeParenthesis, false)
         self._writeComments(values.trailingComments)
     }
 
-    private func _writeValue(_ v: (any IAlphaTexAstNode)?) {
+    private func _writeValue(_ v: (any IAlphaTexAstNode)?) throws {
         if !TypeHelper.isTruthy(v) {
             return
         }
         self._writeComments(v!.leadingComments)
         switch v!.nodeType {
         case AlphaTexNodeType.Ident:
-            self._writer.write((v as! AlphaTexIdentifier).text)
+            try self._writer.write((jsCast(v, AlphaTexIdentifier.self)).text)
         case AlphaTexNodeType.Arguments:
-            self._writeValues((v as! AlphaTexArgumentList))
+            try self._writeValues(jsCast(v, AlphaTexArgumentList.self))
         case AlphaTexNodeType.Number:
-            self._writer.write((v as! AlphaTexNumberLiteral).value.toInvariantString())
+            try self._writer.write((jsCast(v, AlphaTexNumberLiteral.self)).value.toInvariantString())
         case AlphaTexNodeType.String:
-            self._writer.writeString((v as! AlphaTexStringLiteral).text)
+            try self._writer.writeString((jsCast(v, AlphaTexStringLiteral.self)).text)
         default:
             break
         }

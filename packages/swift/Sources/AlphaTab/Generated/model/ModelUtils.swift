@@ -20,8 +20,8 @@ internal final class ModelUtils {
         }))
     }
 
-    public static func getIndex(_ duration: Duration) -> Double {
-        return ModelUtils._durationIndices.get(duration)!
+    public static func getIndex(_ duration: Duration) throws -> Double {
+        return try jsNonNull(ModelUtils._durationIndices.get(duration))
     }
 
     /**
@@ -73,13 +73,13 @@ internal final class ModelUtils {
     /**
      * Checks if the given string is a tuning inticator.
      */
-    public static func isTuning(_ name: String) -> Bool {
-        return TypeHelper.isTruthy(ModelUtils.parseTuning(name))
+    public static func isTuning(_ name: String) throws -> Bool {
+        return try TypeHelper.isTruthy(ModelUtils.parseTuning(name))
     }
 
     nonisolated(unsafe) internal static let tuningLetters: Set<Double> = Set<Double>([67.0, 68.0, 69.0, 70.0, 71.0, 65.0, 66.0, 99.0, 100.0, 101.0, 102.0, 103.0, 97.0, 98.0, 35.0])
 
-    public static func parseTuning(_ name: String) -> TuningParseResult? {
+    public static func parseTuning(_ name: String) throws -> TuningParseResult? {
         var note: String = ""
         var octave: String = ""
         do {
@@ -109,7 +109,7 @@ internal final class ModelUtils {
         let result: TuningParseResult = TuningParseResult()
         result.octave = Number.parseInt(octave, 10.0) + 1.0
         result.note = note.lowercase()
-        let tone: TuningParseResultTone? = ModelUtils.getToneForText(result.note!)
+        let tone: TuningParseResultTone? = try ModelUtils.getToneForText(result.note!)
         if tone == nil {
             return nil
         }
@@ -121,15 +121,15 @@ internal final class ModelUtils {
         return result
     }
 
-    public static func getTuningForText(_ str: String) -> Double {
-        let result: TuningParseResult? = ModelUtils.parseTuning(str)
+    public static func getTuningForText(_ str: String) throws -> Double {
+        let result: TuningParseResult? = try ModelUtils.parseTuning(str)
         if !TypeHelper.isTruthy(result) {
             return -1.0
         }
         return result!.realValue
     }
 
-    public static func getToneForText(_ note: String) -> TuningParseResultTone? {
+    public static func getToneForText(_ note: String) throws -> TuningParseResultTone? {
         let noteName: String = note.substring(0.0, 1.0)
         let accidental: String = note.substring(1.0)
         var noteValue: Double
@@ -155,7 +155,7 @@ internal final class ModelUtils {
         if !ModelUtils.accidentalModeMapping.has(accidental) {
             return nil
         }
-        noteAccidenalMode = ModelUtils.parseAccidentalMode(accidental)
+        try noteAccidenalMode = ModelUtils.parseAccidentalMode(accidental)
         switch noteAccidenalMode {
         case NoteAccidentalMode.Default:
             break
@@ -181,10 +181,10 @@ internal final class ModelUtils {
 
     nonisolated(unsafe) internal static let accidentalModeMapping: Map<String, NoteAccidentalMode> = Map<String, NoteAccidentalMode>([("default", NoteAccidentalMode.Default), ("d", NoteAccidentalMode.Default), ("", NoteAccidentalMode.Default), ("forcenone", NoteAccidentalMode.ForceNone), ("-", NoteAccidentalMode.ForceNone), ("forcenatural", NoteAccidentalMode.ForceNatural), ("n", NoteAccidentalMode.ForceNatural), ("forcesharp", NoteAccidentalMode.ForceSharp), ("#", NoteAccidentalMode.ForceSharp), ("forcedoublesharp", NoteAccidentalMode.ForceDoubleSharp), ("##", NoteAccidentalMode.ForceDoubleSharp), ("x", NoteAccidentalMode.ForceDoubleSharp), ("forceflat", NoteAccidentalMode.ForceFlat), ("b", NoteAccidentalMode.ForceFlat), ("forcedoubleflat", NoteAccidentalMode.ForceDoubleFlat), ("bb", NoteAccidentalMode.ForceDoubleFlat)])
 
-    public static func parseAccidentalMode(_ data: String) -> NoteAccidentalMode {
+    public static func parseAccidentalMode(_ data: String) throws -> NoteAccidentalMode {
         let key: String = data.lowercase()
         if ModelUtils.accidentalModeMapping.has(key) {
-            return ModelUtils.accidentalModeMapping.get(key)!
+            return try jsNonNull(ModelUtils.accidentalModeMapping.get(key))
         }
         return NoteAccidentalMode.Default
     }
@@ -333,17 +333,17 @@ internal final class ModelUtils {
         return value
     }
 
-    public static func buildMultiBarRestInfo(_ tracks: List<Track>?, _ startIndex: Double, _ endIndexInclusive: Double) -> Map<Double, List<Double>>? {
+    public static func buildMultiBarRestInfo(_ tracks: List<Track>?, _ startIndex: Double, _ endIndexInclusive: Double) throws -> Map<Double, List<Double>>? {
         if !TypeHelper.isTruthy(tracks) {
             return nil
         }
-        let stylesheet: RenderStylesheet = tracks![0].score.stylesheet
-        let shouldDrawMultiBarRests: Bool = tracks!.length > 1 ? stylesheet.multiTrackMultiBarRest : stylesheet.perTrackMultiBarRest?.has(tracks![0].index) == true
+        let stylesheet: RenderStylesheet = try tracks!.jsElement(0).score.stylesheet
+        let shouldDrawMultiBarRests: Bool = try tracks!.length > 1 ? stylesheet.multiTrackMultiBarRest : stylesheet.perTrackMultiBarRest?.has(tracks!.jsElement(0).index) == true
         if !shouldDrawMultiBarRests {
             return nil
         }
         let lookup: Map<Double, List<Double>> = Map<Double, List<Double>>()
-        let score: Score = tracks![0].score
+        let score: Score = try tracks!.jsElement(0).score
         var currentIndex: Double = startIndex
         var tempo: Double = score.tempo
         while currentIndex <= endIndexInclusive {
@@ -372,7 +372,7 @@ internal final class ModelUtils {
                             areAllBarsSuitable = false
                             break
                         }
-                        if bar.index > 0 && (bar.keySignature != bar.previousBar!.keySignature || bar.keySignatureType != bar.previousBar!.keySignatureType) {
+                        if try bar.index > 0 && (bar.keySignature != jsNonNull(bar.previousBar).keySignature || bar.keySignatureType != jsNonNull(bar.previousBar).keySignatureType) {
                             areAllBarsSuitable = false
                             break
                         }
@@ -422,23 +422,23 @@ internal final class ModelUtils {
         return endBarIndex
     }
 
-    public static func getOrCreateHeaderFooterStyle(_ score: Score, _ element: ScoreSubElement) -> HeaderFooterStyle {
+    public static func getOrCreateHeaderFooterStyle(_ score: Score, _ element: ScoreSubElement) throws -> HeaderFooterStyle {
         var style: ScoreStyle? = score.style
         if !TypeHelper.isTruthy(score.style) {
             style = ScoreStyle()
             score.style = style!
         }
         var headerFooterStyle: HeaderFooterStyle
-        if style!.headerAndFooter.has(element) {
-            headerFooterStyle = style!.headerAndFooter.get(element)!
+        if try jsNonNull(style).headerAndFooter.has(element) {
+            try headerFooterStyle = jsNonNull(jsNonNull(style).headerAndFooter.get(element))
         } else {
             headerFooterStyle = HeaderFooterStyle()
             if ScoreStyle.defaultHeaderAndFooter.has(element) {
-                let defaults: HeaderFooterStyle = ScoreStyle.defaultHeaderAndFooter.get(element)!
+                let defaults: HeaderFooterStyle = try jsNonNull(ScoreStyle.defaultHeaderAndFooter.get(element))
                 headerFooterStyle.template = defaults.template
                 headerFooterStyle.textAlign = defaults.textAlign
             }
-            style!.headerAndFooter.set(element, headerFooterStyle)
+            try jsNonNull(style).headerAndFooter.set(element, headerFooterStyle)
         }
         return headerFooterStyle
     }
@@ -469,7 +469,7 @@ internal final class ModelUtils {
      * Performs some general consolidations of inconsistencies on the given score like
      * missing bars, beats, duplicated midi channels etc
      */
-    public static func consolidate(_ score: Score) {
+    public static func consolidate(_ score: Score) throws {
         if score.masterBars.length == 0.0 {
             let master: MasterBar = MasterBar()
             score.addMasterBar(master)
@@ -479,7 +479,7 @@ internal final class ModelUtils {
             tempoAutomation.value = score.tempo
             master.tempoAutomations.push(tempoAutomation)
             let bar: Bar = Bar()
-            score.tracks[0].staves[0].addBar(bar)
+            try score.tracks.jsElement(0).staves.jsElement(0).addBar(bar)
             let v: Voice = Voice()
             bar.addVoice(v)
             let emptyBeat: Beat = Beat()
@@ -489,7 +489,7 @@ internal final class ModelUtils {
         }
         let usedChannels: Set<Double> = Set<Double>([SynthConstants.PercussionChannel])
         for track in score.tracks {
-            if track.staves.length == 1.0 && track.staves[0].isPercussion {
+            if try track.staves.length == 1.0 && track.staves.jsElement(0).isPercussion {
                 track.playbackInfo.primaryChannel = SynthConstants.PercussionChannel
                 track.playbackInfo.secondaryChannel = SynthConstants.PercussionChannel
             } else {
@@ -516,7 +516,7 @@ internal final class ModelUtils {
                         }
                     }
                 }
-                let voiceCount: Double = staff.bars.length == 0.0 ? 1.0 : staff.bars[0].voices.length
+                let voiceCount: Double = try staff.bars.length == 0.0 ? 1.0 : staff.bars.jsElement(0).voices.length
                 while staff.bars.length < score.masterBars.length {
                     let bar: Bar = Bar()
                     staff.addBar(bar)
@@ -524,8 +524,8 @@ internal final class ModelUtils {
                     if TypeHelper.isTruthy(previousBar) {
                         bar.clef = previousBar!.clef
                         bar.clefOttava = previousBar!.clefOttava
-                        bar.keySignature = bar.previousBar!.keySignature
-                        bar.keySignatureType = bar.previousBar!.keySignatureType
+                        try bar.keySignature = jsNonNull(bar.previousBar).keySignature
+                        try bar.keySignatureType = jsNonNull(bar.previousBar).keySignatureType
                     }
                     do {
                         var i: Double = 0.0
@@ -538,7 +538,7 @@ internal final class ModelUtils {
             }
         }
         if score.masterBars.length > 0 {
-            let firstTempoAutomation: Automation? = score.masterBars[0].tempoAutomations.find({ (a: Automation) -> Bool in
+            let firstTempoAutomation: Automation? = try score.masterBars.jsElement(0).tempoAutomations.find({ (a: Automation) -> Bool in
                 return a.type == AutomationType.Tempo && a.ratioPosition == 0.0
             })
             if !TypeHelper.isTruthy(firstTempoAutomation) {
@@ -548,7 +548,7 @@ internal final class ModelUtils {
                 tempoAutomation.value = score.tempo
                 tempoAutomation.text = score.tempoLabel
                 tempoAutomation.isVisible = false
-                score.masterBars[0].tempoAutomations.push(tempoAutomation)
+                try score.masterBars.jsElement(0).tempoAutomations.push(tempoAutomation)
             }
         }
     }
@@ -556,7 +556,7 @@ internal final class ModelUtils {
     /**
      * Trims any empty bars at the end of the song.
      */
-    public static func trimEmptyBarsAtEnd(_ score: Score) {
+    public static func trimEmptyBarsAtEnd(_ score: Score) throws {
         while score.masterBars.length > 1 {
             let barIndex: Double = score.masterBars.length - 1.0
             let masterBar: MasterBar = score.masterBars[(barIndex).toInt()]
@@ -578,12 +578,12 @@ internal final class ModelUtils {
                     if barIndex < staff.bars.length {
                         let bar: Bar = staff.bars[(barIndex).toInt()]
                         staff.bars.pop()
-                        bar.previousBar!.nextBar = nil
+                        try jsNonNull(bar.previousBar).nextBar = nil
                     }
                 }
             }
             score.masterBars.pop()
-            masterBar.previousMasterBar!.nextMasterBar = nil
+            try jsNonNull(masterBar.previousMasterBar).nextMasterBar = nil
         }
     }
 
@@ -721,10 +721,10 @@ internal final class ModelUtils {
         return ModelUtils._keySignatureAccidentalByDegree[((Double(keySignature.rawValue)) + 7.0).toInt()][(degree).toInt()]
     }
 
-    public static func resolveSpelling(_ keySignature: KeySignature, _ noteValue: Double, _ accidentalMode: NoteAccidentalMode) -> ResolvedSpelling {
+    public static func resolveSpelling(_ keySignature: KeySignature, _ noteValue: Double, _ accidentalMode: NoteAccidentalMode) throws -> ResolvedSpelling {
         let chroma: Double = ModelUtils.flooredDivision(noteValue, 12.0)
         let preferred: SpellingBase = ModelUtils._getPreferredSpellingForKeySignature(keySignature, chroma)
-        let desiredOffset: Double = ModelUtils._forcedAccidentalOffsetByMode.has(accidentalMode) ? ModelUtils._forcedAccidentalOffsetByMode.get(accidentalMode)! : Number.NaN
+        let desiredOffset: Double = try ModelUtils._forcedAccidentalOffsetByMode.has(accidentalMode) ? jsNonNull(ModelUtils._forcedAccidentalOffsetByMode.get(accidentalMode)) : Number.NaN
         var spelling: SpellingBase = preferred
         if !Number.isNaN(desiredOffset) {
             let candidates: List<SpellingBase> = ModelUtils._spellingCandidates[(chroma).toInt()]
@@ -747,24 +747,24 @@ internal final class ModelUtils {
      * The rendering only uses the accidental mode via  and checks for
      * . If this changes, this method has to be adapted.
      */
-    public static func simplifyAccidentalMode(_ keySignature: KeySignature, _ noteValue: Double, _ accidentalMode: NoteAccidentalMode) -> NoteAccidentalMode {
+    public static func simplifyAccidentalMode(_ keySignature: KeySignature, _ noteValue: Double, _ accidentalMode: NoteAccidentalMode) throws -> NoteAccidentalMode {
         if accidentalMode == NoteAccidentalMode.Default || accidentalMode == NoteAccidentalMode.ForceNone {
             return accidentalMode
         }
-        let forced: ResolvedSpelling = ModelUtils.resolveSpelling(keySignature, noteValue, accidentalMode)
-        let preferred: ResolvedSpelling = ModelUtils.resolveSpelling(keySignature, noteValue, NoteAccidentalMode.Default)
+        let forced: ResolvedSpelling = try ModelUtils.resolveSpelling(keySignature, noteValue, accidentalMode)
+        let preferred: ResolvedSpelling = try ModelUtils.resolveSpelling(keySignature, noteValue, NoteAccidentalMode.Default)
         if forced.degree == preferred.degree && forced.accidentalOffset == preferred.accidentalOffset {
             return NoteAccidentalMode.Default
         }
         return accidentalMode
     }
 
-    public static func computeAccidental(_ keySignature: KeySignature, _ accidentalMode: NoteAccidentalMode, _ noteValue: Double, _ quarterBend: Bool, _ currentAccidentalOffset: Double? = nil) -> AccidentalType {
-        let spelling: ResolvedSpelling = ModelUtils.resolveSpelling(keySignature, noteValue, accidentalMode)
-        return ModelUtils.computeAccidentalForSpelling(keySignature, accidentalMode, spelling, quarterBend, currentAccidentalOffset)
+    public static func computeAccidental(_ keySignature: KeySignature, _ accidentalMode: NoteAccidentalMode, _ noteValue: Double, _ quarterBend: Bool, _ currentAccidentalOffset: Double? = nil) throws -> AccidentalType {
+        let spelling: ResolvedSpelling = try ModelUtils.resolveSpelling(keySignature, noteValue, accidentalMode)
+        return try ModelUtils.computeAccidentalForSpelling(keySignature, accidentalMode, spelling, quarterBend, currentAccidentalOffset)
     }
 
-    public static func computeAccidentalForSpelling(_ keySignature: KeySignature, _ accidentalMode: NoteAccidentalMode, _ spelling: ResolvedSpelling, _ quarterBend: Bool, _ currentAccidentalOffset: Double? = nil) -> AccidentalType {
+    public static func computeAccidentalForSpelling(_ keySignature: KeySignature, _ accidentalMode: NoteAccidentalMode, _ spelling: ResolvedSpelling, _ quarterBend: Bool, _ currentAccidentalOffset: Double? = nil) throws -> AccidentalType {
         if accidentalMode == NoteAccidentalMode.ForceNone {
             return AccidentalType.None
         }
@@ -785,11 +785,11 @@ internal final class ModelUtils {
         if currentAccidentalOffset == nil && desiredOffset == ksOffset {
             return AccidentalType.None
         }
-        return ModelUtils.accidentalOffsetToType(desiredOffset)
+        return try ModelUtils.accidentalOffsetToType(desiredOffset)
     }
 
-    public static func accidentalOffsetToType(_ offset: Double) -> AccidentalType {
-        return ModelUtils._accidentalOffsetToType.has(offset) ? ModelUtils._accidentalOffsetToType.get(offset)! : AccidentalType.None
+    public static func accidentalOffsetToType(_ offset: Double) throws -> AccidentalType {
+        return try ModelUtils._accidentalOffsetToType.has(offset) ? jsNonNull(ModelUtils._accidentalOffsetToType.get(offset)) : AccidentalType.None
     }
 
     private static func _getPreferredSpellingForKeySignature(_ keySignature: KeySignature, _ chroma: Double) -> SpellingBase {

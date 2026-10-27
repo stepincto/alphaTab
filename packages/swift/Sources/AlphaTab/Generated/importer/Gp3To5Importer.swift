@@ -118,12 +118,12 @@ internal final class Gp3To5Importer: ScoreImporter {
         if self._score.masterBars.length > 0 {
             let automation: Automation = Automation.buildTempoAutomation(false, 0.0, self._score.tempo, 2.0)
             automation.text = self._score.tempoLabel
-            self._score.masterBars[0].tempoAutomations.push(automation)
+            try self._score.masterBars.jsElement(0).tempoAutomations.push(automation)
         }
-        ModelUtils.consolidate(self._score)
-        self._score.finish(self.settings)
+        try ModelUtils.consolidate(self._score)
+        try self._score.finish(self.settings)
         if TypeHelper.isTruthy(self._lyrics) && self._lyricsTrack >= 0 {
-            self._score.tracks[(self._lyricsTrack).toInt()].applyLyrics(self._lyrics)
+            try self._score.tracks.jsElement((self._lyricsTrack).toInt()).applyLyrics(self._lyrics)
         }
         return self._score
     }
@@ -136,7 +136,7 @@ internal final class Gp3To5Importer: ScoreImporter {
         directionIndex -= 1
         var directionsList: List<Direction>
         if self._directionLookup.has(directionIndex) {
-            directionsList = self._directionLookup.get(directionIndex)!
+            try directionsList = jsNonNull(self._directionLookup.get(directionIndex))
         } else {
             directionsList = List<Direction>()
             self._directionLookup.set(directionIndex, directionsList)
@@ -215,23 +215,23 @@ internal final class Gp3To5Importer: ScoreImporter {
     public func readPageSetup() throws {
         self.data.skip(28.0)
         let flags: Double = try IOHelper.readInt16LE(self.data)
-        ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Title).isVisible = (jsAnd(flags, jsShl(1, 0))) != 0
+        try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Title).isVisible = (jsAnd(flags, jsShl(1, 0))) != 0
         try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Title).template = GpBinaryHelpers.gpReadStringIntByte(self.data, self._stringEncoding, self.settings.importer.maxDecodingBufferSize)
-        ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.SubTitle).isVisible = (jsAnd(flags, jsShl(1, 1))) != 0
+        try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.SubTitle).isVisible = (jsAnd(flags, jsShl(1, 1))) != 0
         try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.SubTitle).template = GpBinaryHelpers.gpReadStringIntByte(self.data, self._stringEncoding, self.settings.importer.maxDecodingBufferSize)
-        ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Artist).isVisible = (jsAnd(flags, jsShl(1, 2))) != 0
+        try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Artist).isVisible = (jsAnd(flags, jsShl(1, 2))) != 0
         try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Artist).template = GpBinaryHelpers.gpReadStringIntByte(self.data, self._stringEncoding, self.settings.importer.maxDecodingBufferSize)
-        ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Album).isVisible = (jsAnd(flags, jsShl(1, 3))) != 0
+        try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Album).isVisible = (jsAnd(flags, jsShl(1, 3))) != 0
         try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Album).template = GpBinaryHelpers.gpReadStringIntByte(self.data, self._stringEncoding, self.settings.importer.maxDecodingBufferSize)
-        ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Words).isVisible = (jsAnd(flags, jsShl(1, 4))) != 0
+        try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Words).isVisible = (jsAnd(flags, jsShl(1, 4))) != 0
         try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Words).template = GpBinaryHelpers.gpReadStringIntByte(self.data, self._stringEncoding, self.settings.importer.maxDecodingBufferSize)
-        ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Music).isVisible = (jsAnd(flags, jsShl(1, 5))) != 0
+        try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Music).isVisible = (jsAnd(flags, jsShl(1, 5))) != 0
         try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Music).template = GpBinaryHelpers.gpReadStringIntByte(self.data, self._stringEncoding, self.settings.importer.maxDecodingBufferSize)
-        ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.WordsAndMusic).isVisible = (jsAnd(flags, jsShl(1, 6))) != 0
+        try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.WordsAndMusic).isVisible = (jsAnd(flags, jsShl(1, 6))) != 0
         try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.WordsAndMusic).template = GpBinaryHelpers.gpReadStringIntByte(self.data, self._stringEncoding, self.settings.importer.maxDecodingBufferSize)
-        ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Copyright).isVisible = (jsAnd(flags, jsShl(1, 7))) != 0
+        try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Copyright).isVisible = (jsAnd(flags, jsShl(1, 7))) != 0
         try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.Copyright).template = GpBinaryHelpers.gpReadStringIntByte(self.data, self._stringEncoding, self.settings.importer.maxDecodingBufferSize)
-        ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.CopyrightSecondLine).isVisible = (jsAnd(flags, jsShl(1, 7))) != 0
+        try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.CopyrightSecondLine).isVisible = (jsAnd(flags, jsShl(1, 7))) != 0
         try ModelUtils.getOrCreateHeaderFooterStyle(self._score, ScoreSubElement.CopyrightSecondLine).template = GpBinaryHelpers.gpReadStringIntByte(self.data, self._stringEncoding, self.settings.importer.maxDecodingBufferSize)
         try GpBinaryHelpers.gpReadStringIntByte(self.data, self._stringEncoding, self.settings.importer.maxDecodingBufferSize)
     }
@@ -273,8 +273,8 @@ internal final class Gp3To5Importer: ScoreImporter {
             previousMasterBar = self._score.masterBars[(self._score.masterBars.length - 1.0).toInt()]
         }
         let newMasterBar: MasterBar = MasterBar()
-        if !TypeHelper.isTruthy(previousMasterBar) && self._initialTempo!.value > 0 {
-            newMasterBar.tempoAutomations.push(self._initialTempo!)
+        if try !TypeHelper.isTruthy(previousMasterBar) && jsNonNull(self._initialTempo).value > 0 {
+            try newMasterBar.tempoAutomations.push(jsNonNull(self._initialTempo))
         }
         let flags: Double = try self.data.readByte()
         if (jsAnd(flags, 1)) != 0 {
@@ -352,7 +352,7 @@ internal final class Gp3To5Importer: ScoreImporter {
         newMasterBar.isDoubleBar = isDoubleBar
         let barIndexForDirection: Double = self._score.masterBars.length
         if self._directionLookup.has(barIndexForDirection) {
-            for direction in self._directionLookup.get(barIndexForDirection)! {
+            for direction in try jsNonNull(self._directionLookup.get(barIndexForDirection)) {
                 newMasterBar.addDirection(direction)
             }
         }
@@ -375,7 +375,7 @@ internal final class Gp3To5Importer: ScoreImporter {
     /**
      * Guitar Pro 3-6 changes to a bass clef if any string tuning is below B1
      */
-    private static let _bassClefTuningThreshold: Double = ModelUtils.parseTuning("B1")!.realValue
+    private static let _bassClefTuningThreshold: Double = try! ModelUtils.parseTuning("B1")!.realValue
 
     public func readTrack() throws {
         let newTrack: Track = Track()
@@ -488,16 +488,16 @@ internal final class Gp3To5Importer: ScoreImporter {
         if mainStaff.isPercussion {
             newBar.clef = Clef.Neutral
         } else if self._clefsPerTrack.has(track.index) {
-            newBar.clef = self._clefsPerTrack.get(track.index)!
+            try newBar.clef = jsNonNull(self._clefsPerTrack.get(track.index))
         }
         mainStaff.addBar(newBar)
         if self._keySignatures.has(newBar.index) {
-            let newKeySignature: (KeySignature, KeySignatureType) = self._keySignatures.get(newBar.index)!
+            let newKeySignature: (KeySignature, KeySignatureType) = try jsNonNull(self._keySignatures.get(newBar.index))
             newBar.keySignature = newKeySignature.0
             newBar.keySignatureType = newKeySignature.1
         } else if newBar.index > 0 {
-            newBar.keySignature = newBar.previousBar!.keySignature
-            newBar.keySignatureType = newBar.previousBar!.keySignatureType
+            try newBar.keySignature = jsNonNull(newBar.previousBar).keySignature
+            try newBar.keySignatureType = jsNonNull(newBar.previousBar).keySignatureType
         }
         if self._doubleBars.has(newBar.index) {
             newBar.barLineRight = BarLineStyle.LightLight
@@ -521,7 +521,7 @@ internal final class Gp3To5Importer: ScoreImporter {
         if beatCount == 0.0 {
             return
         }
-        let currentVoiceCount: Double = bar.index == 0.0 ? 1.0 : bar.previousBar!.voices.length
+        let currentVoiceCount: Double = try bar.index == 0.0 ? 1.0 : jsNonNull(bar.previousBar).voices.length
         if bar.voices.length == 0.0 || currentVoiceCount == 2.0 {
             try self._readAndChainVoice(track, bar, beatCount)
             return
@@ -697,8 +697,8 @@ internal final class Gp3To5Importer: ScoreImporter {
                 }
             }
         }
-        if beatTextAsLyrics && !newBeat.isRest && self._beatTextChunksByTrack.has(track.index) && self._beatTextChunksByTrack.get(track.index)!.length > 0 {
-            newBeat.lyrics = List<String>(self._beatTextChunksByTrack.get(track.index)!.pop()!)
+        if try beatTextAsLyrics && !newBeat.isRest && self._beatTextChunksByTrack.has(track.index) && jsNonNull(self._beatTextChunksByTrack.get(track.index)).length > 0 {
+            try newBeat.lyrics = List<String>(jsNonNull(jsNonNull(self._beatTextChunksByTrack.get(track.index)).pop()))
         }
     }
 
@@ -1067,15 +1067,15 @@ internal final class Gp3To5Importer: ScoreImporter {
             try self.readNoteEffects(track, voice, beat, newNote)
         }
         if bar.staff.isPercussion {
-            let midi: Double = Gp3To5Importer._gp5PercussionInstrumentMap.has(newNote.fret) ? Gp3To5Importer._gp5PercussionInstrumentMap.get(newNote.fret)! : newNote.fret
-            let knownArticulation: InstrumentArticulation? = PercussionMapper.getArticulationById(midi)
+            let midi: Double = try Gp3To5Importer._gp5PercussionInstrumentMap.has(newNote.fret) ? jsNonNull(Gp3To5Importer._gp5PercussionInstrumentMap.get(newNote.fret)) : newNote.fret
+            let knownArticulation: InstrumentArticulation? = try PercussionMapper.getArticulationById(midi)
             if knownArticulation != nil {
                 newNote.percussionArticulation = bar.staff.track.getOrRegisterPercussionArticulation(knownArticulation!)
             }
             newNote.fret = Number.NaN
         }
         if swapAccidentals {
-            let accidental: AccidentalType = ModelUtils.computeAccidental(bar.keySignature, NoteAccidentalMode.Default, newNote.realValueWithoutHarmonic, false)
+            let accidental: AccidentalType = try ModelUtils.computeAccidental(bar.keySignature, NoteAccidentalMode.Default, newNote.realValueWithoutHarmonic, false)
             if accidental == AccidentalType.Sharp {
                 newNote.accidentalMode = NoteAccidentalMode.ForceFlat
             } else if accidental == AccidentalType.Flat {

@@ -7,20 +7,24 @@
 
 /// Port of `src/util/Lazy.ts` (`@target web`). A computed `nil` is cached, as JS caches `null`.
 public final class Lazy<T> {
-    private let _factory: () -> T
+    private let _factory: () throws -> T
     private var _value: T?
     public private(set) var hasValue: Bool = false
 
-    public init(_ factory: @escaping () -> T) {
+    /// The factory may throw (a TS `x!` or cast in it lowers to a throwing helper).
+    public init(_ factory: @escaping () throws -> T) {
         self._factory = factory
     }
 
+    /// `get throws`: a failing factory reaches the reader, as in JS (the emitter prints `try lazy.value`).
     public var value: T {
-        if !hasValue {
-            _value = _factory()
-            hasValue = true
+        get throws {
+            if !hasValue {
+                _value = try _factory()
+                hasValue = true
+            }
+            return _value!
         }
-        return _value!
     }
 
     public func reset() {

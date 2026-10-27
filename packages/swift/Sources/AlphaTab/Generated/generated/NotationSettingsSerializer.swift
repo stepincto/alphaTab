@@ -44,19 +44,19 @@ internal final class NotationSettingsSerializer {
     public static func setProperty(_ obj: NotationSettings, _ property: String, _ v: Any?) throws -> Bool {
         switch property {
         case "notationmode":
-            try obj.notationMode = JsonHelperPartials.parseEnum(v, NotationMode.self)!
+            try obj.notationMode = jsNonNull(JsonHelperPartials.parseEnum(v, NotationMode.self))
             return true
         case "fingeringmode":
-            try obj.fingeringMode = JsonHelperPartials.parseEnum(v, FingeringMode.self)!
+            try obj.fingeringMode = jsNonNull(JsonHelperPartials.parseEnum(v, FingeringMode.self))
             return true
         case "elements":
             obj.elements = Map<NotationElement, Bool>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try obj.elements.set(JsonHelperPartials.parseEnum(k, NotationElement.self)!, (v as! Bool))
+                try obj.elements.set(jsNonNull(JsonHelperPartials.parseEnum(k, NotationElement.self)), (v as! Bool))
             })
             return true
         case "rhythmmode":
-            try obj.rhythmMode = JsonHelperPartials.parseEnum(v, TabRhythmMode.self)!
+            try obj.rhythmMode = jsNonNull(JsonHelperPartials.parseEnum(v, TabRhythmMode.self))
             return true
         case "rhythmheight":
             obj.rhythmHeight = TypeHelper.unknownToNumber(v)

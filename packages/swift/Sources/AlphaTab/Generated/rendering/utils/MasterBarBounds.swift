@@ -107,8 +107,8 @@ public final class MasterBarBounds {
     /**
      * Adds a new beat to the lookup.
      */
-    public func addBeat(_ bounds: BeatBounds) {
-        self.staffSystemBounds!.boundsLookup.addBeat(bounds)
+    public func addBeat(_ bounds: BeatBounds) throws {
+        try jsNonNull(self.staffSystemBounds).boundsLookup.addBeat(bounds)
     }
 
     public init() {}

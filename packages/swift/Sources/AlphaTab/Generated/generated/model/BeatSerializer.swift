@@ -102,16 +102,16 @@ internal final class BeatSerializer {
             obj.isEmpty = (v! as! Bool)
             return true
         case "whammystyle":
-            try obj.whammyStyle = JsonHelperPartials.parseEnum(v, BendStyle.self)!
+            try obj.whammyStyle = jsNonNull(JsonHelperPartials.parseEnum(v, BendStyle.self))
             return true
         case "ottava":
-            try obj.ottava = JsonHelperPartials.parseEnum(v, Ottavia.self)!
+            try obj.ottava = jsNonNull(JsonHelperPartials.parseEnum(v, Ottavia.self))
             return true
         case "islegatoorigin":
             obj.isLegatoOrigin = (v! as! Bool)
             return true
         case "duration":
-            try obj.duration = JsonHelperPartials.parseEnum(v, Duration.self)!
+            try obj.duration = jsNonNull(JsonHelperPartials.parseEnum(v, Duration.self))
             return true
         case "automations":
             obj.automations = List<Automation>()
@@ -128,7 +128,7 @@ internal final class BeatSerializer {
             obj.fadeIn = (v! as! Bool)
             return true
         case "fade":
-            try obj.fade = JsonHelperPartials.parseEnum(v, FadeType.self)!
+            try obj.fade = jsNonNull(JsonHelperPartials.parseEnum(v, FadeType.self))
             return true
         case "lyrics":
             obj.lyrics = TypeHelper.unknownToNullableList(v, String.self)
@@ -158,7 +158,7 @@ internal final class BeatSerializer {
             obj.restDisplayOctave = TypeHelper.unknownToNumber(v)
             return true
         case "brushtype":
-            try obj.brushType = JsonHelperPartials.parseEnum(v, BrushType.self)!
+            try obj.brushType = jsNonNull(JsonHelperPartials.parseEnum(v, BrushType.self))
             return true
         case "brushduration":
             obj.brushDuration = TypeHelper.unknownToNumber(v)
@@ -173,7 +173,7 @@ internal final class BeatSerializer {
             obj.isContinuedWhammy = (v! as! Bool)
             return true
         case "whammybartype":
-            try obj.whammyBarType = JsonHelperPartials.parseEnum(v, WhammyType.self)!
+            try obj.whammyBarType = jsNonNull(JsonHelperPartials.parseEnum(v, WhammyType.self))
             return true
         case "whammybarpoints":
             if TypeHelper.isTruthy(v) {
@@ -186,16 +186,16 @@ internal final class BeatSerializer {
             }
             return true
         case "vibrato":
-            try obj.vibrato = JsonHelperPartials.parseEnum(v, VibratoType.self)!
+            try obj.vibrato = jsNonNull(JsonHelperPartials.parseEnum(v, VibratoType.self))
             return true
         case "chordid":
             obj.chordId = (v as? String)
             return true
         case "gracetype":
-            try obj.graceType = JsonHelperPartials.parseEnum(v, GraceType.self)!
+            try obj.graceType = jsNonNull(JsonHelperPartials.parseEnum(v, GraceType.self))
             return true
         case "pickstroke":
-            try obj.pickStroke = JsonHelperPartials.parseEnum(v, PickStroke.self)!
+            try obj.pickStroke = jsNonNull(JsonHelperPartials.parseEnum(v, PickStroke.self))
             return true
         case "tremolopicking":
             if TypeHelper.isTruthy(v) {
@@ -209,7 +209,7 @@ internal final class BeatSerializer {
             try obj.tremoloSpeed = JsonHelperPartials.parseEnum(v, Duration.self)
             return true
         case "crescendo":
-            try obj.crescendo = JsonHelperPartials.parseEnum(v, CrescendoType.self)!
+            try obj.crescendo = jsNonNull(JsonHelperPartials.parseEnum(v, CrescendoType.self))
             return true
         case "displaystart":
             obj.displayStart = TypeHelper.unknownToNumber(v)
@@ -227,10 +227,10 @@ internal final class BeatSerializer {
             obj.overrideDisplayDuration = (v as? Double)
             return true
         case "golpe":
-            try obj.golpe = JsonHelperPartials.parseEnum(v, GolpeType.self)!
+            try obj.golpe = jsNonNull(JsonHelperPartials.parseEnum(v, GolpeType.self))
             return true
         case "dynamics":
-            try obj.dynamics = JsonHelperPartials.parseEnum(v, DynamicValue.self)!
+            try obj.dynamics = jsNonNull(JsonHelperPartials.parseEnum(v, DynamicValue.self))
             return true
         case "invertbeamdirection":
             obj.invertBeamDirection = (v! as! Bool)
@@ -239,19 +239,19 @@ internal final class BeatSerializer {
             try obj.preferredBeamDirection = JsonHelperPartials.parseEnum(v, BeamDirection.self)
             return true
         case "beamingmode":
-            try obj.beamingMode = JsonHelperPartials.parseEnum(v, BeatBeamingMode.self)!
+            try obj.beamingMode = jsNonNull(JsonHelperPartials.parseEnum(v, BeatBeamingMode.self))
             return true
         case "wahpedal":
-            try obj.wahPedal = JsonHelperPartials.parseEnum(v, WahPedal.self)!
+            try obj.wahPedal = jsNonNull(JsonHelperPartials.parseEnum(v, WahPedal.self))
             return true
         case "barrefret":
             obj.barreFret = TypeHelper.unknownToNumber(v)
             return true
         case "barreshape":
-            try obj.barreShape = JsonHelperPartials.parseEnum(v, BarreShape.self)!
+            try obj.barreShape = jsNonNull(JsonHelperPartials.parseEnum(v, BarreShape.self))
             return true
         case "rasgueado":
-            try obj.rasgueado = JsonHelperPartials.parseEnum(v, Rasgueado.self)!
+            try obj.rasgueado = jsNonNull(JsonHelperPartials.parseEnum(v, Rasgueado.self))
             return true
         case "showtimer":
             obj.showTimer = (v! as! Bool)

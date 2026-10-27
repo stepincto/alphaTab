@@ -16,7 +16,7 @@ internal final class TrackSerializer {
         })
     }
 
-    public static func toJson(_ obj: Track?) -> Map<String, Any?>? {
+    public static func toJson(_ obj: Track?) throws -> Map<String, Any?>? {
         if !TypeHelper.isTruthy(obj) {
             return nil
         }
@@ -25,7 +25,7 @@ internal final class TrackSerializer {
             return StaffSerializer.toJson(i)
         }))
         o.set("playbackinfo", PlaybackInformationSerializer.toJson(obj!.playbackInfo))
-        o.set("color", Color.toJson(obj!.color)!)
+        try o.set("color", jsNonNull(Color.toJson(obj!.color)))
         o.set("name", obj!.name)
         o.set("isvisibleonmultitrack", obj!.isVisibleOnMultiTrack)
         o.set("shortname", obj!.shortName)
@@ -61,7 +61,7 @@ internal final class TrackSerializer {
             try PlaybackInformationSerializer.fromJson(obj.playbackInfo, v)
             return true
         case "color":
-            try obj.color = Color.fromJson(v)!
+            try obj.color = jsNonNull(Color.fromJson(v))
             return true
         case "name":
             obj.name = (v! as! String)

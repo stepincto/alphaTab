@@ -92,7 +92,7 @@ public final class Voice {
         }
     }
 
-    private func _chain(_ beat: Beat, _ sharedDataBag: Map<String, Any?>? = nil) {
+    private func _chain(_ beat: Beat, _ sharedDataBag: Map<String, Any?>? = nil) throws {
         if !TypeHelper.isTruthy(self.bar) {
             return
         }
@@ -100,15 +100,15 @@ public final class Voice {
             beat.nextBeat = self.beats[(beat.index + 1.0).toInt()]
             beat.nextBeat!.previousBeat = beat
         } else if TypeHelper.isTruthy(beat.isLastOfVoice && TypeHelper.isTruthy(beat.voice.bar.nextBar)) {
-            let nextVoice: Voice = self.bar.nextBar!.voices[(self.index).toInt()]
+            let nextVoice: Voice = try jsNonNull(self.bar.nextBar).voices[(self.index).toInt()]
             if nextVoice.beats.length > 0 {
                 beat.nextBeat = nextVoice.beats[0]
                 beat.nextBeat!.previousBeat = beat
             } else {
-                beat.nextBeat!.previousBeat = beat
+                try jsNonNull(beat.nextBeat).previousBeat = beat
             }
         }
-        beat.chain(sharedDataBag)
+        try beat.chain(sharedDataBag)
     }
 
     public func addGraceBeat(_ beat: Beat) {
@@ -124,14 +124,14 @@ public final class Voice {
         self._isRestOnly = false
     }
 
-    public func getBeatAtPlaybackStart(_ playbackStart: Double) -> Beat? {
+    public func getBeatAtPlaybackStart(_ playbackStart: Double) throws -> Beat? {
         if self._beatLookup.has(playbackStart) {
-            return self._beatLookup.get(playbackStart)!
+            return try jsNonNull(self._beatLookup.get(playbackStart))
         }
         return nil
     }
 
-    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) {
+    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) throws {
         self._isEmpty = true
         self._isRestOnly = true
         self._beatLookup = Map<Double, Beat>()
@@ -141,7 +141,7 @@ public final class Voice {
             while index < self.beats.length {
                 let beat: Beat = self.beats[(index).toInt()]
                 beat.index = index
-                self._chain(beat, sharedDataBag)
+                try self._chain(beat, sharedDataBag)
                 if beat.graceType == GraceType.None {
                     beat.graceGroup = currentGraceGroup
                     if TypeHelper.isTruthy(currentGraceGroup) {
@@ -171,7 +171,7 @@ public final class Voice {
             while i < self.beats.length {
                 let beat: Beat = self.beats[(i).toInt()]
                 beat.index = i
-                beat.finish(settings, sharedDataBag)
+                try beat.finish(settings, sharedDataBag)
                 if beat.graceType == GraceType.None {
                     if beat.duration > self.shortestDuration {
                         self.shortestDuration = beat.duration
@@ -221,7 +221,7 @@ public final class Voice {
                 if TypeHelper.isTruthy(beat.fermata) {
                     self.bar.masterBar.addFermata(beat.playbackStart, beat.fermata!)
                 } else {
-                    beat.fermata = self.bar.masterBar.getFermata(beat)
+                    try beat.fermata = self.bar.masterBar.getFermata(beat)
                 }
                 beat.finishTuplet()
                 if TypeHelper.isTruthy(beat.graceGroup) {

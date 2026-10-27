@@ -23,9 +23,9 @@ internal final class SkylineSegmentExpect: IRecord {
 }
 
 internal final class SkylineFixtures {
-    public static func newSkyline(_ xMin: Double, _ xMax: Double) -> Skyline {
+    public static func newSkyline(_ xMin: Double, _ xMax: Double) throws -> Skyline {
         let pool: SkylineSegmentPool = SkylineSegmentPool()
-        return Skyline(xMin, xMax, pool)
+        return try Skyline(xMin, xMax, pool)
     }
 
     public init() {}
@@ -35,7 +35,7 @@ internal final class SkylineFixtures {
 final class Skyline_Construction {
     @Test("starts with two segments: baseline at xMin + sentinel at xMax")
     func startsWithTwoSegments_BaselineAtXMin_SentinelAtXMax() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
         TestGlobals.expect(sky.xMin).toBe(0.0)
         TestGlobals.expect(sky.xMax).toBe(100.0)
         TestGlobals.expect(sky.segmentCount).toBe(1.0)
@@ -44,7 +44,7 @@ final class Skyline_Construction {
 
     @Test("empty placeAbove on a fresh skyline returns pad (zero clearance for pad=0)")
     func emptyPlaceAboveOnAFreshSkylineReturnsPad_zeroClearanceForPad_0_() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
         TestGlobals.expect(sky.placeAbove(10.0, 20.0, 1.0, 0.0)).toBe(0.0)
         TestGlobals.expect(sky.placeAbove(10.0, 20.0, 1.0, 0.5)).toBe(0.5)
     }
@@ -56,32 +56,32 @@ final class Skyline_Construction {
 final class Skyline_Insert_PlaceAbove {
     @Test("a single insert raises the skyline in its range")
     func aSingleInsertRaisesTheSkylineInItsRange() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 5.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 5.0, 0.0)
         TestGlobals.expect(sky.placeAbove(15.0, 25.0, 1.0, 0.0)).toBe(5.0)
         TestGlobals.expect(sky.placeAbove(40.0, 60.0, 1.0, 0.0)).toBe(0.0)
     }
 
     @Test("placeAbove adds pad clearance on top of max-in-range")
     func placeAboveAddsPadClearanceOnTopOfMaxInRange() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 5.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 5.0, 0.0)
         TestGlobals.expect(sky.placeAbove(15.0, 25.0, 1.0, 0.5)).toBe(5.5)
     }
 
     @Test("placeAbove pad does NOT widen the x-axis query range")
     func placeAbovePadDoesNOTWidenTheXAxisQueryRange() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 5.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 5.0, 0.0)
         TestGlobals.expect(sky.placeAbove(35.0, 40.0, 1.0, 0.0)).toBe(0.0)
         TestGlobals.expect(sky.placeAbove(35.0, 40.0, 1.0, 10.0)).toBe(10.0)
     }
 
     @Test("multiple non-overlapping inserts coexist")
     func multipleNonOverlappingInsertsCoexist() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 5.0, 0.0)
-        sky.insert(50.0, 70.0, 3.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 5.0, 0.0)
+        try sky.insert(50.0, 70.0, 3.0, 0.0)
         TestGlobals.expect(sky.placeAbove(15.0, 25.0, 1.0, 0.0)).toBe(5.0)
         TestGlobals.expect(sky.placeAbove(55.0, 65.0, 1.0, 0.0)).toBe(3.0)
         TestGlobals.expect(sky.placeAbove(35.0, 45.0, 1.0, 0.0)).toBe(0.0)
@@ -89,9 +89,9 @@ final class Skyline_Insert_PlaceAbove {
 
     @Test("overlapping inserts take the per-x max")
     func overlappingInsertsTakeThePerXMax() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 40.0, 5.0, 0.0)
-        sky.insert(30.0, 60.0, 8.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 40.0, 5.0, 0.0)
+        try sky.insert(30.0, 60.0, 8.0, 0.0)
         TestGlobals.expect(sky.placeAbove(15.0, 25.0, 1.0, 0.0)).toBe(5.0)
         TestGlobals.expect(sky.placeAbove(35.0, 38.0, 1.0, 0.0)).toBe(8.0)
         TestGlobals.expect(sky.placeAbove(45.0, 55.0, 1.0, 0.0)).toBe(8.0)
@@ -100,24 +100,24 @@ final class Skyline_Insert_PlaceAbove {
 
     @Test("insert below current height is a no-op (per-x max semantics)")
     func insertBelowCurrentHeightIsANoOp_perXMaxSemantics_() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 5.0, 0.0)
-        sky.insert(10.0, 30.0, 2.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 5.0, 0.0)
+        try sky.insert(10.0, 30.0, 2.0, 0.0)
         TestGlobals.expect(sky.placeAbove(15.0, 25.0, 1.0, 0.0)).toBe(5.0)
     }
 
     @Test("non-positive newHeight is a no-op")
     func nonPositiveNewHeightIsANoOp() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 0.0, 0.0)
-        sky.insert(10.0, 30.0, -5.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 0.0, 0.0)
+        try sky.insert(10.0, 30.0, -5.0, 0.0)
         TestGlobals.expect(sky.maxHeight()).toBe(0.0)
     }
 
     @Test("insert outside the skyline range is clamped to [xMin, xMax]")
     func insertOutsideTheSkylineRangeIsClampedTo_xMin_XMax_() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(-50.0, 200.0, 7.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(-50.0, 200.0, 7.0, 0.0)
         TestGlobals.expect(sky.placeAbove(0.0, 100.0, 1.0, 0.0)).toBe(7.0)
     }
 
@@ -128,8 +128,8 @@ final class Skyline_Insert_PlaceAbove {
 final class Skyline_PlaceBelow {
     @Test("placeBelow runs the same algorithm as placeAbove")
     func placeBelowRunsTheSameAlgorithmAsPlaceAbove() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 4.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 4.0, 0.0)
         TestGlobals.expect(sky.placeBelow(15.0, 25.0, 1.0, 0.0)).toBe(4.0)
         TestGlobals.expect(sky.placeBelow(15.0, 25.0, 1.0, 0.5)).toBe(4.5)
     }
@@ -141,19 +141,19 @@ final class Skyline_PlaceBelow {
 final class Skyline_AdjacencyMerge {
     @Test("two contiguous same-height inserts collapse into one segment")
     func twoContiguousSameHeightInsertsCollapseIntoOneSegment() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 5.0, 0.0)
-        sky.insert(30.0, 50.0, 5.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 5.0, 0.0)
+        try sky.insert(30.0, 50.0, 5.0, 0.0)
         TestGlobals.expect(sky.segmentCount).toBe(3.0)
         TestGlobals.expect(sky.placeAbove(40.0, 45.0, 1.0, 0.0)).toBe(5.0)
     }
 
     @Test("three overlapping inserts at same height collapse")
     func threeOverlappingInsertsAtSameHeightCollapse() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 5.0, 0.0)
-        sky.insert(20.0, 40.0, 5.0, 0.0)
-        sky.insert(35.0, 50.0, 5.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 5.0, 0.0)
+        try sky.insert(20.0, 40.0, 5.0, 0.0)
+        try sky.insert(35.0, 50.0, 5.0, 0.0)
         TestGlobals.expect(sky.segmentCount).toBe(3.0)
         TestGlobals.expect(sky.placeAbove(15.0, 45.0, 1.0, 0.0)).toBe(5.0)
     }
@@ -165,10 +165,10 @@ final class Skyline_AdjacencyMerge {
 final class Skyline_SegmentSplittingAtInsertBoundaries {
     @Test("insert splits existing segments at xStart and xEnd")
     func insertSplitsExistingSegmentsAtXStartAndXEnd() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(0.0, 100.0, 3.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(0.0, 100.0, 3.0, 0.0)
         TestGlobals.expect(sky.segmentCount).toBe(1.0)
-        sky.insert(20.0, 40.0, 7.0, 0.0)
+        try sky.insert(20.0, 40.0, 7.0, 0.0)
         TestGlobals.expect(sky.segmentCount).toBe(3.0)
         TestGlobals.expect(sky.placeAbove(10.0, 15.0, 1.0, 0.0)).toBe(3.0)
         TestGlobals.expect(sky.placeAbove(25.0, 35.0, 1.0, 0.0)).toBe(7.0)
@@ -182,16 +182,16 @@ final class Skyline_SegmentSplittingAtInsertBoundaries {
 final class Skyline_MaxHeight {
     @Test("returns the largest segment height")
     func returnsTheLargestSegmentHeight() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 5.0, 0.0)
-        sky.insert(50.0, 70.0, 12.0, 0.0)
-        sky.insert(80.0, 90.0, 3.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 5.0, 0.0)
+        try sky.insert(50.0, 70.0, 12.0, 0.0)
+        try sky.insert(80.0, 90.0, 3.0, 0.0)
         TestGlobals.expect(sky.maxHeight()).toBe(12.0)
     }
 
     @Test("returns 0 for an empty skyline")
     func returns0ForAnEmptySkyline() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
         TestGlobals.expect(sky.maxHeight()).toBe(0.0)
     }
 
@@ -202,11 +202,11 @@ final class Skyline_MaxHeight {
 final class Skyline_Union {
     @Test("raises self to per-x max of self and other")
     func raisesSelfToPerXMaxOfSelfAndOther() async throws {
-        let a: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        let b: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        a.insert(10.0, 40.0, 5.0, 0.0)
-        b.insert(30.0, 60.0, 8.0, 0.0)
-        a.union(b)
+        let a: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        let b: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try a.insert(10.0, 40.0, 5.0, 0.0)
+        try b.insert(30.0, 60.0, 8.0, 0.0)
+        try a.union(b)
         TestGlobals.expect(a.placeAbove(15.0, 25.0, 1.0, 0.0)).toBe(5.0)
         TestGlobals.expect(a.placeAbove(35.0, 38.0, 1.0, 0.0)).toBe(8.0)
         TestGlobals.expect(a.placeAbove(45.0, 55.0, 1.0, 0.0)).toBe(8.0)
@@ -215,10 +215,10 @@ final class Skyline_Union {
 
     @Test("union of an empty skyline is a no-op")
     func unionOfAnEmptySkylineIsANoOp() async throws {
-        let a: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        a.insert(10.0, 30.0, 5.0, 0.0)
-        let empty: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        a.union(empty)
+        let a: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try a.insert(10.0, 30.0, 5.0, 0.0)
+        let empty: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try a.union(empty)
         TestGlobals.expect(a.placeAbove(15.0, 25.0, 1.0, 0.0)).toBe(5.0)
         TestGlobals.expect(a.maxHeight()).toBe(5.0)
     }
@@ -230,11 +230,11 @@ final class Skyline_Union {
 final class Skyline_UnionShifted {
     @Test("shifts other by dx and takes per-x max with self")
     func shiftsOtherByDxAndTakesPerXMaxWithSelf() async throws {
-        let a: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        let b: Skyline = SkylineFixtures.newSkyline(0.0, 50.0)
-        a.insert(10.0, 40.0, 5.0, 0.0)
-        b.insert(0.0, 20.0, 8.0, 0.0)
-        a.unionShifted(b, 30.0)
+        let a: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        let b: Skyline = try SkylineFixtures.newSkyline(0.0, 50.0)
+        try a.insert(10.0, 40.0, 5.0, 0.0)
+        try b.insert(0.0, 20.0, 8.0, 0.0)
+        try a.unionShifted(b, 30.0)
         TestGlobals.expect(a.placeAbove(15.0, 25.0, 1.0, 0.0)).toBe(5.0)
         TestGlobals.expect(a.placeAbove(30.0, 40.0, 1.0, 0.0)).toBe(8.0)
         TestGlobals.expect(a.placeAbove(40.0, 50.0, 1.0, 0.0)).toBe(8.0)
@@ -243,42 +243,42 @@ final class Skyline_UnionShifted {
 
     @Test("clamps shifted segments to [xMin, xMax]")
     func clampsShiftedSegmentsTo_xMin_XMax_() async throws {
-        let a: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        let b: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        b.insert(10.0, 30.0, 6.0, 0.0)
-        a.unionShifted(b, -20.0)
+        let a: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        let b: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try b.insert(10.0, 30.0, 6.0, 0.0)
+        try a.unionShifted(b, -20.0)
         TestGlobals.expect(a.placeAbove(0.0, 10.0, 1.0, 0.0)).toBe(6.0)
         TestGlobals.expect(a.placeAbove(10.0, 20.0, 1.0, 0.0)).toBe(0.0)
     }
 
     @Test("drops shifted segments that fall fully outside the target range")
     func dropsShiftedSegmentsThatFallFullyOutsideTheTargetRange() async throws {
-        let a: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        let b: Skyline = SkylineFixtures.newSkyline(0.0, 50.0)
-        b.insert(0.0, 50.0, 9.0, 0.0)
-        a.unionShifted(b, 200.0)
+        let a: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        let b: Skyline = try SkylineFixtures.newSkyline(0.0, 50.0)
+        try b.insert(0.0, 50.0, 9.0, 0.0)
+        try a.unionShifted(b, 200.0)
         TestGlobals.expect(a.maxHeight()).toBe(0.0)
         TestGlobals.expect(a.segmentCount).toBe(1.0)
     }
 
     @Test("empty other is a no-op")
     func emptyOtherIsANoOp() async throws {
-        let a: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        a.insert(10.0, 30.0, 5.0, 0.0)
-        let empty: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        a.unionShifted(empty, 7.0)
+        let a: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try a.insert(10.0, 30.0, 5.0, 0.0)
+        let empty: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try a.unionShifted(empty, 7.0)
         TestGlobals.expect(a.placeAbove(15.0, 25.0, 1.0, 0.0)).toBe(5.0)
         TestGlobals.expect(a.maxHeight()).toBe(5.0)
     }
 
     @Test("repeated unions accumulate correctly (per-x max)")
     func repeatedUnionsAccumulateCorrectly_perXMax_() async throws {
-        let a: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        let b: Skyline = SkylineFixtures.newSkyline(0.0, 20.0)
-        b.insert(0.0, 20.0, 4.0, 0.0)
-        a.unionShifted(b, 0.0)
-        a.unionShifted(b, 30.0)
-        a.unionShifted(b, 60.0)
+        let a: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        let b: Skyline = try SkylineFixtures.newSkyline(0.0, 20.0)
+        try b.insert(0.0, 20.0, 4.0, 0.0)
+        try a.unionShifted(b, 0.0)
+        try a.unionShifted(b, 30.0)
+        try a.unionShifted(b, 60.0)
         TestGlobals.expect(a.placeAbove(0.0, 20.0, 1.0, 0.0)).toBe(4.0)
         TestGlobals.expect(a.placeAbove(20.0, 30.0, 1.0, 0.0)).toBe(0.0)
         TestGlobals.expect(a.placeAbove(30.0, 50.0, 1.0, 0.0)).toBe(4.0)
@@ -288,11 +288,11 @@ final class Skyline_UnionShifted {
 
     @Test("produces canonical segments (no adjacent same-height entries)")
     func producesCanonicalSegments_noAdjacentSameHeightEntries_() async throws {
-        let a: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        let b: Skyline = SkylineFixtures.newSkyline(0.0, 50.0)
-        a.insert(10.0, 30.0, 5.0, 0.0)
-        b.insert(0.0, 20.0, 5.0, 0.0)
-        a.unionShifted(b, 30.0)
+        let a: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        let b: Skyline = try SkylineFixtures.newSkyline(0.0, 50.0)
+        try a.insert(10.0, 30.0, 5.0, 0.0)
+        try b.insert(0.0, 20.0, 5.0, 0.0)
+        try a.unionShifted(b, 30.0)
         TestGlobals.expect(a.segmentCount).toBe(3.0)
         TestGlobals.expect(a.placeAbove(15.0, 25.0, 1.0, 0.0)).toBe(5.0)
         TestGlobals.expect(a.placeAbove(30.0, 50.0, 1.0, 0.0)).toBe(5.0)
@@ -301,9 +301,9 @@ final class Skyline_UnionShifted {
 
     @Test("index-based segment accessors mirror forEachSegment")
     func indexBasedSegmentAccessorsMirrorForEachSegment() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 5.0, 0.0)
-        sky.insert(50.0, 70.0, 8.0, 0.0)
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 5.0, 0.0)
+        try sky.insert(50.0, 70.0, 8.0, 0.0)
         let fromCb: List<SkylineSegmentExpect> = List<SkylineSegmentExpect>()
         sky.forEachSegment({ (xStart: Double, xEnd: Double, height: Double) in
             fromCb.push(SkylineSegmentExpect(s: xStart, e: xEnd, h: height))
@@ -320,9 +320,9 @@ final class Skyline_UnionShifted {
         do {
             var i: Double = 0.0
             while i < fromIdx.length {
-                TestGlobals.expect(fromIdx[(i).toInt()].s).toBe(fromCb[(i).toInt()].s)
-                TestGlobals.expect(fromIdx[(i).toInt()].e).toBe(fromCb[(i).toInt()].e)
-                TestGlobals.expect(fromIdx[(i).toInt()].h).toBe(fromCb[(i).toInt()].h)
+                try TestGlobals.expect(fromIdx.jsElement((i).toInt()).s).toBe(fromCb.jsElement((i).toInt()).s)
+                try TestGlobals.expect(fromIdx.jsElement((i).toInt()).e).toBe(fromCb.jsElement((i).toInt()).e)
+                try TestGlobals.expect(fromIdx.jsElement((i).toInt()).h).toBe(fromCb.jsElement((i).toInt()).h)
                 i = i + 1.0
             }
         }
@@ -336,25 +336,25 @@ final class Skyline_Reset {
     @Test("returns segments to the pool and rebuilds the baseline")
     func returnsSegmentsToThePoolAndRebuildsTheBaseline() async throws {
         let pool: SkylineSegmentPool = SkylineSegmentPool()
-        let sky: Skyline = Skyline(0.0, 100.0, pool)
-        sky.insert(10.0, 30.0, 5.0, 0.0)
-        sky.insert(50.0, 70.0, 8.0, 0.0)
+        let sky: Skyline = try Skyline(0.0, 100.0, pool)
+        try sky.insert(10.0, 30.0, 5.0, 0.0)
+        try sky.insert(50.0, 70.0, 8.0, 0.0)
         let grownBefore: Double = pool.grownCount
         TestGlobals.expect(grownBefore).toBeGreaterThan(2.0)
-        sky.reset()
+        try sky.reset()
         TestGlobals.expect(sky.maxHeight()).toBe(0.0)
         TestGlobals.expect(sky.segmentCount).toBe(1.0)
-        sky.insert(20.0, 80.0, 6.0, 0.0)
+        try sky.insert(20.0, 80.0, 6.0, 0.0)
         TestGlobals.expect(sky.placeAbove(40.0, 60.0, 1.0, 0.0)).toBe(6.0)
         TestGlobals.expect(pool.grownCount).toBe(grownBefore)
     }
 
     @Test("reset is idempotent")
     func resetIsIdempotent() async throws {
-        let sky: Skyline = SkylineFixtures.newSkyline(0.0, 100.0)
-        sky.insert(10.0, 30.0, 5.0, 0.0)
-        sky.reset()
-        sky.reset()
+        let sky: Skyline = try SkylineFixtures.newSkyline(0.0, 100.0)
+        try sky.insert(10.0, 30.0, 5.0, 0.0)
+        try sky.reset()
+        try sky.reset()
         TestGlobals.expect(sky.maxHeight()).toBe(0.0)
         TestGlobals.expect(sky.segmentCount).toBe(1.0)
     }
@@ -367,7 +367,7 @@ final class SkylineSegmentPoolClass {
     @Test("acquires a fresh segment with zeroed fields")
     func acquiresAFreshSegmentWithZeroedFields() async throws {
         let pool: SkylineSegmentPool = SkylineSegmentPool()
-        let a: SkylineSegment = pool.acquire()
+        let a: SkylineSegment = try pool.acquire()
         TestGlobals.expect(a.xStart).toBe(0.0)
         TestGlobals.expect(a.height).toBe(0.0)
     }
@@ -375,11 +375,11 @@ final class SkylineSegmentPoolClass {
     @Test("reuses released segments before growing")
     func reusesReleasedSegmentsBeforeGrowing() async throws {
         let pool: SkylineSegmentPool = SkylineSegmentPool()
-        let a: SkylineSegment = pool.acquire()
+        let a: SkylineSegment = try pool.acquire()
         a.xStart = 5.0
         a.height = 7.0
         pool.release(a)
-        let b: SkylineSegment = pool.acquire()
+        let b: SkylineSegment = try pool.acquire()
         TestGlobals.expect(b).toBe(a)
         TestGlobals.expect(b.xStart).toBe(0.0)
         TestGlobals.expect(b.height).toBe(0.0)

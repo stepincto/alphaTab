@@ -14,10 +14,10 @@ final class AccidentalResolutionEdgeTests {
     func spellsBHashInCHashMajorForPitchCNatural() async throws {
         let ks: KeySignature = KeySignature.CSharp
         let noteValue: Double = 60.0
-        let spelling: ResolvedSpelling = ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.Default)
+        let spelling: ResolvedSpelling = try ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.Default)
         TestGlobals.expect(spelling.degree).toBe(6.0)
         TestGlobals.expect(spelling.accidentalOffset).toBe(1.0)
-        let accidental: AccidentalType = ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.Default, spelling, false, nil)
+        let accidental: AccidentalType = try ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.Default, spelling, false, nil)
         TestGlobals.expect(accidental).toBe(AccidentalType.None)
     }
 
@@ -25,10 +25,10 @@ final class AccidentalResolutionEdgeTests {
     func spellsFbInCbMajorForPitchENatural() async throws {
         let ks: KeySignature = KeySignature.Cb
         let noteValue: Double = 64.0
-        let spelling: ResolvedSpelling = ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.Default)
+        let spelling: ResolvedSpelling = try ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.Default)
         TestGlobals.expect(spelling.degree).toBe(3.0)
         TestGlobals.expect(spelling.accidentalOffset).toBe(-1.0)
-        let accidental: AccidentalType = ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.Default, spelling, false, nil)
+        let accidental: AccidentalType = try ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.Default, spelling, false, nil)
         TestGlobals.expect(accidental).toBe(AccidentalType.None)
     }
 
@@ -36,10 +36,10 @@ final class AccidentalResolutionEdgeTests {
     func forcesDoubleSharpSpellingWhenRequested() async throws {
         let ks: KeySignature = KeySignature.C
         let noteValue: Double = 62.0
-        let spelling: ResolvedSpelling = ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.ForceDoubleSharp)
+        let spelling: ResolvedSpelling = try ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.ForceDoubleSharp)
         TestGlobals.expect(spelling.degree).toBe(0.0)
         TestGlobals.expect(spelling.accidentalOffset).toBe(2.0)
-        let accidental: AccidentalType = ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.ForceDoubleSharp, spelling, false, nil)
+        let accidental: AccidentalType = try ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.ForceDoubleSharp, spelling, false, nil)
         TestGlobals.expect(accidental).toBe(AccidentalType.DoubleSharp)
     }
 
@@ -47,10 +47,10 @@ final class AccidentalResolutionEdgeTests {
     func forcesDoubleFlatSpellingWhenRequested() async throws {
         let ks: KeySignature = KeySignature.C
         let noteValue: Double = 62.0
-        let spelling: ResolvedSpelling = ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.ForceDoubleFlat)
+        let spelling: ResolvedSpelling = try ModelUtils.resolveSpelling(ks, (noteValue), NoteAccidentalMode.ForceDoubleFlat)
         TestGlobals.expect(spelling.degree).toBe(2.0)
         TestGlobals.expect(spelling.accidentalOffset).toBe(-2.0)
-        let accidental: AccidentalType = ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.ForceDoubleFlat, spelling, false, nil)
+        let accidental: AccidentalType = try ModelUtils.computeAccidentalForSpelling(ks, NoteAccidentalMode.ForceDoubleFlat, spelling, false, nil)
         TestGlobals.expect(accidental).toBe(AccidentalType.DoubleFlat)
     }
 

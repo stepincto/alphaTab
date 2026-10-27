@@ -134,11 +134,11 @@ public final class Font {
         case "undefined":
             return nil
         case "object":
-            let m: Map<String, Any?> = (v as! Map<String, Any?>)
+            let m: Map<String, Any?> = try jsCast(v, Map<String, Any?>.self)
             let families: List<String> = TypeHelper.unknownToList(m.get("families"), String.self)
             let size: Double = TypeHelper.unknownToNumber(m.get("size"))
-            let style: FontStyle = try JsonHelperPartials.parseEnum(m.get("style"), FontStyle.self)!
-            let weight: FontWeight = try JsonHelperPartials.parseEnum(m.get("weight"), FontWeight.self)!
+            let style: FontStyle = try jsNonNull(JsonHelperPartials.parseEnum(m.get("style"), FontStyle.self))
+            let weight: FontWeight = try jsNonNull(JsonHelperPartials.parseEnum(m.get("weight"), FontWeight.self))
             return try Font.withFamilyList(families, size, style, weight)
         case "string":
             let parser: FontParser = FontParser((v as! String))
@@ -310,7 +310,7 @@ internal final class FontParser {
             }
         }
         if !self.parseOnlyFamilies {
-            self._fontStyleVariantWeight()
+            try self._fontStyleVariantWeight()
             try self._fontSizeLineHeight()
         }
         try self._fontFamily()
@@ -415,7 +415,7 @@ internal final class FontParser {
         }
     }
 
-    private func _fontStyleVariantWeight() {
+    private func _fontStyleVariantWeight() throws {
         var hasStyle: Bool = false
         var hasVariant: Bool = false
         var hasWeight: Bool = false
@@ -454,7 +454,7 @@ internal final class FontParser {
             }
         }
         while ambiguous.length > 0 {
-            let v: String = ambiguous.pop()!
+            let v: String = try jsNonNull(ambiguous.pop())
             if !hasWeight {
                 self.weight = v
             } else if !hasVariant {

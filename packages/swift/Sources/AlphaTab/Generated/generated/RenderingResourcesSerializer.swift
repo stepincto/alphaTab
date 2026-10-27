@@ -16,7 +16,7 @@ internal final class RenderingResourcesSerializer {
         })
     }
 
-    public static func toJson(_ obj: RenderingResources?) -> Map<String, Any?>? {
+    public static func toJson(_ obj: RenderingResources?) throws -> Map<String, Any?>? {
         if !TypeHelper.isTruthy(obj) {
             return nil
         }
@@ -27,19 +27,19 @@ internal final class RenderingResourcesSerializer {
             let m: Map<String, Any?> = Map<String, Any?>()
             o.set("elementfonts", m)
             for (k, v) in obj!.elementFonts {
-                m.set(k.toInvariantString(), Font.toJson(v)!)
+                try m.set(k.toInvariantString(), jsNonNull(Font.toJson(v)))
             }
         }
-        o.set("numberednotationfont", Font.toJson(obj!.numberedNotationFont)!)
-        o.set("numberednotationgracefont", Font.toJson(obj!.numberedNotationGraceFont)!)
-        o.set("tablaturefont", Font.toJson(obj!.tablatureFont)!)
-        o.set("gracefont", Font.toJson(obj!.graceFont)!)
-        o.set("stafflinecolor", Color.toJson(obj!.staffLineColor)!)
-        o.set("barseparatorcolor", Color.toJson(obj!.barSeparatorColor)!)
-        o.set("barnumbercolor", Color.toJson(obj!.barNumberColor)!)
-        o.set("mainglyphcolor", Color.toJson(obj!.mainGlyphColor)!)
-        o.set("secondaryglyphcolor", Color.toJson(obj!.secondaryGlyphColor)!)
-        o.set("scoreinfocolor", Color.toJson(obj!.scoreInfoColor)!)
+        try o.set("numberednotationfont", jsNonNull(Font.toJson(obj!.numberedNotationFont)))
+        try o.set("numberednotationgracefont", jsNonNull(Font.toJson(obj!.numberedNotationGraceFont)))
+        try o.set("tablaturefont", jsNonNull(Font.toJson(obj!.tablatureFont)))
+        try o.set("gracefont", jsNonNull(Font.toJson(obj!.graceFont)))
+        try o.set("stafflinecolor", jsNonNull(Color.toJson(obj!.staffLineColor)))
+        try o.set("barseparatorcolor", jsNonNull(Color.toJson(obj!.barSeparatorColor)))
+        try o.set("barnumbercolor", jsNonNull(Color.toJson(obj!.barNumberColor)))
+        try o.set("mainglyphcolor", jsNonNull(Color.toJson(obj!.mainGlyphColor)))
+        try o.set("secondaryglyphcolor", jsNonNull(Color.toJson(obj!.secondaryGlyphColor)))
+        try o.set("scoreinfocolor", jsNonNull(Color.toJson(obj!.scoreInfoColor)))
         return o
     }
 
@@ -49,66 +49,66 @@ internal final class RenderingResourcesSerializer {
             obj.smuflFontFamilyName = (v as? String)
             return true
         case "copyrightfont":
-            try obj.copyrightFont = Font.fromJson(v)!
+            try obj.copyrightFont = jsNonNull(Font.fromJson(v))
             return true
         case "titlefont":
-            try obj.titleFont = Font.fromJson(v)!
+            try obj.titleFont = jsNonNull(Font.fromJson(v))
             return true
         case "subtitlefont":
-            try obj.subTitleFont = Font.fromJson(v)!
+            try obj.subTitleFont = jsNonNull(Font.fromJson(v))
             return true
         case "wordsfont":
-            try obj.wordsFont = Font.fromJson(v)!
+            try obj.wordsFont = jsNonNull(Font.fromJson(v))
             return true
         case "timerfont":
-            try obj.timerFont = Font.fromJson(v)!
+            try obj.timerFont = jsNonNull(Font.fromJson(v))
             return true
         case "directionsfont":
-            try obj.directionsFont = Font.fromJson(v)!
+            try obj.directionsFont = jsNonNull(Font.fromJson(v))
             return true
         case "fretboardnumberfont":
-            try obj.fretboardNumberFont = Font.fromJson(v)!
+            try obj.fretboardNumberFont = jsNonNull(Font.fromJson(v))
             return true
         case "markerfont":
-            try obj.markerFont = Font.fromJson(v)!
+            try obj.markerFont = jsNonNull(Font.fromJson(v))
             return true
         case "barnumberfont":
-            try obj.barNumberFont = Font.fromJson(v)!
+            try obj.barNumberFont = jsNonNull(Font.fromJson(v))
             return true
         case "elementfonts":
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try obj.elementFonts.set(JsonHelperPartials.parseEnum(k, NotationElement.self)!, Font.fromJson(v)!)
+                try obj.elementFonts.set(jsNonNull(JsonHelperPartials.parseEnum(k, NotationElement.self)), jsNonNull(Font.fromJson(v)))
             })
             return true
         case "numberednotationfont":
-            try obj.numberedNotationFont = Font.fromJson(v)!
+            try obj.numberedNotationFont = jsNonNull(Font.fromJson(v))
             return true
         case "numberednotationgracefont":
-            try obj.numberedNotationGraceFont = Font.fromJson(v)!
+            try obj.numberedNotationGraceFont = jsNonNull(Font.fromJson(v))
             return true
         case "tablaturefont":
-            try obj.tablatureFont = Font.fromJson(v)!
+            try obj.tablatureFont = jsNonNull(Font.fromJson(v))
             return true
         case "gracefont":
-            try obj.graceFont = Font.fromJson(v)!
+            try obj.graceFont = jsNonNull(Font.fromJson(v))
             return true
         case "stafflinecolor":
-            try obj.staffLineColor = Color.fromJson(v)!
+            try obj.staffLineColor = jsNonNull(Color.fromJson(v))
             return true
         case "barseparatorcolor":
-            try obj.barSeparatorColor = Color.fromJson(v)!
+            try obj.barSeparatorColor = jsNonNull(Color.fromJson(v))
             return true
         case "barnumbercolor":
-            try obj.barNumberColor = Color.fromJson(v)!
+            try obj.barNumberColor = jsNonNull(Color.fromJson(v))
             return true
         case "mainglyphcolor":
-            try obj.mainGlyphColor = Color.fromJson(v)!
+            try obj.mainGlyphColor = jsNonNull(Color.fromJson(v))
             return true
         case "secondaryglyphcolor":
-            try obj.secondaryGlyphColor = Color.fromJson(v)!
+            try obj.secondaryGlyphColor = jsNonNull(Color.fromJson(v))
             return true
         case "scoreinfocolor":
-            try obj.scoreInfoColor = Color.fromJson(v)!
+            try obj.scoreInfoColor = jsNonNull(Color.fromJson(v))
             return true
         default:
             break

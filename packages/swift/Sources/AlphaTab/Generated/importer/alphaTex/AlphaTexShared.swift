@@ -313,13 +313,13 @@ public protocol IAlphaTexImporter: AnyObject {
 
     var parseMode: AlphaTexParseMode { get }
 
-    func applyStaffNoteKind(_ staff: Staff, _ staffNoteKind: AlphaTexStaffNoteKind)
+    func applyStaffNoteKind(_ staff: Staff, _ staffNoteKind: AlphaTexStaffNoteKind) throws
 
-    func startNewVoice()
+    func startNewVoice() throws
 
-    func startNewTrack() -> Track
+    func startNewTrack() throws -> Track
 
-    func startNewStaff() -> Staff
+    func startNewStaff() throws -> Staff
 
     func addSemanticDiagnostic(_ diagnostic: AlphaTexDiagnostic)
 }

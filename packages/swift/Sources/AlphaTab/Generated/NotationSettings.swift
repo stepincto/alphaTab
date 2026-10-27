@@ -75,12 +75,12 @@ public final class NotationSettings {
     /**
      * Gets whether the given music notation element should be shown
      */
-    public func isNotationElementVisible(_ element: NotationElement) -> Bool {
+    public func isNotationElementVisible(_ element: NotationElement) throws -> Bool {
         if self.elements.has(element) {
-            return self.elements.get(element)!
+            return try jsNonNull(self.elements.get(element))
         }
         if NotationSettings.defaultElements.has(element) {
-            return NotationSettings.defaultElements.get(element)!
+            return try jsNonNull(NotationSettings.defaultElements.get(element))
         }
         return true
     }

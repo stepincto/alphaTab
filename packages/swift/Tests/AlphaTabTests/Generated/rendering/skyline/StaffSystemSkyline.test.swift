@@ -20,9 +20,9 @@ internal final class SysSkyHandle {
 }
 
 internal final class StaffSystemSkylineFixtures {
-    public static func newSysSky(_ staffIndex: Double = 0.0, _ systemIndex: Double = 0.0, _ xMin: Double = 0.0, _ xMax: Double = 200.0) -> SysSkyHandle {
+    public static func newSysSky(_ staffIndex: Double = 0.0, _ systemIndex: Double = 0.0, _ xMin: Double = 0.0, _ xMax: Double = 200.0) throws -> SysSkyHandle {
         let pool: SkylineSegmentPool = SkylineSegmentPool()
-        let sky: StaffSystemSkyline = StaffSystemSkyline(staffIndex, systemIndex, xMin, xMax, pool)
+        let sky: StaffSystemSkyline = try StaffSystemSkyline(staffIndex, systemIndex, xMin, xMax, pool)
         return SysSkyHandle(sky, pool)
     }
 
@@ -33,7 +33,7 @@ internal final class StaffSystemSkylineFixtures {
 final class StaffSystemSkyline_Construction {
     @Test("records staffIndex + systemIndex and starts with flat skylines")
     func recordsStaffIndex_SystemIndexAndStartsWithFlatSkylines() async throws {
-        let h: SysSkyHandle = StaffSystemSkylineFixtures.newSysSky(2.0, 5.0, 0.0, 80.0)
+        let h: SysSkyHandle = try StaffSystemSkylineFixtures.newSysSky(2.0, 5.0, 0.0, 80.0)
         let sky: StaffSystemSkyline = h.sky
         TestGlobals.expect(sky.staffIndex).toBe(2.0)
         TestGlobals.expect(sky.systemIndex).toBe(5.0)
@@ -52,10 +52,10 @@ final class StaffSystemSkyline_Construction {
 final class StaffSystemSkyline_InsertPlaced_Routing {
     @Test("side-aware insertPlaced raises only the addressed skyline")
     func sideAwareInsertPlacedRaisesOnlyTheAddressedSkyline() async throws {
-        let h: SysSkyHandle = StaffSystemSkylineFixtures.newSysSky()
+        let h: SysSkyHandle = try StaffSystemSkylineFixtures.newSysSky()
         let sky: StaffSystemSkyline = h.sky
-        sky.insertPlaced(StaffSide.Top, 20.0, 80.0, 5.0, 0.0)
-        sky.insertPlaced(StaffSide.Bottom, 40.0, 60.0, 4.0, 0.0)
+        try sky.insertPlaced(StaffSide.Top, 20.0, 80.0, 5.0, 0.0)
+        try sky.insertPlaced(StaffSide.Bottom, 40.0, 60.0, 4.0, 0.0)
         TestGlobals.expect(sky.upSky.maxHeight()).toBe(5.0)
         TestGlobals.expect(sky.downSky.maxHeight()).toBe(4.0)
     }
@@ -67,14 +67,14 @@ final class StaffSystemSkyline_InsertPlaced_Routing {
 final class StaffSystemSkyline_Reset {
     @Test("clears state for reuse")
     func clearsStateForReuse() async throws {
-        let h: SysSkyHandle = StaffSystemSkylineFixtures.newSysSky()
+        let h: SysSkyHandle = try StaffSystemSkylineFixtures.newSysSky()
         let sky: StaffSystemSkyline = h.sky
-        sky.insertPlaced(StaffSide.Top, 20.0, 40.0, 6.0, 0.0)
-        sky.insertPlaced(StaffSide.Bottom, 50.0, 70.0, 3.0, 0.0)
-        sky.reset()
+        try sky.insertPlaced(StaffSide.Top, 20.0, 40.0, 6.0, 0.0)
+        try sky.insertPlaced(StaffSide.Bottom, 50.0, 70.0, 3.0, 0.0)
+        try sky.reset()
         TestGlobals.expect(sky.upSky.maxHeight()).toBe(0.0)
         TestGlobals.expect(sky.downSky.maxHeight()).toBe(0.0)
-        sky.insertPlaced(StaffSide.Top, 30.0, 70.0, 4.0, 0.0)
+        try sky.insertPlaced(StaffSide.Top, 30.0, 70.0, 4.0, 0.0)
         TestGlobals.expect(sky.upSky.maxHeight()).toBe(4.0)
     }
 

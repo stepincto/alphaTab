@@ -16,7 +16,7 @@ internal final class DisplaySettingsSerializer {
         })
     }
 
-    public static func toJson(_ obj: DisplaySettings?) -> Map<String, Any?>? {
+    public static func toJson(_ obj: DisplaySettings?) throws -> Map<String, Any?>? {
         if !TypeHelper.isTruthy(obj) {
             return nil
         }
@@ -31,7 +31,7 @@ internal final class DisplaySettingsSerializer {
         o.set("barcount", obj!.barCount)
         o.set("barcountperpartial", obj!.barCountPerPartial)
         o.set("lastsystemfillthreshold", obj!.lastSystemFillThreshold)
-        o.set("resources", RenderingResourcesSerializer.toJson(obj!.resources))
+        try o.set("resources", RenderingResourcesSerializer.toJson(obj!.resources))
         o.set("padding", obj!.padding)
         o.set("firstsystempaddingtop", obj!.firstSystemPaddingTop)
         o.set("systempaddingtop", obj!.systemPaddingTop)
@@ -68,10 +68,10 @@ internal final class DisplaySettingsSerializer {
             obj.spacingRatio = TypeHelper.unknownToNumber(v)
             return true
         case "layoutmode":
-            try obj.layoutMode = JsonHelperPartials.parseEnum(v, LayoutMode.self)!
+            try obj.layoutMode = jsNonNull(JsonHelperPartials.parseEnum(v, LayoutMode.self))
             return true
         case "staveprofile":
-            try obj.staveProfile = JsonHelperPartials.parseEnum(v, StaveProfile.self)!
+            try obj.staveProfile = jsNonNull(JsonHelperPartials.parseEnum(v, StaveProfile.self))
             return true
         case "barsperrow":
             obj.barsPerRow = TypeHelper.unknownToNumber(v)
@@ -152,7 +152,7 @@ internal final class DisplaySettingsSerializer {
             obj.lyricLinesPaddingBetween = TypeHelper.unknownToNumber(v)
             return true
         case "systemslayoutmode":
-            try obj.systemsLayoutMode = JsonHelperPartials.parseEnum(v, SystemsLayoutMode.self)!
+            try obj.systemsLayoutMode = jsNonNull(JsonHelperPartials.parseEnum(v, SystemsLayoutMode.self))
             return true
         default:
             break

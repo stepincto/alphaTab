@@ -57,7 +57,7 @@ internal final class Gp7To8Importer: ScoreImporter {
         let gpifParser: GpifParser = GpifParser()
         gpifParser.loadAsset = { (fileName: String) -> Uint8Array? in
             if entryLookup.has(fileName) {
-                return entryLookup.get(fileName)!.data
+                return try jsNonNull(entryLookup.get(fileName)).data
             }
             return nil
         }
@@ -67,7 +67,7 @@ internal final class Gp7To8Importer: ScoreImporter {
         if TypeHelper.isTruthy(binaryStylesheetData) {
             Logger.debug(self.name, "Start Parsing BinaryStylesheet")
             let stylesheet: BinaryStylesheet = try BinaryStylesheet(binaryStylesheetData!, self.settings.importer.maxDecodingBufferSize)
-            stylesheet.apply(score)
+            try stylesheet.apply(score)
             Logger.debug(self.name, "BinaryStylesheet parsed")
         }
         var partConfigurationParser: PartConfiguration? = nil

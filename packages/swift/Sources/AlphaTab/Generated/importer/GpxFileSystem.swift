@@ -113,7 +113,7 @@ internal final class GpxFileSystem {
     /**
      * Reads an uncompressed data block into the model.
      */
-    private func _readUncompressedBlock(_ data: Uint8Array) {
+    private func _readUncompressedBlock(_ data: Uint8Array) throws {
         let sectorSize: Double = 4096.0
         var offset: Double = sectorSize
         while offset + 3.0 < data.length {
@@ -135,15 +135,15 @@ internal final class GpxFileSystem {
                     if sector != 0.0 {
                         offset = sector * sectorSize
                         if storeFile {
-                            fileData!.write(data, offset, sectorSize)
+                            try jsNonNull(fileData).write(data, offset, sectorSize)
                         }
                     } else {
                         break
                     }
                 }
                 if storeFile {
-                    file.data = Uint8Array(Math.min(file.fileSize, fileData!.length))
-                    let raw: Uint8Array = fileData!.toArray()
+                    try file.data = Uint8Array(Math.min(file.fileSize, jsNonNull(fileData).length))
+                    let raw: Uint8Array = try jsNonNull(fileData).toArray()
                     file.data!.set(raw.subarray(0.0, 0.0 + file.data!.length), 0.0)
                 }
             }

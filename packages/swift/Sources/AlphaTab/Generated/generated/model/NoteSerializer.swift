@@ -73,13 +73,13 @@ internal final class NoteSerializer {
             obj.id = TypeHelper.unknownToNumber(v)
             return true
         case "accentuated":
-            try obj.accentuated = JsonHelperPartials.parseEnum(v, AccentuationType.self)!
+            try obj.accentuated = jsNonNull(JsonHelperPartials.parseEnum(v, AccentuationType.self))
             return true
         case "bendtype":
-            try obj.bendType = JsonHelperPartials.parseEnum(v, BendType.self)!
+            try obj.bendType = jsNonNull(JsonHelperPartials.parseEnum(v, BendType.self))
             return true
         case "bendstyle":
-            try obj.bendStyle = JsonHelperPartials.parseEnum(v, BendStyle.self)!
+            try obj.bendStyle = jsNonNull(JsonHelperPartials.parseEnum(v, BendStyle.self))
             return true
         case "iscontinuedbend":
             obj.isContinuedBend = (v! as! Bool)
@@ -125,7 +125,7 @@ internal final class NoteSerializer {
             obj.isSlurDestination = (v! as! Bool)
             return true
         case "harmonictype":
-            try obj.harmonicType = JsonHelperPartials.parseEnum(v, HarmonicType.self)!
+            try obj.harmonicType = jsNonNull(JsonHelperPartials.parseEnum(v, HarmonicType.self))
             return true
         case "harmonicvalue":
             obj.harmonicValue = TypeHelper.unknownToNumber(v)
@@ -146,40 +146,40 @@ internal final class NoteSerializer {
             obj.isStaccato = (v! as! Bool)
             return true
         case "slideintype":
-            try obj.slideInType = JsonHelperPartials.parseEnum(v, SlideInType.self)!
+            try obj.slideInType = jsNonNull(JsonHelperPartials.parseEnum(v, SlideInType.self))
             return true
         case "slideouttype":
-            try obj.slideOutType = JsonHelperPartials.parseEnum(v, SlideOutType.self)!
+            try obj.slideOutType = jsNonNull(JsonHelperPartials.parseEnum(v, SlideOutType.self))
             return true
         case "vibrato":
-            try obj.vibrato = JsonHelperPartials.parseEnum(v, VibratoType.self)!
+            try obj.vibrato = jsNonNull(JsonHelperPartials.parseEnum(v, VibratoType.self))
             return true
         case "istiedestination":
             obj.isTieDestination = (v! as! Bool)
             return true
         case "lefthandfinger":
-            try obj.leftHandFinger = JsonHelperPartials.parseEnum(v, Fingers.self)!
+            try obj.leftHandFinger = jsNonNull(JsonHelperPartials.parseEnum(v, Fingers.self))
             return true
         case "righthandfinger":
-            try obj.rightHandFinger = JsonHelperPartials.parseEnum(v, Fingers.self)!
+            try obj.rightHandFinger = jsNonNull(JsonHelperPartials.parseEnum(v, Fingers.self))
             return true
         case "trillvalue":
             obj.trillValue = TypeHelper.unknownToNumber(v)
             return true
         case "trillspeed":
-            try obj.trillSpeed = JsonHelperPartials.parseEnum(v, Duration.self)!
+            try obj.trillSpeed = jsNonNull(JsonHelperPartials.parseEnum(v, Duration.self))
             return true
         case "durationpercent":
             obj.durationPercent = TypeHelper.unknownToNumber(v)
             return true
         case "accidentalmode":
-            try obj.accidentalMode = JsonHelperPartials.parseEnum(v, NoteAccidentalMode.self)!
+            try obj.accidentalMode = jsNonNull(JsonHelperPartials.parseEnum(v, NoteAccidentalMode.self))
             return true
         case "dynamics":
-            try obj.dynamics = JsonHelperPartials.parseEnum(v, DynamicValue.self)!
+            try obj.dynamics = jsNonNull(JsonHelperPartials.parseEnum(v, DynamicValue.self))
             return true
         case "ornament":
-            try obj.ornament = JsonHelperPartials.parseEnum(v, NoteOrnament.self)!
+            try obj.ornament = jsNonNull(JsonHelperPartials.parseEnum(v, NoteOrnament.self))
             return true
         case "style":
             if TypeHelper.isTruthy(v) {

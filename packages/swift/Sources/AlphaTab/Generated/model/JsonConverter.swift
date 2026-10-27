@@ -14,8 +14,8 @@ public final class JsonConverter {
     /**
      * Converts the score into a JavaScript object without circular dependencies.
      */
-    public static func scoreToJsObject(_ score: Score) -> Map<String, Any?>? {
-        return ScoreSerializer.toJson(score)
+    public static func scoreToJsObject(_ score: Score) throws -> Map<String, Any?>? {
+        return try ScoreSerializer.toJson(score)
     }
 
     /**
@@ -24,15 +24,15 @@ public final class JsonConverter {
     public static func jsObjectToScore(_ jsObject: Any?, _ settings: Settings? = nil) throws -> Score {
         let score: Score = Score()
         try ScoreSerializer.fromJson(score, jsObject)
-        score.finish(settings ?? Settings())
+        try score.finish(settings ?? Settings())
         return score
     }
 
     /**
      * Converts the settings object into a JavaScript object for transmission between components or saving purposes.
      */
-    public static func settingsToJsObject(_ settings: Settings) -> Map<String, Any?>? {
-        return SettingsSerializer.toJson(settings)
+    public static func settingsToJsObject(_ settings: Settings) throws -> Map<String, Any?>? {
+        return try SettingsSerializer.toJson(settings)
     }
 
     /**
@@ -124,23 +124,23 @@ public final class JsonConverter {
     /**
      * Converts the given MidiFile object into a serialized JavaScript object.
      */
-    public static func midiFileToJsObject(_ midi: MidiFile) -> Map<String, Any?> {
+    public static func midiFileToJsObject(_ midi: MidiFile) throws -> Map<String, Any?> {
         let o: Map<String, Any?> = Map<String, Any?>()
         o.set("division", midi.division)
         o.set("tickShift", midi.tickShift)
         let tracks: List<Map<String, Any?>> = List<Map<String, Any?>>()
         for track in midi.tracks {
-            tracks.push(JsonConverter._midiTrackToJsObject(track))
+            try tracks.push(JsonConverter._midiTrackToJsObject(track))
         }
         o.set("tracks", tracks)
         return o
     }
 
-    private static func _midiTrackToJsObject(_ midi: MidiTrack) -> Map<String, Any?> {
+    private static func _midiTrackToJsObject(_ midi: MidiTrack) throws -> Map<String, Any?> {
         let o: Map<String, Any?> = Map<String, Any?>()
         let events: List<Map<String, Any?>> = List<Map<String, Any?>>()
         for track in midi.events {
-            events.push(JsonConverter.midiEventToJsObject(track))
+            try events.push(JsonConverter.midiEventToJsObject(track))
         }
         o.set("events", events)
         return o
@@ -149,43 +149,43 @@ public final class JsonConverter {
     /**
      * Converts the given MidiEvent object into a serialized JavaScript object.
      */
-    public static func midiEventToJsObject(_ midiEvent: MidiEvent) -> Map<String, Any?> {
+    public static func midiEventToJsObject(_ midiEvent: MidiEvent) throws -> Map<String, Any?> {
         let o: Map<String, Any?> = Map<String, Any?>()
         o.set("track", midiEvent.track)
         o.set("tick", midiEvent.tick)
         o.set("type", Double(midiEvent.type.rawValue))
         switch midiEvent.type! {
         case MidiEventType.TimeSignature:
-            o.set("numerator", (midiEvent as! TimeSignatureEvent).numerator)
-            o.set("denominatorIndex", (midiEvent as! TimeSignatureEvent).denominatorIndex)
-            o.set("midiClocksPerMetronomeClick", (midiEvent as! TimeSignatureEvent).midiClocksPerMetronomeClick)
-            o.set("thirdySecondNodesInQuarter", (midiEvent as! TimeSignatureEvent).thirtySecondNodesInQuarter)
+            try o.set("numerator", (jsCast(midiEvent, TimeSignatureEvent.self)).numerator)
+            try o.set("denominatorIndex", (jsCast(midiEvent, TimeSignatureEvent.self)).denominatorIndex)
+            try o.set("midiClocksPerMetronomeClick", (jsCast(midiEvent, TimeSignatureEvent.self)).midiClocksPerMetronomeClick)
+            try o.set("thirdySecondNodesInQuarter", (jsCast(midiEvent, TimeSignatureEvent.self)).thirtySecondNodesInQuarter)
         case MidiEventType.AlphaTabRest:
-            o.set("channel", (midiEvent as! AlphaTabRestEvent).channel)
+            try o.set("channel", (jsCast(midiEvent, AlphaTabRestEvent.self)).channel)
         case MidiEventType.AlphaTabMetronome:
-            o.set("metronomeNumerator", (midiEvent as! AlphaTabMetronomeEvent).metronomeNumerator)
-            o.set("metronomeDurationInMilliseconds", (midiEvent as! AlphaTabMetronomeEvent).metronomeDurationInMilliseconds)
-            o.set("metronomeDurationInTicks", (midiEvent as! AlphaTabMetronomeEvent).metronomeDurationInTicks)
+            try o.set("metronomeNumerator", (jsCast(midiEvent, AlphaTabMetronomeEvent.self)).metronomeNumerator)
+            try o.set("metronomeDurationInMilliseconds", (jsCast(midiEvent, AlphaTabMetronomeEvent.self)).metronomeDurationInMilliseconds)
+            try o.set("metronomeDurationInTicks", (jsCast(midiEvent, AlphaTabMetronomeEvent.self)).metronomeDurationInTicks)
         case MidiEventType.NoteOn, MidiEventType.NoteOff:
-            o.set("channel", (midiEvent as! NoteEvent).channel)
-            o.set("noteKey", (midiEvent as! NoteEvent).noteKey)
-            o.set("noteVelocity", (midiEvent as! NoteEvent).noteVelocity)
+            try o.set("channel", (jsCast(midiEvent, NoteEvent.self)).channel)
+            try o.set("noteKey", (jsCast(midiEvent, NoteEvent.self)).noteKey)
+            try o.set("noteVelocity", (jsCast(midiEvent, NoteEvent.self)).noteVelocity)
         case MidiEventType.ControlChange:
-            o.set("channel", (midiEvent as! ControlChangeEvent).channel)
-            o.set("controller", Double((midiEvent as! ControlChangeEvent).controller.rawValue))
-            o.set("value", (midiEvent as! ControlChangeEvent).value)
+            try o.set("channel", (jsCast(midiEvent, ControlChangeEvent.self)).channel)
+            try o.set("controller", Double((jsCast(midiEvent, ControlChangeEvent.self)).controller.rawValue))
+            try o.set("value", (jsCast(midiEvent, ControlChangeEvent.self)).value)
         case MidiEventType.ProgramChange:
-            o.set("channel", (midiEvent as! ProgramChangeEvent).channel)
-            o.set("program", (midiEvent as! ProgramChangeEvent).program)
+            try o.set("channel", (jsCast(midiEvent, ProgramChangeEvent.self)).channel)
+            try o.set("program", (jsCast(midiEvent, ProgramChangeEvent.self)).program)
         case MidiEventType.TempoChange:
-            o.set("beatsPerMinute", (midiEvent as! TempoChangeEvent).beatsPerMinute)
+            try o.set("beatsPerMinute", (jsCast(midiEvent, TempoChangeEvent.self)).beatsPerMinute)
         case MidiEventType.PitchBend:
-            o.set("channel", (midiEvent as! PitchBendEvent).channel)
-            o.set("value", (midiEvent as! PitchBendEvent).value)
+            try o.set("channel", (jsCast(midiEvent, PitchBendEvent.self)).channel)
+            try o.set("value", (jsCast(midiEvent, PitchBendEvent.self)).value)
         case MidiEventType.PerNotePitchBend:
-            o.set("channel", (midiEvent as! NoteBendEvent).channel)
-            o.set("noteKey", (midiEvent as! NoteBendEvent).noteKey)
-            o.set("value", (midiEvent as! NoteBendEvent).value)
+            try o.set("channel", (jsCast(midiEvent, NoteBendEvent.self)).channel)
+            try o.set("noteKey", (jsCast(midiEvent, NoteBendEvent.self)).noteKey)
+            try o.set("value", (jsCast(midiEvent, NoteBendEvent.self)).value)
         case MidiEventType.EndOfTrack:
             break
         default:

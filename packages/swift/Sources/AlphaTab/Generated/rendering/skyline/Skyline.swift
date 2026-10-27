@@ -19,11 +19,11 @@ internal final class Skyline {
 
     private var _segments: List<SkylineSegment> = List<SkylineSegment>()
 
-    public init(_ xMin: Double, _ xMax: Double, _ pool: SkylineSegmentPool) {
+    public init(_ xMin: Double, _ xMax: Double, _ pool: SkylineSegmentPool) throws {
         self.xMin = xMin
         self.xMax = xMax
         self._pool = pool
-        self._initBaseline()
+        try self._initBaseline()
     }
 
     public var segmentCount: Double {
@@ -70,20 +70,20 @@ internal final class Skyline {
         return self._maxHeightInRange(xStart, xEnd) + pad
     }
 
-    public func insert(_ xStart: Double, _ xEnd: Double, _ outerEdgeHeight: Double, _ _pad: Double) {
-        self._raiseRange(xStart, xEnd, outerEdgeHeight)
+    public func insert(_ xStart: Double, _ xEnd: Double, _ outerEdgeHeight: Double, _ _pad: Double) throws {
+        try self._raiseRange(xStart, xEnd, outerEdgeHeight)
     }
 
-    public func union(_ other: Skyline) {
+    public func union(_ other: Skyline) throws {
         let o: List<SkylineSegment> = other._segments
         do {
             var k: Double = 0.0
             while k < o.length - 1.0 {
-                let segStart: Double = o[(k).toInt()].xStart
-                let segEnd: Double = o[(k + 1.0).toInt()].xStart
-                let h: Double = o[(k).toInt()].height
+                let segStart: Double = try o.jsElement((k).toInt()).xStart
+                let segEnd: Double = try o.jsElement((k + 1.0).toInt()).xStart
+                let h: Double = try o.jsElement((k).toInt()).height
                 if h > 0 {
-                    self._raiseRange(segStart, segEnd, h)
+                    try self._raiseRange(segStart, segEnd, h)
                 }
                 k = k + 1.0
             }
@@ -106,19 +106,19 @@ internal final class Skyline {
      * This replaces the previous "iterate other + raise per segment" path,
      * which was O(s_other * s_this) due to repeated split+raise on `this`.
      */
-    public func unionShifted(_ other: Skyline, _ dx: Double) {
+    public func unionShifted(_ other: Skyline, _ dx: Double) throws {
         let o: List<SkylineSegment> = other._segments
         let oLast: Double = o.length - 1.0
         let xMin: Double = self.xMin
         let xMax: Double = self.xMax
-        if o[(oLast).toInt()].xStart + dx <= xMin || o[0].xStart + dx >= xMax {
+        if try o.jsElement((oLast).toInt()).xStart + dx <= xMin || o.jsElement(0).xStart + dx >= xMax {
             return
         }
         var hasContent: Bool = false
         do {
             var k: Double = 0.0
             while k < oLast {
-                if o[(k).toInt()].height > 0 {
+                if try o.jsElement((k).toInt()).height > 0 {
                     hasContent = true
                     break
                 }
@@ -133,35 +133,35 @@ internal final class Skyline {
         let newSegs: List<SkylineSegment> = List<SkylineSegment>()
         var i: Double = 0.0
         var j: Double = 0.0
-        while j < oLast && o[(j + 1.0).toInt()].xStart + dx <= xMin {
+        while try j < oLast && o.jsElement((j + 1.0).toInt()).xStart + dx <= xMin {
             j = j + 1.0
         }
         var x: Double = xMin
         while x < xMax {
-            let thisH: Double = i < tLast ? t[(i).toInt()].height : 0.0
+            let thisH: Double = try i < tLast ? t.jsElement((i).toInt()).height : 0.0
             var otherH: Double = 0.0
             if j < oLast {
-                let oStart: Double = o[(j).toInt()].xStart + dx
+                let oStart: Double = try o.jsElement((j).toInt()).xStart + dx
                 if x >= oStart {
-                    otherH = o[(j).toInt()].height
+                    try otherH = o.jsElement((j).toInt()).height
                 }
             }
             let h: Double = thisH > otherH ? thisH : otherH
             var nextX: Double = xMax
             if i < tLast {
-                let tNext: Double = t[(i + 1.0).toInt()].xStart
+                let tNext: Double = try t.jsElement((i + 1.0).toInt()).xStart
                 if tNext < nextX {
                     nextX = tNext
                 }
             }
             if j < oLast {
-                let oStart: Double = o[(j).toInt()].xStart + dx
+                let oStart: Double = try o.jsElement((j).toInt()).xStart + dx
                 if x < oStart {
                     if oStart < nextX {
                         nextX = oStart
                     }
                 } else {
-                    let oExit: Double = o[(j + 1.0).toInt()].xStart + dx
+                    let oExit: Double = try o.jsElement((j + 1.0).toInt()).xStart + dx
                     if oExit < nextX {
                         nextX = oExit
                     }
@@ -173,27 +173,27 @@ internal final class Skyline {
             if nextX <= x {
                 nextX = xMax
             }
-            if newSegs.length > 0 && newSegs[(newSegs.length - 1.0).toInt()].height == h {
+            if try newSegs.length > 0 && newSegs.jsElement((newSegs.length - 1.0).toInt()).height == h {
             } else {
-                let ns: SkylineSegment = self._pool.acquire()
+                let ns: SkylineSegment = try self._pool.acquire()
                 ns.xStart = x
                 ns.height = h
                 newSegs.push(ns)
             }
             x = nextX
-            while i < tLast && t[(i + 1.0).toInt()].xStart <= x {
+            while try i < tLast && t.jsElement((i + 1.0).toInt()).xStart <= x {
                 i = i + 1.0
             }
-            while j < oLast && o[(j + 1.0).toInt()].xStart + dx <= x {
+            while try j < oLast && o.jsElement((j + 1.0).toInt()).xStart + dx <= x {
                 j = j + 1.0
             }
         }
-        let sentinel: SkylineSegment = self._pool.acquire()
+        let sentinel: SkylineSegment = try self._pool.acquire()
         sentinel.xStart = xMax
         sentinel.height = 0.0
         newSegs.push(sentinel)
         while self._segments.length > 0 {
-            let s: SkylineSegment = self._segments.pop()!
+            let s: SkylineSegment = try jsNonNull(self._segments.pop())
             self._pool.release(s)
         }
         do {
@@ -210,7 +210,7 @@ internal final class Skyline {
      * pair-merge pass: one result list and one segment rebuild instead of
      * three.
      */
-    public func unionShifted3(_ o1: Skyline, _ dx1: Double, _ o2: Skyline, _ dx2: Double, _ o3: Skyline, _ dx3: Double) {
+    public func unionShifted3(_ o1: Skyline, _ dx1: Double, _ o2: Skyline, _ dx2: Double, _ o3: Skyline, _ dx3: Double) throws {
         let a: List<SkylineSegment> = o1._segments
         let b: List<SkylineSegment> = o2._segments
         let c: List<SkylineSegment> = o3._segments
@@ -219,13 +219,13 @@ internal final class Skyline {
         let cLast: Double = c.length - 1.0
         let xMin: Double = self.xMin
         let xMax: Double = self.xMax
-        var aActive: Bool = !(a[(aLast).toInt()].xStart + dx1 <= xMin || a[0].xStart + dx1 >= xMax)
+        var aActive: Bool = try !(a.jsElement((aLast).toInt()).xStart + dx1 <= xMin || a.jsElement(0).xStart + dx1 >= xMax)
         if aActive {
             var any: Bool = false
             do {
                 var k: Double = 0.0
                 while k < aLast {
-                    if a[(k).toInt()].height > 0 {
+                    if try a.jsElement((k).toInt()).height > 0 {
                         any = true
                         break
                     }
@@ -234,13 +234,13 @@ internal final class Skyline {
             }
             aActive = any
         }
-        var bActive: Bool = !(b[(bLast).toInt()].xStart + dx2 <= xMin || b[0].xStart + dx2 >= xMax)
+        var bActive: Bool = try !(b.jsElement((bLast).toInt()).xStart + dx2 <= xMin || b.jsElement(0).xStart + dx2 >= xMax)
         if bActive {
             var any: Bool = false
             do {
                 var k: Double = 0.0
                 while k < bLast {
-                    if b[(k).toInt()].height > 0 {
+                    if try b.jsElement((k).toInt()).height > 0 {
                         any = true
                         break
                     }
@@ -249,13 +249,13 @@ internal final class Skyline {
             }
             bActive = any
         }
-        var cActive: Bool = !(c[(cLast).toInt()].xStart + dx3 <= xMin || c[0].xStart + dx3 >= xMax)
+        var cActive: Bool = try !(c.jsElement((cLast).toInt()).xStart + dx3 <= xMin || c.jsElement(0).xStart + dx3 >= xMax)
         if cActive {
             var any: Bool = false
             do {
                 var k: Double = 0.0
                 while k < cLast {
-                    if c[(k).toInt()].height > 0 {
+                    if try c.jsElement((k).toInt()).height > 0 {
                         any = true
                         break
                     }
@@ -275,46 +275,46 @@ internal final class Skyline {
         var jb: Double = 0.0
         var jc: Double = 0.0
         if aActive {
-            while ja < aLast && a[(ja + 1.0).toInt()].xStart + dx1 <= xMin {
+            while try ja < aLast && a.jsElement((ja + 1.0).toInt()).xStart + dx1 <= xMin {
                 ja = ja + 1.0
             }
         }
         if bActive {
-            while jb < bLast && b[(jb + 1.0).toInt()].xStart + dx2 <= xMin {
+            while try jb < bLast && b.jsElement((jb + 1.0).toInt()).xStart + dx2 <= xMin {
                 jb = jb + 1.0
             }
         }
         if cActive {
-            while jc < cLast && c[(jc + 1.0).toInt()].xStart + dx3 <= xMin {
+            while try jc < cLast && c.jsElement((jc + 1.0).toInt()).xStart + dx3 <= xMin {
                 jc = jc + 1.0
             }
         }
         var x: Double = xMin
         while x < xMax {
-            let thisH: Double = i < tLast ? t[(i).toInt()].height : 0.0
+            let thisH: Double = try i < tLast ? t.jsElement((i).toInt()).height : 0.0
             var h: Double = thisH
             if aActive && ja < aLast {
-                let oStart: Double = a[(ja).toInt()].xStart + dx1
+                let oStart: Double = try a.jsElement((ja).toInt()).xStart + dx1
                 if x >= oStart {
-                    let ah: Double = a[(ja).toInt()].height
+                    let ah: Double = try a.jsElement((ja).toInt()).height
                     if ah > h {
                         h = ah
                     }
                 }
             }
             if bActive && jb < bLast {
-                let oStart: Double = b[(jb).toInt()].xStart + dx2
+                let oStart: Double = try b.jsElement((jb).toInt()).xStart + dx2
                 if x >= oStart {
-                    let bh: Double = b[(jb).toInt()].height
+                    let bh: Double = try b.jsElement((jb).toInt()).height
                     if bh > h {
                         h = bh
                     }
                 }
             }
             if cActive && jc < cLast {
-                let oStart: Double = c[(jc).toInt()].xStart + dx3
+                let oStart: Double = try c.jsElement((jc).toInt()).xStart + dx3
                 if x >= oStart {
-                    let ch: Double = c[(jc).toInt()].height
+                    let ch: Double = try c.jsElement((jc).toInt()).height
                     if ch > h {
                         h = ch
                     }
@@ -322,45 +322,45 @@ internal final class Skyline {
             }
             var nextX: Double = xMax
             if i < tLast {
-                let tNext: Double = t[(i + 1.0).toInt()].xStart
+                let tNext: Double = try t.jsElement((i + 1.0).toInt()).xStart
                 if tNext < nextX {
                     nextX = tNext
                 }
             }
             if aActive && ja < aLast {
-                let oStart: Double = a[(ja).toInt()].xStart + dx1
+                let oStart: Double = try a.jsElement((ja).toInt()).xStart + dx1
                 if x < oStart {
                     if oStart < nextX {
                         nextX = oStart
                     }
                 } else {
-                    let oExit: Double = a[(ja + 1.0).toInt()].xStart + dx1
+                    let oExit: Double = try a.jsElement((ja + 1.0).toInt()).xStart + dx1
                     if oExit < nextX {
                         nextX = oExit
                     }
                 }
             }
             if bActive && jb < bLast {
-                let oStart: Double = b[(jb).toInt()].xStart + dx2
+                let oStart: Double = try b.jsElement((jb).toInt()).xStart + dx2
                 if x < oStart {
                     if oStart < nextX {
                         nextX = oStart
                     }
                 } else {
-                    let oExit: Double = b[(jb + 1.0).toInt()].xStart + dx2
+                    let oExit: Double = try b.jsElement((jb + 1.0).toInt()).xStart + dx2
                     if oExit < nextX {
                         nextX = oExit
                     }
                 }
             }
             if cActive && jc < cLast {
-                let oStart: Double = c[(jc).toInt()].xStart + dx3
+                let oStart: Double = try c.jsElement((jc).toInt()).xStart + dx3
                 if x < oStart {
                     if oStart < nextX {
                         nextX = oStart
                     }
                 } else {
-                    let oExit: Double = c[(jc + 1.0).toInt()].xStart + dx3
+                    let oExit: Double = try c.jsElement((jc + 1.0).toInt()).xStart + dx3
                     if oExit < nextX {
                         nextX = oExit
                     }
@@ -372,39 +372,39 @@ internal final class Skyline {
             if nextX <= x {
                 nextX = xMax
             }
-            if newSegs.length > 0 && newSegs[(newSegs.length - 1.0).toInt()].height == h {
+            if try newSegs.length > 0 && newSegs.jsElement((newSegs.length - 1.0).toInt()).height == h {
             } else {
-                let ns: SkylineSegment = self._pool.acquire()
+                let ns: SkylineSegment = try self._pool.acquire()
                 ns.xStart = x
                 ns.height = h
                 newSegs.push(ns)
             }
             x = nextX
-            while i < tLast && t[(i + 1.0).toInt()].xStart <= x {
+            while try i < tLast && t.jsElement((i + 1.0).toInt()).xStart <= x {
                 i = i + 1.0
             }
             if aActive {
-                while ja < aLast && a[(ja + 1.0).toInt()].xStart + dx1 <= x {
+                while try ja < aLast && a.jsElement((ja + 1.0).toInt()).xStart + dx1 <= x {
                     ja = ja + 1.0
                 }
             }
             if bActive {
-                while jb < bLast && b[(jb + 1.0).toInt()].xStart + dx2 <= x {
+                while try jb < bLast && b.jsElement((jb + 1.0).toInt()).xStart + dx2 <= x {
                     jb = jb + 1.0
                 }
             }
             if cActive {
-                while jc < cLast && c[(jc + 1.0).toInt()].xStart + dx3 <= x {
+                while try jc < cLast && c.jsElement((jc + 1.0).toInt()).xStart + dx3 <= x {
                     jc = jc + 1.0
                 }
             }
         }
-        let sentinel: SkylineSegment = self._pool.acquire()
+        let sentinel: SkylineSegment = try self._pool.acquire()
         sentinel.xStart = xMax
         sentinel.height = 0.0
         newSegs.push(sentinel)
         while self._segments.length > 0 {
-            let s: SkylineSegment = self._segments.pop()!
+            let s: SkylineSegment = try jsNonNull(self._segments.pop())
             self._pool.release(s)
         }
         do {
@@ -435,20 +435,20 @@ internal final class Skyline {
         return best
     }
 
-    public func reset() {
+    public func reset() throws {
         while self._segments.length > 0 {
-            let s: SkylineSegment = self._segments.pop()!
+            let s: SkylineSegment = try jsNonNull(self._segments.pop())
             self._pool.release(s)
         }
-        self._initBaseline()
+        try self._initBaseline()
     }
 
-    private func _initBaseline() {
-        let first: SkylineSegment = self._pool.acquire()
+    private func _initBaseline() throws {
+        let first: SkylineSegment = try self._pool.acquire()
         first.xStart = self.xMin
         first.height = 0.0
         self._segments.push(first)
-        let sentinel: SkylineSegment = self._pool.acquire()
+        let sentinel: SkylineSegment = try self._pool.acquire()
         sentinel.xStart = self.xMax
         sentinel.height = 0.0
         self._segments.push(sentinel)
@@ -483,18 +483,18 @@ internal final class Skyline {
         return best
     }
 
-    private func _raiseRange(_ xStart: Double, _ xEnd: Double, _ newHeight: Double) {
+    private func _raiseRange(_ xStart: Double, _ xEnd: Double, _ newHeight: Double) throws {
         let lo: Double = xStart > self.xMin ? xStart : self.xMin
         let hi: Double = xEnd < self.xMax ? xEnd : self.xMax
         if lo >= hi || newHeight <= 0 {
             return
         }
-        let loIdx: Double = self._splitAt(lo)
-        let hiIdx: Double = self._splitAt(hi)
+        let loIdx: Double = try self._splitAt(lo)
+        let hiIdx: Double = try self._splitAt(hi)
         do {
             var i: Double = loIdx
             while i < hiIdx {
-                if self._segments[(i).toInt()].height < newHeight {
+                if try self._segments.jsElement((i).toInt()).height < newHeight {
                     self._segments[(i).toInt()].height = newHeight
                 }
                 i = i + 1.0
@@ -507,7 +507,7 @@ internal final class Skyline {
             mergeEnd = self._segments.length - 2.0
         }
         while mergeIdx <= mergeEnd {
-            if mergeIdx < self._segments.length - 2.0 && self._segments[(mergeIdx).toInt()].height == self._segments[(mergeIdx + 1.0).toInt()].height {
+            if try mergeIdx < self._segments.length - 2.0 && self._segments.jsElement((mergeIdx).toInt()).height == self._segments.jsElement((mergeIdx + 1.0).toInt()).height {
                 let removed: SkylineSegment = self._segments.splice(mergeIdx + 1.0, 1.0)[0]
                 self._pool.release(removed)
                 mergeEnd = mergeEnd - 1.0
@@ -523,7 +523,7 @@ internal final class Skyline {
      * the baseline (index 0) is returned. If `x >= xMax` the sentinel
      * index (`_segments.length - 1`) is returned.
      */
-    private func _splitAt(_ x: Double) -> Double {
+    private func _splitAt(_ x: Double) throws -> Double {
         if x <= self.xMin {
             return 0.0
         }
@@ -534,18 +534,18 @@ internal final class Skyline {
         var hi: Double = self._segments.length - 1.0
         while lo < hi {
             let mid: Double = Math.floor((lo + hi + 1.0) / 2.0)
-            if self._segments[(mid).toInt()].xStart <= x {
+            if try self._segments.jsElement((mid).toInt()).xStart <= x {
                 lo = mid
             } else {
                 hi = mid - 1.0
             }
         }
-        if self._segments[(lo).toInt()].xStart == x {
+        if try self._segments.jsElement((lo).toInt()).xStart == x {
             return lo
         }
-        let newSeg: SkylineSegment = self._pool.acquire()
+        let newSeg: SkylineSegment = try self._pool.acquire()
         newSeg.xStart = x
-        newSeg.height = self._segments[(lo).toInt()].height
+        try newSeg.height = self._segments.jsElement((lo).toInt()).height
         self._segments.splice(lo + 1.0, 0.0, newSeg)
         return lo + 1.0
     }

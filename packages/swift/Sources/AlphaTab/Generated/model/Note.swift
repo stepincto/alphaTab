@@ -120,13 +120,13 @@ public final class Note {
 
     public var element: Double {
         get {
-            return self.isPercussion ? PercussionMapper.getElementAndVariation(self)[0] : -1.0
+            return try! self.isPercussion ? PercussionMapper.getElementAndVariation(self)[0] : -1.0
         }
     }
 
     public var variation: Double {
         get {
-            return self.isPercussion ? PercussionMapper.getElementAndVariation(self)[1] : -1.0
+            return try! self.isPercussion ? PercussionMapper.getElementAndVariation(self)[1] : -1.0
         }
     }
 
@@ -504,30 +504,30 @@ public final class Note {
 
     public var realValue: Double {
         get {
-            return self.calculateRealValue(true, true)
+            return try! self.calculateRealValue(true, true)
         }
     }
 
     public var realValueWithoutHarmonic: Double {
         get {
-            return self.calculateRealValue(true, false)
+            return try! self.calculateRealValue(true, false)
         }
     }
 
     /**
      * Calculates the real note value of this note as midi key respecting the given options.
      */
-    public func calculateRealValue(_ applyTranspositionPitch: Bool, _ applyHarmonic: Bool) -> Double {
+    public func calculateRealValue(_ applyTranspositionPitch: Bool, _ applyHarmonic: Bool) throws -> Double {
         let transpositionPitch: Double = applyTranspositionPitch ? self.beat.voice.bar.staff.transpositionPitch : 0.0
         if applyHarmonic {
-            let realValue: Double = self.calculateRealValue(applyTranspositionPitch, false)
+            let realValue: Double = try self.calculateRealValue(applyTranspositionPitch, false)
             if self.isStringed && self.harmonicType == HarmonicType.Natural {
                 return self.harmonicPitch + self.stringTuning - transpositionPitch
             }
             return realValue + self.harmonicPitch
         }
         if self.isPercussion {
-            let art: InstrumentArticulation? = PercussionMapper.getArticulation(self)
+            let art: InstrumentArticulation? = try PercussionMapper.getArticulation(self)
             return art != nil ? art!.outputMidiNumber : self.percussionArticulation
         }
         if self.isStringed {
@@ -647,36 +647,36 @@ public final class Note {
         }
     }
 
-    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) {
-        let nextNoteOnLine: Lazy<Note?> = Lazy<Note?>({ () -> Note? in
-            return Note.nextNoteOnSameLine(self)
+    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) throws {
+        let nextNoteOnLine: Lazy<Note?> = try Lazy<Note?>({ () -> Note? in
+            return try Note.nextNoteOnSameLine(self)
         })
         let isSongBook: Bool = TypeHelper.isTruthy(settings) && settings.notation.notationMode == NotationMode.SongBook
         if self.isTieDestination {
-            self.chain(sharedDataBag)
+            try self.chain(sharedDataBag)
             if TypeHelper.isTruthy(TypeHelper.isTruthy(isSongBook && TypeHelper.isTruthy(self.tieOrigin)) && self.tieOrigin!.isLetRing) {
                 self.isLetRing = true
             }
         }
         if self.isLetRing {
-            if !TypeHelper.isTruthy(nextNoteOnLine.value) || !nextNoteOnLine.value!.isLetRing {
+            if try !TypeHelper.isTruthy(nextNoteOnLine.value) || !nextNoteOnLine.value!.isLetRing {
                 self.letRingDestination = self
             } else {
-                self.letRingDestination = nextNoteOnLine.value!
+                try self.letRingDestination = nextNoteOnLine.value!
             }
-            if isSongBook && self.isTieDestination && !self.tieOrigin!.hasBend {
+            if try isSongBook && self.isTieDestination && !jsNonNull(self.tieOrigin).hasBend {
                 self.isVisible = false
             }
         }
         if self.isPalmMute {
-            if !TypeHelper.isTruthy(nextNoteOnLine.value) || !nextNoteOnLine.value!.isPalmMute {
+            if try !TypeHelper.isTruthy(nextNoteOnLine.value) || !nextNoteOnLine.value!.isPalmMute {
                 self.palmMuteDestination = self
             } else {
-                self.palmMuteDestination = nextNoteOnLine.value!
+                try self.palmMuteDestination = nextNoteOnLine.value!
             }
         }
         if self.isHammerPullOrigin {
-            let hammerPullDestination: Note? = Note.findHammerPullDestination(self)
+            let hammerPullDestination: Note? = try Note.findHammerPullDestination(self)
             if !TypeHelper.isTruthy(hammerPullDestination) {
                 self.isHammerPullOrigin = false
             } else {
@@ -687,7 +687,7 @@ public final class Note {
         switch self.slideOutType {
         case SlideOutType.Shift, SlideOutType.Legato:
             if !TypeHelper.isTruthy(self.slideTarget) {
-                self.slideTarget = nextNoteOnLine.value
+                try self.slideTarget = nextNoteOnLine.value
             }
             if !TypeHelper.isTruthy(self.slideTarget) {
                 self.slideOutType = SlideOutType.None
@@ -738,7 +738,7 @@ public final class Note {
         let points: List<BendPoint>? = self.bendPoints
         let hasBend: Bool = points != nil && points!.length > 0
         if hasBend {
-            let isContinuedBend: Bool = self.isTieDestination && self.tieOrigin!.hasBend
+            let isContinuedBend: Bool = try self.isTieDestination && jsNonNull(self.tieOrigin).hasBend
             self.isContinuedBend = isContinuedBend
         } else {
             self.bendType = BendType.None
@@ -854,10 +854,10 @@ public final class Note {
 
     private static let _maxOffsetForSameLineSearch: Double = 3.0
 
-    public static func nextNoteOnSameLine(_ note: Note) -> Note? {
+    public static func nextNoteOnSameLine(_ note: Note) throws -> Note? {
         var nextBeat: Beat? = note.beat.nextBeat
         while TypeHelper.isTruthy(TypeHelper.isTruthy(nextBeat) && nextBeat!.voice.bar.index <= note.beat.voice.bar.index + Note._maxOffsetForSameLineSearch) {
-            let noteOnString: Note? = nextBeat!.getNoteOnString(note.string)
+            let noteOnString: Note? = try nextBeat!.getNoteOnString(note.string)
             if TypeHelper.isTruthy(noteOnString) {
                 return noteOnString!
             }
@@ -866,17 +866,17 @@ public final class Note {
         return nil
     }
 
-    public static func findHammerPullDestination(_ note: Note) -> Note? {
+    public static func findHammerPullDestination(_ note: Note) throws -> Note? {
         var nextBeat: Beat? = note.beat.nextBeat
         while TypeHelper.isTruthy(TypeHelper.isTruthy(nextBeat) && nextBeat!.voice.bar.index <= note.beat.voice.bar.index + Note._maxOffsetForSameLineSearch) {
-            var noteOnString: Note? = nextBeat!.getNoteOnString(note.string)
+            var noteOnString: Note? = try nextBeat!.getNoteOnString(note.string)
             if TypeHelper.isTruthy(noteOnString) {
                 return noteOnString!
             }
             do {
                 var str: Double = note.string
                 while str > 0 {
-                    noteOnString = nextBeat!.getNoteOnString(str)
+                    try noteOnString = nextBeat!.getNoteOnString(str)
                     if TypeHelper.isTruthy(noteOnString) {
                         if noteOnString!.isLeftHandTapped {
                             return noteOnString!
@@ -889,7 +889,7 @@ public final class Note {
             do {
                 var str: Double = note.string
                 while str <= note.beat.voice.bar.staff.tuning.length {
-                    noteOnString = nextBeat!.getNoteOnString(str)
+                    try noteOnString = nextBeat!.getNoteOnString(str)
                     if TypeHelper.isTruthy(noteOnString) {
                         if noteOnString!.isLeftHandTapped {
                             return noteOnString!
@@ -904,11 +904,11 @@ public final class Note {
         return nil
     }
 
-    public static func findTieOrigin(_ note: Note) -> Note? {
+    public static func findTieOrigin(_ note: Note) throws -> Note? {
         var previousBeat: Beat? = note.beat.previousBeat
         while TypeHelper.isTruthy(TypeHelper.isTruthy(previousBeat) && previousBeat!.voice.bar.index >= note.beat.voice.bar.index - Note._maxOffsetForSameLineSearch) {
             if note.isStringed {
-                let noteOnString: Note? = previousBeat!.getNoteOnString(note.string)
+                let noteOnString: Note? = try previousBeat!.getNoteOnString(note.string)
                 if TypeHelper.isTruthy(noteOnString) {
                     return noteOnString!
                 }
@@ -918,7 +918,7 @@ public final class Note {
                         return previousBeat!.notes[(note.index).toInt()]
                     }
                 } else {
-                    let noteWithValue: Note? = previousBeat!.getNoteWithRealValue(note.realValue)
+                    let noteWithValue: Note? = try previousBeat!.getNoteWithRealValue(note.realValue)
                     if TypeHelper.isTruthy(noteWithValue) {
                         return noteWithValue!
                     }
@@ -933,7 +933,7 @@ public final class Note {
 
     private var _noteIdBag: NoteIdBag? = nil
 
-    public func chain(_ sharedDataBag: Map<String, Any?>? = nil) {
+    public func chain(_ sharedDataBag: Map<String, Any?>? = nil) throws {
         if sharedDataBag == nil {
             return
         }
@@ -949,19 +949,19 @@ public final class Note {
                 noteIdLookup.set(self.id, self)
             }
             if self._noteIdBag!.hammerPullOriginNoteId != -1.0 {
-                self.hammerPullOrigin = noteIdLookup.get(self._noteIdBag!.hammerPullOriginNoteId)!
+                try self.hammerPullOrigin = jsNonNull(noteIdLookup.get(self._noteIdBag!.hammerPullOriginNoteId))
                 self.hammerPullOrigin!.hammerPullDestination = self
             }
             if self._noteIdBag!.tieOriginNoteId != -1.0 {
-                self.tieOrigin = noteIdLookup.get(self._noteIdBag!.tieOriginNoteId)!
+                try self.tieOrigin = jsNonNull(noteIdLookup.get(self._noteIdBag!.tieOriginNoteId))
                 self.tieOrigin!.tieDestination = self
             }
             if self._noteIdBag!.slurOriginNoteId != -1.0 {
-                self.slurOrigin = noteIdLookup.get(self._noteIdBag!.slurOriginNoteId)!
+                try self.slurOrigin = jsNonNull(noteIdLookup.get(self._noteIdBag!.slurOriginNoteId))
                 self.slurOrigin!.slurDestination = self
             }
             if self._noteIdBag!.slideOriginNoteId != -1.0 {
-                self.slideOrigin = noteIdLookup.get(self._noteIdBag!.slideOriginNoteId)!
+                try self.slideOrigin = jsNonNull(noteIdLookup.get(self._noteIdBag!.slideOriginNoteId))
                 self.slideOrigin!.slideTarget = self
             }
             self._noteIdBag = nil
@@ -969,7 +969,7 @@ public final class Note {
             if !self.isTieDestination && self.tieOrigin == nil {
                 return
             }
-            let tieOrigin: Note? = self.tieOrigin ?? Note.findTieOrigin(self)
+            let tieOrigin: Note? = try self.tieOrigin ?? Note.findTieOrigin(self)
             if !TypeHelper.isTruthy(tieOrigin) {
                 self.isTieDestination = false
             } else {

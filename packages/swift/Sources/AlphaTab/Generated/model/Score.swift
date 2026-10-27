@@ -180,10 +180,10 @@ public final class Score {
         self.tracks.push(track)
     }
 
-    public func finish(_ settings: Settings) {
+    public func finish(_ settings: Settings) throws {
         let sharedDataBag: Map<String, Any?> = Map<String, Any?>()
         for t in self.tracks {
-            t.finish(settings, sharedDataBag)
+            try t.finish(settings, sharedDataBag)
         }
         var barNumber: Double = 1.0
         for mb in self.masterBars {
@@ -197,14 +197,14 @@ public final class Score {
                 mb._realBarNumber = barNumber
                 barNumber += 1
             }
-            mb.finish(sharedDataBag)
+            try mb.finish(sharedDataBag)
         }
     }
 
     /**
      * Applies the given list of  to this song.
      */
-    public func applyFlatSyncPoints(_ syncPoints: List<FlatSyncPoint>) {
+    public func applyFlatSyncPoints(_ syncPoints: List<FlatSyncPoint>) throws {
         for b in self.masterBars {
             b.syncPoints = nil
         }
@@ -216,13 +216,13 @@ public final class Score {
             automation.syncPointValue!.millisecondOffset = syncPoint.millisecondOffset
             automation.syncPointValue!.barOccurence = syncPoint.barOccurence
             if syncPoint.barIndex < self.masterBars.length {
-                self.masterBars[(syncPoint.barIndex).toInt()].addSyncPoint(automation)
+                try self.masterBars.jsElement((syncPoint.barIndex).toInt()).addSyncPoint(automation)
             }
         }
         for b in self.masterBars {
             if TypeHelper.isTruthy(b.syncPoints) {
-                b.syncPoints!.sort({ (a: Automation, b: Automation) -> Double in
-                    let occurence: Double = a.syncPointValue!.barOccurence - b.syncPointValue!.barOccurence
+                try b.syncPoints!.sort({ (a: Automation, b: Automation) -> Double in
+                    let occurence: Double = try jsNonNull(a.syncPointValue).barOccurence - jsNonNull(b.syncPointValue).barOccurence
                     if occurence != 0.0 {
                         return occurence
                     }
@@ -235,13 +235,13 @@ public final class Score {
     /**
      * Exports all sync points in this song to a  list.
      */
-    public func exportFlatSyncPoints() -> List<FlatSyncPoint> {
+    public func exportFlatSyncPoints() throws -> List<FlatSyncPoint> {
         let syncPoints: List<FlatSyncPoint> = List<FlatSyncPoint>()
         for masterBar in self.masterBars {
             let masterBarSyncPoints: List<Automation>? = masterBar.syncPoints
             if TypeHelper.isTruthy(masterBarSyncPoints) {
                 for syncPoint in masterBarSyncPoints! {
-                    syncPoints.push(FlatSyncPoint(barIndex: masterBar.index, barPosition: syncPoint.ratioPosition, barOccurence: syncPoint.syncPointValue!.barOccurence, millisecondOffset: syncPoint.syncPointValue!.millisecondOffset))
+                    try syncPoints.push(FlatSyncPoint(barIndex: masterBar.index, barPosition: syncPoint.ratioPosition, barOccurence: jsNonNull(syncPoint.syncPointValue).barOccurence, millisecondOffset: jsNonNull(syncPoint.syncPointValue).millisecondOffset))
                 }
             }
         }

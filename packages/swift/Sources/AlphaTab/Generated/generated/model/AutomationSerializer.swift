@@ -39,7 +39,7 @@ internal final class AutomationSerializer {
             obj.isLinear = (v! as! Bool)
             return true
         case "type":
-            try obj.type = JsonHelperPartials.parseEnum(v, AutomationType.self)!
+            try obj.type = jsNonNull(JsonHelperPartials.parseEnum(v, AutomationType.self))
             return true
         case "value":
             obj.value = TypeHelper.unknownToNumber(v)

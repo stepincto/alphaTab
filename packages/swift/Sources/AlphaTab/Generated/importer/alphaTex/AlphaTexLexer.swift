@@ -41,7 +41,7 @@ public final class AlphaTexLexer {
         self._codepoint = self._codepoints.length > 0 ? self._codepoints[0] : AlphaTexLexer._eof
     }
 
-    public func peekToken() -> AlphaTexAstNode? {
+    public func peekToken() throws -> AlphaTexAstNode? {
         if self.fatalError {
             return nil
         }
@@ -49,12 +49,12 @@ public final class AlphaTexLexer {
         if TypeHelper.isTruthy(peeked) {
             return peeked!
         }
-        peeked = self._readToken()
+        try peeked = self._readToken()
         self._peekedToken = peeked
         return peeked
     }
 
-    public func extendToFloat(_ peekedNode: AlphaTexNumberLiteral) -> AlphaTexNumberLiteral {
+    public func extendToFloat(_ peekedNode: AlphaTexNumberLiteral) throws -> AlphaTexNumberLiteral {
         if self._codepoint != 46.0 || self._offset + 1.0 >= self._codepoints.length || !AlphaTexLexer._isDigit(self._codepoints[(self._offset + 1.0).toInt()]) {
             return peekedNode
         }
@@ -70,7 +70,7 @@ public final class AlphaTexLexer {
         self._col += characters
         self._nextCodepoint()
         peekedNode.end = self._currentLexerLocation()
-        peekedNode.value = Number.parseFloat(String.fromCodePoint(self._codepoints.slice(peekedNode.start!.offset, peekedNode.end!.offset)))
+        try peekedNode.value = Number.parseFloat(String.fromCodePoint(self._codepoints.slice(jsNonNull(peekedNode.start).offset, peekedNode.end!.offset)))
         return peekedNode
     }
 
@@ -116,12 +116,12 @@ public final class AlphaTexLexer {
         return AlphaTexAstNodeLocation(line: self._line, col: self._col, offset: self._offset)
     }
 
-    private func _readToken() -> AlphaTexAstNode? {
+    private func _readToken() throws -> AlphaTexAstNode? {
         self._leadingComments = nil
         while self._codepoint != AlphaTexLexer._eof && !self.fatalError {
             self._tokenStart = self._currentLexerLocation()
             if AlphaTexLexer._terminalTokens.has(self._codepoint) {
-                let token: AlphaTexAstNode? = AlphaTexLexer._terminalTokens.get(self._codepoint)!(self)
+                let token: AlphaTexAstNode? = try jsNonNull(AlphaTexLexer._terminalTokens.get(self._codepoint))(self)
                 if TypeHelper.isTruthy(token) {
                     self._trailingCommentNode = token!
                     return token!
@@ -137,12 +137,12 @@ public final class AlphaTexLexer {
         return nil
     }
 
-    private func _comment() -> AlphaTexAstNode? {
+    private func _comment() throws -> AlphaTexAstNode? {
         self._codepoint = self._nextCodepoint()
         if self._codepoint == 47.0 {
-            self._singleLineComment()
+            try self._singleLineComment()
         } else if self._codepoint == 42.0 {
-            self._multiLineComment()
+            try self._multiLineComment()
         } else {
             self.lexerDiagnostics.push(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT001, message: "Unexpected character at comment start, expected '//' or '/*' but found '/\((String.fromCodePoint(self._codepoint)).toTemplate())'", start: self._tokenStart, end: self._currentLexerLocation()))
             self.fatalError = true
@@ -151,7 +151,7 @@ public final class AlphaTexLexer {
     }
 
     nonisolated(unsafe) private static var _terminalTokens: Map<Double, (AlphaTexLexer) -> AlphaTexAstNode?> = Map<Double, (AlphaTexLexer) -> AlphaTexAstNode?>([(47.0, { (l: AlphaTexLexer) -> AlphaTexAstNode? in
-        return l._comment()
+        return try! l._comment()
     }), (34.0, { (l: AlphaTexLexer) -> AlphaTexStringLiteral? in
         return l._string()
     }), (39.0, { (l: AlphaTexLexer) -> AlphaTexStringLiteral? in
@@ -297,7 +297,7 @@ public final class AlphaTexLexer {
         return stringToken
     }
 
-    private func _multiLineComment() {
+    private func _multiLineComment() throws {
         let trailingCommentNode: AlphaTexAstNode? = self._trailingCommentNode
         let comment: AlphaTexComment = AlphaTexComment(multiLine: true, text: "", start: self._tokenStart, end: self._currentLexerLocation())
         while self._codepoint != AlphaTexLexer._eof {
@@ -308,16 +308,16 @@ public final class AlphaTexLexer {
                     break
                 } else {
                     comment.text += "*\((String.fromCodePoint(self._codepoint)).toTemplate())"
-                    comment.end!.line = self._line
-                    comment.end!.col = self._col
-                    comment.end!.offset = self._offset
+                    try jsNonNull(comment.end).line = self._line
+                    try jsNonNull(comment.end).col = self._col
+                    try jsNonNull(comment.end).offset = self._offset
                 }
             } else {
                 self._codepoint = self._nextCodepoint()
                 comment.text += String.fromCodePoint(self._codepoint)
-                comment.end!.line = self._line
-                comment.end!.col = self._col
-                comment.end!.offset = self._offset
+                try jsNonNull(comment.end).line = self._line
+                try jsNonNull(comment.end).col = self._col
+                try jsNonNull(comment.end).offset = self._offset
             }
         }
         if TypeHelper.isTruthy(trailingCommentNode) {
@@ -373,7 +373,7 @@ public final class AlphaTexLexer {
         return identifier
     }
 
-    private func _singleLineComment() {
+    private func _singleLineComment() throws {
         let trailingCommentNode: AlphaTexAstNode? = self._trailingCommentNode
         let comment: AlphaTexComment = AlphaTexComment(multiLine: false, text: "", start: self._tokenStart, end: self._currentLexerLocation())
         var codepoint: Double = self._codepoint
@@ -381,9 +381,9 @@ public final class AlphaTexLexer {
             codepoint = self._nextCodepoint()
             if codepoint != 10.0 && codepoint != AlphaTexLexer._eof {
                 comment.text += String.fromCodePoint(codepoint)
-                comment.end!.line = self._line
-                comment.end!.col = self._col
-                comment.end!.offset = self._offset
+                try jsNonNull(comment.end).line = self._line
+                try jsNonNull(comment.end).col = self._col
+                try jsNonNull(comment.end).offset = self._offset
             } else {
                 break
             }

@@ -38,10 +38,10 @@ public final class BarBounds {
     /**
      * Adds a new beat to this lookup.
      */
-    public func addBeat(_ bounds: BeatBounds) {
+    public func addBeat(_ bounds: BeatBounds) throws {
         bounds.barBounds = self
         self.beats.push(bounds)
-        self.masterBarBounds.addBeat(bounds)
+        try self.masterBarBounds.addBeat(bounds)
     }
 
     /**

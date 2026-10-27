@@ -11,62 +11,62 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
 
     nonisolated(unsafe) private static let _timeSignatureDenominators: Set<Double> = Set<Double>([1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0])
 
-    public func applyScoreMetaData(_ importer: any IAlphaTexImporter, _ score: Score, _ metaData: AlphaTexMetaDataNode) -> ApplyNodeResult {
-        let result: ApplyNodeResult? = self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.scoreMetaDataSignatures), metaData, metaData.tag.tag.text.lowercase(), metaData.arguments)
+    public func applyScoreMetaData(_ importer: any IAlphaTexImporter, _ score: Score, _ metaData: AlphaTexMetaDataNode) throws -> ApplyNodeResult {
+        let result: ApplyNodeResult? = try self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.scoreMetaDataSignatures), metaData, metaData.tag.tag.text.lowercase(), metaData.arguments)
         if result != nil {
             return result!
         }
         switch metaData.tag.tag.text.lowercase() {
         case "title":
-            score.title = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
-            self._headerFooterStyle(importer, score, ScoreSubElement.Title, metaData)
+            try score.title = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
+            try self._headerFooterStyle(importer, score, ScoreSubElement.Title, metaData)
             return ApplyNodeResult.Applied
         case "subtitle":
-            score.subTitle = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
-            self._headerFooterStyle(importer, score, ScoreSubElement.SubTitle, metaData)
+            try score.subTitle = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
+            try self._headerFooterStyle(importer, score, ScoreSubElement.SubTitle, metaData)
             return ApplyNodeResult.Applied
         case "artist":
-            score.artist = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
-            self._headerFooterStyle(importer, score, ScoreSubElement.Artist, metaData)
+            try score.artist = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
+            try self._headerFooterStyle(importer, score, ScoreSubElement.Artist, metaData)
             return ApplyNodeResult.Applied
         case "album":
-            score.album = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
-            self._headerFooterStyle(importer, score, ScoreSubElement.Album, metaData)
+            try score.album = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
+            try self._headerFooterStyle(importer, score, ScoreSubElement.Album, metaData)
             return ApplyNodeResult.Applied
         case "words":
-            score.words = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
-            self._headerFooterStyle(importer, score, ScoreSubElement.Words, metaData)
+            try score.words = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
+            try self._headerFooterStyle(importer, score, ScoreSubElement.Words, metaData)
             return ApplyNodeResult.Applied
         case "music":
-            score.music = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
-            self._headerFooterStyle(importer, score, ScoreSubElement.Music, metaData)
+            try score.music = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
+            try self._headerFooterStyle(importer, score, ScoreSubElement.Music, metaData)
             return ApplyNodeResult.Applied
         case "copyright":
-            score.copyright = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
-            self._headerFooterStyle(importer, score, ScoreSubElement.Copyright, metaData)
+            try score.copyright = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
+            try self._headerFooterStyle(importer, score, ScoreSubElement.Copyright, metaData)
             return ApplyNodeResult.Applied
         case "instructions":
-            score.instructions = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
+            try score.instructions = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
             return ApplyNodeResult.Applied
         case "notices":
-            score.notices = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
+            try score.notices = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
             return ApplyNodeResult.Applied
         case "tab":
-            score.tab = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
-            self._headerFooterStyle(importer, score, ScoreSubElement.Transcriber, metaData)
+            try score.tab = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
+            try self._headerFooterStyle(importer, score, ScoreSubElement.Transcriber, metaData)
             return ApplyNodeResult.Applied
         case "copyright2":
-            self._headerFooterStyle(importer, score, ScoreSubElement.CopyrightSecondLine, metaData, 0.0)
+            try self._headerFooterStyle(importer, score, ScoreSubElement.CopyrightSecondLine, metaData, 0.0)
             return ApplyNodeResult.Applied
         case "wordsandmusic":
-            self._headerFooterStyle(importer, score, ScoreSubElement.WordsAndMusic, metaData, 0.0)
+            try self._headerFooterStyle(importer, score, ScoreSubElement.WordsAndMusic, metaData, 0.0)
             return ApplyNodeResult.Applied
         case "defaultsystemslayout":
-            score.defaultSystemsLayout = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try score.defaultSystemsLayout = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             return ApplyNodeResult.Applied
         case "systemslayout":
-            for v in metaData.arguments!.arguments {
-                score.systemsLayout.push((v as! AlphaTexNumberLiteral).value)
+            for v in try jsNonNull(metaData.arguments).arguments {
+                try score.systemsLayout.push((jsCast(v, AlphaTexNumberLiteral.self)).value)
             }
             return ApplyNodeResult.Applied
         case "hidedynamics":
@@ -79,7 +79,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             score.stylesheet.extendBarLines = true
             return ApplyNodeResult.Applied
         case "bracketextendmode":
-            let bracketExtendMode: BracketExtendMode? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "bracket extend mode", AlphaTex1EnumMappings.bracketExtendMode)
+            let bracketExtendMode: BracketExtendMode? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "bracket extend mode", AlphaTex1EnumMappings.bracketExtendMode)
             if bracketExtendMode == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
@@ -89,7 +89,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             score.stylesheet.useSystemSignSeparator = true
             return ApplyNodeResult.Applied
         case "tuningdisplaymode":
-            let tuningDisplayMode: TuningDisplayMode? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "tuning display mode", AlphaTex1EnumMappings.tuningDisplayMode)
+            let tuningDisplayMode: TuningDisplayMode? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "tuning display mode", AlphaTex1EnumMappings.tuningDisplayMode)
             if tuningDisplayMode == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
@@ -99,49 +99,49 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             score.stylesheet.multiTrackMultiBarRest = true
             return ApplyNodeResult.Applied
         case "singletracktracknamepolicy":
-            let singleTrackTrackNamePolicy: TrackNamePolicy? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "track name policy", AlphaTex1EnumMappings.trackNamePolicy)
+            let singleTrackTrackNamePolicy: TrackNamePolicy? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "track name policy", AlphaTex1EnumMappings.trackNamePolicy)
             if singleTrackTrackNamePolicy == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             score.stylesheet.singleTrackTrackNamePolicy = singleTrackTrackNamePolicy!
             return ApplyNodeResult.Applied
         case "multitracktracknamepolicy":
-            let multiTrackTrackNamePolicy: TrackNamePolicy? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "track name policy", AlphaTex1EnumMappings.trackNamePolicy)
+            let multiTrackTrackNamePolicy: TrackNamePolicy? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "track name policy", AlphaTex1EnumMappings.trackNamePolicy)
             if multiTrackTrackNamePolicy == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             score.stylesheet.multiTrackTrackNamePolicy = multiTrackTrackNamePolicy!
             return ApplyNodeResult.Applied
         case "firstsystemtracknamemode":
-            let firstSystemTrackNameMode: TrackNameMode? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "track name mode", AlphaTex1EnumMappings.trackNameMode)
+            let firstSystemTrackNameMode: TrackNameMode? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "track name mode", AlphaTex1EnumMappings.trackNameMode)
             if firstSystemTrackNameMode == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             score.stylesheet.firstSystemTrackNameMode = firstSystemTrackNameMode!
             return ApplyNodeResult.Applied
         case "othersystemstracknamemode":
-            let otherSystemsTrackNameMode: TrackNameMode? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "track name mode", AlphaTex1EnumMappings.trackNameMode)
+            let otherSystemsTrackNameMode: TrackNameMode? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "track name mode", AlphaTex1EnumMappings.trackNameMode)
             if otherSystemsTrackNameMode == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             score.stylesheet.otherSystemsTrackNameMode = otherSystemsTrackNameMode!
             return ApplyNodeResult.Applied
         case "firstsystemtracknameorientation":
-            let firstSystemTrackNameOrientation: TrackNameOrientation? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "track name orientation", AlphaTex1EnumMappings.trackNameOrientation)
+            let firstSystemTrackNameOrientation: TrackNameOrientation? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "track name orientation", AlphaTex1EnumMappings.trackNameOrientation)
             if firstSystemTrackNameOrientation == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             score.stylesheet.firstSystemTrackNameOrientation = firstSystemTrackNameOrientation!
             return ApplyNodeResult.Applied
         case "othersystemstracknameorientation":
-            let otherSystemsTrackNameOrientation: TrackNameOrientation? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "track name orientation", AlphaTex1EnumMappings.trackNameOrientation)
+            let otherSystemsTrackNameOrientation: TrackNameOrientation? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "track name orientation", AlphaTex1EnumMappings.trackNameOrientation)
             if otherSystemsTrackNameOrientation == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             score.stylesheet.otherSystemsTrackNameOrientation = otherSystemsTrackNameOrientation!
             return ApplyNodeResult.Applied
         case "chorddiagramsinscore":
-            score.stylesheet.globalDisplayChordDiagramsInScore = TypeHelper.isTruthy(metaData.arguments) ? AlphaTex1LanguageHandler._booleanLikeValue(metaData.arguments!.arguments, 0.0) : true
+            try score.stylesheet.globalDisplayChordDiagramsInScore = TypeHelper.isTruthy(metaData.arguments) ? AlphaTex1LanguageHandler._booleanLikeValue(metaData.arguments!.arguments, 0.0) : true
             return ApplyNodeResult.Applied
         case "hideemptystaves":
             score.stylesheet.hideEmptyStaves = true
@@ -153,21 +153,21 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             score.stylesheet.showSingleStaffBrackets = true
             return ApplyNodeResult.Applied
         case "defaultbarnumberdisplay":
-            let barNumberDisplay: BarNumberDisplay? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "bar number display", AlphaTex1EnumMappings.barNumberDisplay)
+            let barNumberDisplay: BarNumberDisplay? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "bar number display", AlphaTex1EnumMappings.barNumberDisplay)
             if barNumberDisplay == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             score.stylesheet.barNumberDisplay = barNumberDisplay!
             return ApplyNodeResult.Applied
         case "defaultstaffdisplay":
-            self._staffDisplayProperties(importer, metaData, score.stylesheet, nil, nil)
+            try self._staffDisplayProperties(importer, metaData, score.stylesheet, nil, nil)
             return ApplyNodeResult.Applied
         default:
             return ApplyNodeResult.NotAppliedUnrecognizedMarker
         }
     }
 
-    private func _checkArgumentTypes(_ importer: any IAlphaTexImporter, _ lookupList: List<Map<String, List<AlphaTexSignatureDefinition>?>>, _ parent: AlphaTexAstNode, _ tag: String, _ args: AlphaTexArgumentList?) -> ApplyNodeResult? {
+    private func _checkArgumentTypes(_ importer: any IAlphaTexImporter, _ lookupList: List<Map<String, List<AlphaTexSignatureDefinition>?>>, _ parent: AlphaTexAstNode, _ tag: String, _ args: AlphaTexArgumentList?) throws -> ApplyNodeResult? {
         let lookup: Map<String, List<AlphaTexSignatureDefinition>?>? = lookupList.find({ (l: Map<String, List<AlphaTexSignatureDefinition>?>) -> Bool in
             return l.has(tag)
         })
@@ -181,20 +181,20 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             }
             return nil
         }
-        if !self._validateArgumentTypes(importer, types!, parent, args) {
+        if try !self._validateArgumentTypes(importer, types!, parent, args) {
             return ApplyNodeResult.NotAppliedSemanticError
         }
         return nil
     }
 
-    public func applyStaffMetaData(_ importer: any IAlphaTexImporter, _ staff: Staff, _ metaData: AlphaTexMetaDataNode) -> ApplyNodeResult {
-        let result: ApplyNodeResult? = self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.staffMetaDataSignatures), metaData, metaData.tag.tag.text.lowercase(), metaData.arguments)
+    public func applyStaffMetaData(_ importer: any IAlphaTexImporter, _ staff: Staff, _ metaData: AlphaTexMetaDataNode) throws -> ApplyNodeResult {
+        let result: ApplyNodeResult? = try self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.staffMetaDataSignatures), metaData, metaData.tag.tag.text.lowercase(), metaData.arguments)
         if result != nil {
             return result!
         }
         switch metaData.tag.tag.text.lowercase() {
         case "capo":
-            staff.capo = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try staff.capo = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             return ApplyNodeResult.Applied
         case "tuning":
             let tuning: List<Double> = List<Double>()
@@ -202,21 +202,21 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             var tuningName: String = ""
             do {
                 var i: Double = 0.0
-                while i < metaData.arguments!.arguments.length {
-                    let v: any IAlphaTexArgumentValue = metaData.arguments!.arguments[(i).toInt()]
-                    let text: String = (v as! AlphaTexTextNode).text
+                while try i < jsNonNull(metaData.arguments).arguments.length {
+                    let v: any IAlphaTexArgumentValue = try jsNonNull(metaData.arguments).arguments[(i).toInt()]
+                    let text: String = try (jsCast(v, AlphaTexTextNode.self)).text
                     switch text {
                     case "piano", "none", "voice":
-                        importer.applyStaffNoteKind(staff, AlphaTexStaffNoteKind.Pitched)
-                        i = metaData.arguments!.arguments.length
+                        try importer.applyStaffNoteKind(staff, AlphaTexStaffNoteKind.Pitched)
+                        try i = jsNonNull(metaData.arguments).arguments.length
                     case "hide":
                         hideTuning = true
                         importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Warning, code: AlphaTexDiagnosticCode.AT305, message: "This value should be rather specified via the properties.", start: v.start, end: v.end))
                     default:
-                        let t: TuningParseResult? = ModelUtils.parseTuning(text)
+                        let t: TuningParseResult? = try ModelUtils.parseTuning(text)
                         if TypeHelper.isTruthy(t) {
                             tuning.push(t!.realValue)
-                        } else if i == metaData.arguments!.arguments.length - 1.0 && tuning.length > 0 {
+                        } else if try i == jsNonNull(metaData.arguments).arguments.length - 1.0 && tuning.length > 0 {
                             tuningName = text
                             importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Warning, code: AlphaTexDiagnosticCode.AT305, message: "This value should be rather specified via the properties.", start: v.start, end: v.end))
                         } else {
@@ -233,7 +233,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             staff.stringTuning = Tuning()
             staff.stringTuning.tunings = tuning
             staff.stringTuning.name = tuningName
-            self._tuningProperties(importer, staff, staff.stringTuning, metaData)
+            try self._tuningProperties(importer, staff, staff.stringTuning, metaData)
             if hideTuning {
                 if !TypeHelper.isTruthy(staff.track.score.stylesheet.perTrackDisplayTuning) {
                     staff.track.score.stylesheet.perTrackDisplayTuning = Map<Double, Bool>()
@@ -243,38 +243,38 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             return ApplyNodeResult.Applied
         case "instrument":
             importer.state.staffTuningApplied.delete(staff)
-            self._readTrackInstrument(importer, staff.track, metaData.arguments!)
+            try self._readTrackInstrument(importer, staff.track, jsNonNull(metaData.arguments))
             return ApplyNodeResult.Applied
         case "staffdisplay":
-            self._staffDisplayProperties(importer, metaData, nil, staff, nil)
+            try self._staffDisplayProperties(importer, metaData, nil, staff, nil)
             return ApplyNodeResult.Applied
         case "bank":
-            staff.track.playbackInfo.bank = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try staff.track.playbackInfo.bank = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             return ApplyNodeResult.Applied
         case "lyrics":
             let lyrics: Lyrics = Lyrics()
             lyrics.startBar = 0.0
             lyrics.text = ""
-            if metaData.arguments!.arguments.length == 2.0 {
-                lyrics.startBar = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
-                lyrics.text = (metaData.arguments!.arguments[1] as! AlphaTexTextNode).text
+            if try jsNonNull(metaData.arguments).arguments.length == 2.0 {
+                try lyrics.startBar = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
+                try lyrics.text = (jsCast(jsNonNull(metaData.arguments).arguments[1], AlphaTexTextNode.self)).text
             } else {
-                lyrics.text = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
+                try lyrics.text = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
             }
-            importer.state.lyrics.get(staff.track.index)!.push(lyrics)
+            try jsNonNull(importer.state.lyrics.get(staff.track.index)).push(lyrics)
             return ApplyNodeResult.Applied
         case "chord":
             let chord: Chord = Chord()
-            self._chordProperties(importer, chord, metaData)
-            chord.name = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
+            try self._chordProperties(importer, chord, metaData)
+            try chord.name = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
             do {
                 var i: Double = 1.0
-                while i < metaData.arguments!.arguments.length {
-                    let v: any IAlphaTexArgumentValue = metaData.arguments!.arguments[(i).toInt()]
+                while try i < jsNonNull(metaData.arguments).arguments.length {
+                    let v: any IAlphaTexArgumentValue = try jsNonNull(metaData.arguments).arguments[(i).toInt()]
                     if v.nodeType == AlphaTexNodeType.Number {
-                        chord.strings.push((v as! AlphaTexNumberLiteral).value)
+                        try chord.strings.push((jsCast(v, AlphaTexNumberLiteral.self)).value)
                     } else if v.nodeType == AlphaTexNodeType.Ident {
-                        let txt: String = (v as! AlphaTexIdentifier).text
+                        let txt: String = try (jsCast(v, AlphaTexIdentifier.self)).text
                         if txt == "x" {
                             chord.strings.push(-1.0)
                         } else {
@@ -288,7 +288,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             return ApplyNodeResult.Applied
         case "articulation":
             let percussionArticulationNames: Map<String, String> = importer.state.percussionArticulationNames
-            let articulationName: String = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
+            let articulationName: String = try (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
             if articulationName == "defaults" {
                 for (defaultName, defaultValue) in PercussionMapper.instrumentArticulationNames {
                     percussionArticulationNames.set(defaultName.lowercase(), defaultValue)
@@ -296,9 +296,9 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                 }
                 return ApplyNodeResult.Applied
             }
-            if metaData.arguments!.arguments.length == 2.0 {
-                let number: Double = (metaData.arguments!.arguments[1] as! AlphaTexNumberLiteral).value
-                let articulation: InstrumentArticulation? = PercussionMapper.getArticulationById(number)
+            if try jsNonNull(metaData.arguments).arguments.length == 2.0 {
+                let number: Double = try (jsCast(jsNonNull(metaData.arguments).arguments[1], AlphaTexNumberLiteral.self)).value
+                let articulation: InstrumentArticulation? = try PercussionMapper.getArticulationById(number)
                 if TypeHelper.isTruthy(articulation) {
                     percussionArticulationNames.set(articulationName.lowercase(), articulation!.uniqueId)
                     return ApplyNodeResult.Applied
@@ -306,52 +306,52 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                     let articulations: String = Array.from(PercussionMapper.instrumentArticulationIds()).map({ (n: Double) -> String in
                         return "\((n).toTemplate())"
                     }).join(",")
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected articulation value '\((number).toTemplate())', expected: \((articulations).toTemplate())", start: metaData.arguments!.arguments[1].start, end: metaData.arguments!.arguments[1].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected articulation value '\((number).toTemplate())', expected: \((articulations).toTemplate())", start: jsNonNull(metaData.arguments).arguments.jsElement(1).start, end: jsNonNull(metaData.arguments).arguments.jsElement(1).end))
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
             }
             return ApplyNodeResult.Applied
         case "accidentals":
-            return AlphaTex1LanguageHandler._handleAccidentalMode(importer, metaData.arguments!)
+            return try AlphaTex1LanguageHandler._handleAccidentalMode(importer, jsNonNull(metaData.arguments))
         case "displaytranspose":
-            staff.displayTranspositionPitch = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value * -1.0
+            try staff.displayTranspositionPitch = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value * -1.0
             importer.state.staffHasExplicitDisplayTransposition.add(staff)
             return ApplyNodeResult.Applied
         case "transpose":
-            staff.transpositionPitch = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value * -1.0
+            try staff.transpositionPitch = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value * -1.0
             return ApplyNodeResult.Applied
         default:
             return ApplyNodeResult.NotAppliedUnrecognizedMarker
         }
     }
 
-    public func applyBarMetaData(_ importer: any IAlphaTexImporter, _ bar: Bar, _ metaData: AlphaTexMetaDataNode) -> ApplyNodeResult {
-        let result: ApplyNodeResult? = self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.barMetaDataSignatures), metaData, metaData.tag.tag.text.lowercase(), metaData.arguments)
+    public func applyBarMetaData(_ importer: any IAlphaTexImporter, _ bar: Bar, _ metaData: AlphaTexMetaDataNode) throws -> ApplyNodeResult {
+        let result: ApplyNodeResult? = try self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.barMetaDataSignatures), metaData, metaData.tag.tag.text.lowercase(), metaData.arguments)
         if result != nil {
             return result!
         }
         switch metaData.tag.tag.text.lowercase() {
         case "sync":
-            let syncPoint: FlatSyncPoint = self._buildSyncPoint(metaData)
+            let syncPoint: FlatSyncPoint = try self._buildSyncPoint(metaData)
             importer.state.syncPoints.push(syncPoint)
             return ApplyNodeResult.Applied
         case "tempo":
             var ti: Double = 0.0
-            let tempo: Double = (metaData.arguments!.arguments[(jsPostInc(&ti)).toInt()] as! AlphaTexNumberLiteral).value
+            let tempo: Double = try (jsCast(jsNonNull(metaData.arguments).arguments[(jsPostInc(&ti)).toInt()], AlphaTexNumberLiteral.self)).value
             var tempoLabel: String = ""
             var isVisible: Bool = true
             var ratioPosition: Double = 0.0
-            while ti < metaData.arguments!.arguments.length {
-                switch metaData.arguments!.arguments[(ti).toInt()].nodeType {
+            while try ti < jsNonNull(metaData.arguments).arguments.length {
+                switch try jsNonNull(metaData.arguments).arguments.jsElement((ti).toInt()).nodeType {
                 case AlphaTexNodeType.Ident, AlphaTexNodeType.String:
-                    let txt: String = (metaData.arguments!.arguments[(ti).toInt()] as! AlphaTexTextNode).text
+                    let txt: String = try (jsCast(jsNonNull(metaData.arguments).arguments[(ti).toInt()], AlphaTexTextNode.self)).text
                     if txt == "hide" {
                         isVisible = false
                     } else {
                         tempoLabel = txt
                     }
                 case AlphaTexNodeType.Number:
-                    ratioPosition = (metaData.arguments!.arguments[(ti).toInt()] as! AlphaTexNumberLiteral).value
+                    try ratioPosition = (jsCast(jsNonNull(metaData.arguments).arguments[(ti).toInt()], AlphaTexNumberLiteral.self)).value
                 default:
                     break
                 }
@@ -372,12 +372,12 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             tempoAutomation!.isVisible = isVisible
             return ApplyNodeResult.Applied
         case "rc":
-            bar.masterBar.repeatCount = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try bar.masterBar.repeatCount = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             return ApplyNodeResult.Applied
         case "ae":
-            for e in metaData.arguments!.arguments {
+            for e in try jsNonNull(metaData.arguments).arguments {
                 if e.nodeType == AlphaTexNodeType.Number {
-                    let num: Double = (e as! AlphaTexNumberLiteral).value
+                    let num: Double = try (jsCast(e, AlphaTexNumberLiteral.self)).value
                     if num < 1 || num > 31 {
                         importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT211, message: "Value is out of valid range. Allowed range: %s, Actual Value: %s", start: e.start, end: e.end))
                         return ApplyNodeResult.NotAppliedSemanticError
@@ -390,25 +390,25 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             }
             return ApplyNodeResult.Applied
         case "ts":
-            switch metaData.arguments!.arguments[0].nodeType {
+            switch try jsNonNull(metaData.arguments).arguments.jsElement(0).nodeType {
             case AlphaTexNodeType.Number:
-                bar.masterBar.timeSignatureNumerator = jsOr((metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value, 0)
+                try bar.masterBar.timeSignatureNumerator = jsOr((jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value, 0)
                 if bar.masterBar.timeSignatureNumerator < 1 || bar.masterBar.timeSignatureNumerator > 32 {
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT211, message: "Value is out of valid range. Allowed range: 1-32, Actual Value: \((bar.masterBar.timeSignatureNumerator).toTemplate())", start: metaData.arguments!.arguments[0].start, end: metaData.arguments!.arguments[0].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT211, message: "Value is out of valid range. Allowed range: 1-32, Actual Value: \((bar.masterBar.timeSignatureNumerator).toTemplate())", start: jsNonNull(metaData.arguments).arguments.jsElement(0).start, end: jsNonNull(metaData.arguments).arguments.jsElement(0).end))
                 }
-                bar.masterBar.timeSignatureDenominator = jsOr((metaData.arguments!.arguments[1] as! AlphaTexNumberLiteral).value, 0)
+                try bar.masterBar.timeSignatureDenominator = jsOr((jsCast(jsNonNull(metaData.arguments).arguments[1], AlphaTexNumberLiteral.self)).value, 0)
                 if !AlphaTex1LanguageHandler._timeSignatureDenominators.has(bar.masterBar.timeSignatureDenominator) {
                     let valueList: String = Array.from(AlphaTex1LanguageHandler._timeSignatureDenominators).join(", ")
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT211, message: "Value is out of valid range. Allowed range: \((valueList).toTemplate()), Actual Value: \((bar.masterBar.timeSignatureDenominator).toTemplate())", start: metaData.arguments!.arguments[0].start, end: metaData.arguments!.arguments[0].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT211, message: "Value is out of valid range. Allowed range: \((valueList).toTemplate()), Actual Value: \((bar.masterBar.timeSignatureDenominator).toTemplate())", start: jsNonNull(metaData.arguments).arguments.jsElement(0).start, end: jsNonNull(metaData.arguments).arguments.jsElement(0).end))
                 }
             case AlphaTexNodeType.Ident, AlphaTexNodeType.String:
-                let tsValue: String = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
+                let tsValue: String = try (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
                 if tsValue.lowercase() == "common" {
                     bar.masterBar.timeSignatureCommon = true
                     bar.masterBar.timeSignatureNumerator = 4.0
                     bar.masterBar.timeSignatureDenominator = 4.0
                 } else {
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected time signature value '\((tsValue).toTemplate())', expected: common or two numbers", start: metaData.arguments!.arguments[0].start, end: metaData.arguments!.arguments[0].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected time signature value '\((tsValue).toTemplate())', expected: common or two numbers", start: jsNonNull(metaData.arguments).arguments.jsElement(0).start, end: jsNonNull(metaData.arguments).arguments.jsElement(0).end))
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
             default:
@@ -416,13 +416,13 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             }
             return ApplyNodeResult.Applied
         case "beaming":
-            return self._parseBeamingRule(importer, metaData, bar.masterBar)
+            return try self._parseBeamingRule(importer, metaData, bar.masterBar)
         case "ks":
-            let keySignature: KeySignature? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "key signature", AlphaTex1EnumMappings.keySignature)
+            let keySignature: KeySignature? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "key signature", AlphaTex1EnumMappings.keySignature)
             if keySignature == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
-            let keySignatureType: KeySignatureType? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "key signature type", AlphaTex1EnumMappings.keySignatureType)
+            let keySignatureType: KeySignatureType? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "key signature type", AlphaTex1EnumMappings.keySignatureType)
             if keySignatureType == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
@@ -430,15 +430,15 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             bar.keySignatureType = keySignatureType!
             return ApplyNodeResult.Applied
         case "clef":
-            switch metaData.arguments!.arguments[0].nodeType {
+            switch try jsNonNull(metaData.arguments).arguments.jsElement(0).nodeType {
             case AlphaTexNodeType.Ident, AlphaTexNodeType.String:
-                let clef: Clef? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "clef", AlphaTex1EnumMappings.clef)
+                let clef: Clef? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "clef", AlphaTex1EnumMappings.clef)
                 if clef == nil {
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
                 bar.clef = clef!
             case AlphaTexNodeType.Number:
-                let clefValue: Double = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                let clefValue: Double = try (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
                 switch clefValue {
                 case 0.0:
                     bar.clef = Clef.Neutral
@@ -451,7 +451,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                 case 60.0:
                     bar.clef = Clef.C4
                 default:
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected clef value '\((clefValue).toTemplate())', expected: \((Array.from(AlphaTex1EnumMappings.clef.keys()).join(",")).toTemplate())", start: metaData.arguments!.arguments[0].start, end: metaData.arguments!.arguments[0].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected clef value '\((clefValue).toTemplate())', expected: \((Array.from(AlphaTex1EnumMappings.clef.keys()).join(",")).toTemplate())", start: jsNonNull(metaData.arguments).arguments.jsElement(0).start, end: jsNonNull(metaData.arguments).arguments.jsElement(0).end))
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
             default:
@@ -460,24 +460,24 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             return ApplyNodeResult.Applied
         case "section":
             let section: Section = Section()
-            if metaData.arguments!.arguments.length == 1.0 {
-                section.text = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
+            if try jsNonNull(metaData.arguments).arguments.length == 1.0 {
+                try section.text = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
             } else {
-                section.marker = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
-                section.text = (metaData.arguments!.arguments[1] as! AlphaTexTextNode).text
+                try section.marker = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
+                try section.text = (jsCast(jsNonNull(metaData.arguments).arguments[1], AlphaTexTextNode.self)).text
             }
             bar.masterBar.section = section
             return ApplyNodeResult.Applied
         case "tf":
-            switch metaData.arguments!.arguments[0].nodeType {
+            switch try jsNonNull(metaData.arguments).arguments.jsElement(0).nodeType {
             case AlphaTexNodeType.Ident, AlphaTexNodeType.String:
-                let tripletFeel: TripletFeel? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "triplet feel", AlphaTex1EnumMappings.tripletFeel)
+                let tripletFeel: TripletFeel? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "triplet feel", AlphaTex1EnumMappings.tripletFeel)
                 if tripletFeel == nil {
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
                 bar.masterBar.tripletFeel = tripletFeel!
             case AlphaTexNodeType.Number:
-                let tripletFeelValue: Double = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                let tripletFeelValue: Double = try (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
                 switch tripletFeelValue {
                 case 0.0:
                     bar.masterBar.tripletFeel = TripletFeel.NoTripletFeel
@@ -494,7 +494,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                 case 6.0:
                     bar.masterBar.tripletFeel = TripletFeel.Scottish8th
                 default:
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected triplet feel value '\((tripletFeelValue).toTemplate())', expected: \((Array.from(AlphaTex1EnumMappings.tripletFeel.keys()).join(",")).toTemplate())", start: metaData.arguments!.arguments[0].start, end: metaData.arguments!.arguments[0].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected triplet feel value '\((tripletFeelValue).toTemplate())', expected: \((Array.from(AlphaTex1EnumMappings.tripletFeel.keys()).join(",")).toTemplate())", start: jsNonNull(metaData.arguments).arguments.jsElement(0).start, end: jsNonNull(metaData.arguments).arguments.jsElement(0).end))
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
             default:
@@ -502,68 +502,68 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             }
             return ApplyNodeResult.Applied
         case "barlineleft":
-            let barLineLeft: BarLineStyle? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "bar line", AlphaTex1EnumMappings.barLineStyle)
+            let barLineLeft: BarLineStyle? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "bar line", AlphaTex1EnumMappings.barLineStyle)
             if barLineLeft == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             bar.barLineLeft = barLineLeft!
             return ApplyNodeResult.Applied
         case "barlineright":
-            let barLineRight: BarLineStyle? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "bar line", AlphaTex1EnumMappings.barLineStyle)
+            let barLineRight: BarLineStyle? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "bar line", AlphaTex1EnumMappings.barLineStyle)
             if barLineRight == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             bar.barLineRight = barLineRight!
             return ApplyNodeResult.Applied
         case "accidentals":
-            return AlphaTex1LanguageHandler._handleAccidentalMode(importer, metaData.arguments!)
+            return try AlphaTex1LanguageHandler._handleAccidentalMode(importer, jsNonNull(metaData.arguments))
         case "voicemode":
-            return AlphaTex1LanguageHandler._handleVoiceMode(importer, metaData.arguments!)
+            return try AlphaTex1LanguageHandler._handleVoiceMode(importer, jsNonNull(metaData.arguments))
         case "jump":
-            let direction: Direction? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "direction", AlphaTex1EnumMappings.direction)
+            let direction: Direction? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "direction", AlphaTex1EnumMappings.direction)
             if direction == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             bar.masterBar.addDirection(direction!)
             return ApplyNodeResult.Applied
         case "ottava":
-            let ottava: Ottavia? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "clef ottava", AlphaTex1EnumMappings.ottavia)
+            let ottava: Ottavia? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "clef ottava", AlphaTex1EnumMappings.ottavia)
             if ottava == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             bar.clefOttava = ottava!
             return ApplyNodeResult.Applied
         case "simile":
-            let simile: SimileMark? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "simile mark", AlphaTex1EnumMappings.simileMark)
+            let simile: SimileMark? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "simile mark", AlphaTex1EnumMappings.simileMark)
             if simile == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             bar.simileMark = simile!
             return ApplyNodeResult.Applied
         case "width":
-            bar.masterBar.displayWidth = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try bar.masterBar.displayWidth = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             bar.displayWidth = bar.masterBar.displayWidth
             return ApplyNodeResult.Applied
         case "scale":
-            bar.masterBar.displayScale = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try bar.masterBar.displayScale = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             bar.displayScale = bar.masterBar.displayScale
             return ApplyNodeResult.Applied
         case "spd":
             let sustainPedalDown: SustainPedalMarker = SustainPedalMarker()
             sustainPedalDown.pedalType = SustainPedalMarkerType.Down
-            sustainPedalDown.ratioPosition = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try sustainPedalDown.ratioPosition = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             bar.sustainPedals.push(sustainPedalDown)
             return ApplyNodeResult.Applied
         case "spu":
             let sustainPedalUp: SustainPedalMarker = SustainPedalMarker()
             sustainPedalUp.pedalType = SustainPedalMarkerType.Up
-            sustainPedalUp.ratioPosition = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try sustainPedalUp.ratioPosition = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             bar.sustainPedals.push(sustainPedalUp)
             return ApplyNodeResult.Applied
         case "sph":
             let sustainPedalHold: SustainPedalMarker = SustainPedalMarker()
             sustainPedalHold.pedalType = SustainPedalMarkerType.Hold
-            sustainPedalHold.ratioPosition = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try sustainPedalHold.ratioPosition = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             bar.sustainPedals.push(sustainPedalHold)
             return ApplyNodeResult.Applied
         case "ft":
@@ -580,21 +580,21 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             bar.barLineRight = BarLineStyle.LightLight
             return ApplyNodeResult.Applied
         case "barnumberdisplay":
-            let barNumberDisplay: BarNumberDisplay? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "bar number display", AlphaTex1EnumMappings.barNumberDisplay)
+            let barNumberDisplay: BarNumberDisplay? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "bar number display", AlphaTex1EnumMappings.barNumberDisplay)
             if barNumberDisplay == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             bar.barNumberDisplay = barNumberDisplay!
             return ApplyNodeResult.Applied
         case "bardisplay":
-            self._staffDisplayProperties(importer, metaData, nil, nil, bar)
+            try self._staffDisplayProperties(importer, metaData, nil, nil, bar)
             return ApplyNodeResult.Applied
         case "barnumber":
-            switch metaData.arguments!.arguments[0].nodeType {
+            switch try jsNonNull(metaData.arguments).arguments.jsElement(0).nodeType {
             case AlphaTexNodeType.Number:
-                bar.masterBar.customBarNumber = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                try bar.masterBar.customBarNumber = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             case AlphaTexNodeType.String:
-                bar.masterBar.customBarNumberText = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
+                try bar.masterBar.customBarNumberText = (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexTextNode.self)).text
             default:
                 break
             }
@@ -612,10 +612,10 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         }
     }
 
-    private func _parseBeamingRule(_ importer: any IAlphaTexImporter, _ metaData: AlphaTexMetaDataNode, _ masterBar: MasterBar) -> ApplyNodeResult {
+    private func _parseBeamingRule(_ importer: any IAlphaTexImporter, _ metaData: AlphaTexMetaDataNode, _ masterBar: MasterBar) throws -> ApplyNodeResult {
         var duration: Duration = Duration.Eighth
         let groupSizes: List<Double> = List<Double>()
-        let durationValue: Double = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+        let durationValue: Double = try (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
         switch durationValue {
         case 4.0:
             duration = Duration.QuadrupleWhole
@@ -626,18 +626,18 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         case 32.0:
             duration = Duration.ThirtySecond
         default:
-            importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Value is out of valid range. Allowed range: 4,8,16 or 32, Actual Value: \((durationValue).toTemplate())", start: metaData.arguments!.arguments[0].start, end: metaData.arguments!.arguments[0].end))
+            try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Value is out of valid range. Allowed range: 4,8,16 or 32, Actual Value: \((durationValue).toTemplate())", start: jsNonNull(metaData.arguments).arguments.jsElement(0).start, end: jsNonNull(metaData.arguments).arguments.jsElement(0).end))
             return ApplyNodeResult.NotAppliedSemanticError
         }
         do {
             var i: Double = 1.0
-            while i < metaData.arguments!.arguments.length {
-                let groupSize: Double = (metaData.arguments!.arguments[(i).toInt()] as! AlphaTexNumberLiteral).value
+            while try i < jsNonNull(metaData.arguments).arguments.length {
+                let groupSize: Double = try (jsCast(jsNonNull(metaData.arguments).arguments[(i).toInt()], AlphaTexNumberLiteral.self)).value
                 if groupSize < 1 {
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Value is out of valid range. Allowed range: >0, Actual Value: \((durationValue).toTemplate())", start: metaData.arguments!.arguments[(i).toInt()].start, end: metaData.arguments!.arguments[(i).toInt()].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Value is out of valid range. Allowed range: >0, Actual Value: \((durationValue).toTemplate())", start: jsNonNull(metaData.arguments).arguments.jsElement((i).toInt()).start, end: jsNonNull(metaData.arguments).arguments.jsElement((i).toInt()).end))
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
-                groupSizes.push((metaData.arguments!.arguments[(i).toInt()] as! AlphaTexNumberLiteral).value)
+                try groupSizes.push((jsCast(jsNonNull(metaData.arguments).arguments[(i).toInt()], AlphaTexNumberLiteral.self)).value)
                 i += 1
             }
         }
@@ -648,8 +648,8 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         return ApplyNodeResult.Applied
     }
 
-    private static func _handleAccidentalMode(_ importer: any IAlphaTexImporter, _ args: AlphaTexArgumentList) -> ApplyNodeResult {
-        let accidentalMode: AlphaTexAccidentalMode? = AlphaTex1LanguageHandler._parseEnumValue(importer, args, "accidental mode", AlphaTex1EnumMappings.alphaTexAccidentalMode)
+    private static func _handleAccidentalMode(_ importer: any IAlphaTexImporter, _ args: AlphaTexArgumentList) throws -> ApplyNodeResult {
+        let accidentalMode: AlphaTexAccidentalMode? = try AlphaTex1LanguageHandler._parseEnumValue(importer, args, "accidental mode", AlphaTex1EnumMappings.alphaTexAccidentalMode)
         if accidentalMode == nil {
             return ApplyNodeResult.NotAppliedSemanticError
         }
@@ -657,8 +657,8 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         return ApplyNodeResult.Applied
     }
 
-    private static func _handleVoiceMode(_ importer: any IAlphaTexImporter, _ args: AlphaTexArgumentList) -> ApplyNodeResult {
-        let voiceMode: AlphaTexVoiceMode? = AlphaTex1LanguageHandler._parseEnumValue(importer, args, "voice mode", AlphaTex1EnumMappings.alphaTexVoiceMode)
+    private static func _handleVoiceMode(_ importer: any IAlphaTexImporter, _ args: AlphaTexArgumentList) throws -> ApplyNodeResult {
+        let voiceMode: AlphaTexVoiceMode? = try AlphaTex1LanguageHandler._parseEnumValue(importer, args, "voice mode", AlphaTex1EnumMappings.alphaTexVoiceMode)
         if voiceMode == nil {
             return ApplyNodeResult.NotAppliedSemanticError
         }
@@ -670,18 +670,18 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         return chordName.lowercase() + (currentStaff.index).toInvariantString() + (currentStaff.track.index).toInvariantString()
     }
 
-    private func _buildSyncPoint(_ metaData: AlphaTexMetaDataNode) -> FlatSyncPoint {
-        let barIndex: Double = (metaData.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
-        let barOccurence: Double = (metaData.arguments!.arguments[1] as! AlphaTexNumberLiteral).value
-        let millisecondOffset: Double = (metaData.arguments!.arguments[2] as! AlphaTexNumberLiteral).value
+    private func _buildSyncPoint(_ metaData: AlphaTexMetaDataNode) throws -> FlatSyncPoint {
+        let barIndex: Double = try (jsCast(jsNonNull(metaData.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
+        let barOccurence: Double = try (jsCast(jsNonNull(metaData.arguments).arguments[1], AlphaTexNumberLiteral.self)).value
+        let millisecondOffset: Double = try (jsCast(jsNonNull(metaData.arguments).arguments[2], AlphaTexNumberLiteral.self)).value
         var barPosition: Double = 0.0
-        if metaData.arguments!.arguments.length > 3 {
-            barPosition = (metaData.arguments!.arguments[3] as! AlphaTexNumberLiteral).value
+        if try jsNonNull(metaData.arguments).arguments.length > 3 {
+            try barPosition = (jsCast(jsNonNull(metaData.arguments).arguments[3], AlphaTexNumberLiteral.self)).value
         }
         return FlatSyncPoint(barIndex: barIndex, barPosition: barPosition, barOccurence: barOccurence, millisecondOffset: millisecondOffset)
     }
 
-    private func _validateArgumentTypes(_ importer: any IAlphaTexImporter, _ signatures: List<AlphaTexSignatureDefinition>, _ parent: AlphaTexAstNode, _ args: AlphaTexArgumentList?) -> Bool {
+    private func _validateArgumentTypes(_ importer: any IAlphaTexImporter, _ signatures: List<AlphaTexSignatureDefinition>, _ parent: AlphaTexAstNode, _ args: AlphaTexArgumentList?) throws -> Bool {
         if !TypeHelper.isTruthy(args) {
             let hasEmptyParameterOverload: Bool = signatures.some({ (c: AlphaTexSignatureDefinition) -> Bool in
                 return c.parameters.length == 0.0 || (!c.parameters.some({ (v: AlphaTexParameterDefinition) -> Bool in
@@ -712,7 +712,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         } : { (_value: any IAlphaTexAstNode, _overloadIndex: Double) in
         }
         for value in args!.arguments {
-            AlphaTex1MetaDataReader.filterSignatureCandidates(candidates, value, false, trackValue)
+            try AlphaTex1MetaDataReader.filterSignatureCandidates(candidates, value, false, trackValue)
             if candidates.size == 0.0 {
                 break
             }
@@ -732,16 +732,16 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         return !error
     }
 
-    private func _headerFooterStyle(_ importer: any IAlphaTexImporter, _ score: Score, _ element: ScoreSubElement, _ metaData: AlphaTexMetaDataNode, _ startIndex: Double = 1.0) {
-        let remaining: Double = metaData.arguments!.arguments.length - startIndex
+    private func _headerFooterStyle(_ importer: any IAlphaTexImporter, _ score: Score, _ element: ScoreSubElement, _ metaData: AlphaTexMetaDataNode, _ startIndex: Double = 1.0) throws {
+        let remaining: Double = try jsNonNull(metaData.arguments).arguments.length - startIndex
         if remaining < 1 {
             return
         }
-        let style: HeaderFooterStyle = ModelUtils.getOrCreateHeaderFooterStyle(score, element)
+        let style: HeaderFooterStyle = try ModelUtils.getOrCreateHeaderFooterStyle(score, element)
         if style.isVisible == nil {
             style.isVisible = true
         }
-        let value: String = (metaData.arguments!.arguments[(startIndex).toInt()] as! AlphaTexTextNode).text
+        let value: String = try (jsCast(jsNonNull(metaData.arguments).arguments[(startIndex).toInt()], AlphaTexTextNode.self)).text
         if TypeHelper.isTruthy(value) {
             style.template = value
         } else {
@@ -750,59 +750,59 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         if remaining < 2 {
             return
         }
-        let textAlign: TextAlign? = AlphaTex1LanguageHandler._parseEnumValue(importer, metaData.arguments!, "textAlign", AlphaTex1EnumMappings.textAlign, startIndex + 1.0)
+        let textAlign: TextAlign? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(metaData.arguments), "textAlign", AlphaTex1EnumMappings.textAlign, startIndex + 1.0)
         if textAlign == nil {
             return
         }
         style.textAlign = textAlign!
     }
 
-    private func _readTrackInstrument(_ importer: any IAlphaTexImporter, _ track: Track, _ args: AlphaTexArgumentList) {
-        switch args.arguments[0].nodeType {
+    private func _readTrackInstrument(_ importer: any IAlphaTexImporter, _ track: Track, _ args: AlphaTexArgumentList) throws {
+        switch try args.arguments.jsElement(0).nodeType {
         case AlphaTexNodeType.Number:
-            let instrument: Double = (args.arguments[0] as! AlphaTexNumberLiteral).value
+            let instrument: Double = try (jsCast(args.arguments[0], AlphaTexNumberLiteral.self)).value
             if instrument >= 0 && instrument <= 127 {
                 track.playbackInfo.program = instrument
             } else {
-                importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT211, message: "Value is out of valid range. Allowed range: 0-127, Actual Value: \((instrument).toTemplate())", start: args.arguments[0].start, end: args.arguments[0].end))
+                try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT211, message: "Value is out of valid range. Allowed range: 0-127, Actual Value: \((instrument).toTemplate())", start: args.arguments.jsElement(0).start, end: args.arguments.jsElement(0).end))
             }
         case AlphaTexNodeType.Ident, AlphaTexNodeType.String:
-            let instrumentName: String = (args.arguments[0] as! AlphaTexTextNode).text.lowercase()
+            let instrumentName: String = try (jsCast(args.arguments[0], AlphaTexTextNode.self)).text.lowercase()
             if instrumentName == "percussion" {
                 for staff in track.staves {
                     staff.showTablature = false
-                    importer.applyStaffNoteKind(staff, AlphaTexStaffNoteKind.Articulation)
+                    try importer.applyStaffNoteKind(staff, AlphaTexStaffNoteKind.Articulation)
                 }
                 track.playbackInfo.primaryChannel = SynthConstants.PercussionChannel
                 track.playbackInfo.secondaryChannel = SynthConstants.PercussionChannel
             } else {
-                track.playbackInfo.program = GeneralMidi.getValue(instrumentName)
+                try track.playbackInfo.program = GeneralMidi.getValue(instrumentName)
             }
         default:
             break
         }
     }
 
-    private func _chordProperties(_ importer: any IAlphaTexImporter, _ chord: Chord, _ metaData: AlphaTexMetaDataNode) {
+    private func _chordProperties(_ importer: any IAlphaTexImporter, _ chord: Chord, _ metaData: AlphaTexMetaDataNode) throws {
         if !TypeHelper.isTruthy(metaData.properties) {
             return
         }
         for p in metaData.properties!.properties {
-            if !self._checkProperty(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>((AlphaTex1LanguageDefinitions.metaDataProperties.get("chord") ?? nil)!), p) {
+            if try !self._checkProperty(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(jsNonNull((AlphaTex1LanguageDefinitions.metaDataProperties.get("chord") ?? nil))), p) {
                 continue
             }
             switch p.property.text.lowercase() {
             case "firstfret":
-                chord.firstFret = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                try chord.firstFret = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             case "showdiagram":
-                chord.showDiagram = AlphaTex1LanguageHandler._booleanLikeValue(p.arguments!.arguments, 0.0)
+                try chord.showDiagram = AlphaTex1LanguageHandler._booleanLikeValue(jsNonNull(p.arguments).arguments, 0.0)
             case "showfingering":
-                chord.showFingering = AlphaTex1LanguageHandler._booleanLikeValue(p.arguments!.arguments, 0.0)
+                try chord.showFingering = AlphaTex1LanguageHandler._booleanLikeValue(jsNonNull(p.arguments).arguments, 0.0)
             case "showname":
-                chord.showName = AlphaTex1LanguageHandler._booleanLikeValue(p.arguments!.arguments, 0.0)
+                try chord.showName = AlphaTex1LanguageHandler._booleanLikeValue(jsNonNull(p.arguments).arguments, 0.0)
             case "barre":
-                chord.barreFrets = p.arguments!.arguments.map({ (v: any IAlphaTexArgumentValue) -> Double in
-                    return (v as! AlphaTexNumberLiteral).value
+                try chord.barreFrets = jsNonNull(p.arguments).arguments.map({ (v: any IAlphaTexArgumentValue) -> Double in
+                    return try (jsCast(v, AlphaTexNumberLiteral.self)).value
                 })
             default:
                 break
@@ -810,12 +810,12 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         }
     }
 
-    private func _tuningProperties(_ importer: any IAlphaTexImporter, _ staff: Staff, _ tuning: Tuning, _ metaData: AlphaTexMetaDataNode) {
+    private func _tuningProperties(_ importer: any IAlphaTexImporter, _ staff: Staff, _ tuning: Tuning, _ metaData: AlphaTexMetaDataNode) throws {
         if !TypeHelper.isTruthy(metaData.properties) {
             return
         }
         for p in metaData.properties!.properties {
-            if !self._checkProperty(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>((AlphaTex1LanguageDefinitions.metaDataProperties.get("tuning") ?? nil)!), p) {
+            if try !self._checkProperty(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(jsNonNull((AlphaTex1LanguageDefinitions.metaDataProperties.get("tuning") ?? nil))), p) {
                 continue
             }
             switch p.property.text.lowercase() {
@@ -825,36 +825,36 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                 }
                 staff.track.score.stylesheet.perTrackDisplayTuning!.set(staff.track.index, false)
             case "label":
-                tuning.name = (p.arguments!.arguments[0] as! AlphaTexStringLiteral).text
+                try tuning.name = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexStringLiteral.self)).text
             default:
                 break
             }
         }
     }
 
-    private static func _booleanLikeValue(_ args: List<any IAlphaTexArgumentValue>, _ i: Double) -> Bool {
+    private static func _booleanLikeValue(_ args: List<any IAlphaTexArgumentValue>, _ i: Double) throws -> Bool {
         if i >= args.length {
             return true
         }
         let v: any IAlphaTexArgumentValue = args[(i).toInt()]
         switch v.nodeType {
         case AlphaTexNodeType.String, AlphaTexNodeType.Ident:
-            return (v as! AlphaTexTextNode).text != "false"
+            return try (jsCast(v, AlphaTexTextNode.self)).text != "false"
         case AlphaTexNodeType.Number:
-            return (v as! AlphaTexNumberLiteral).value != 0.0
+            return try (jsCast(v, AlphaTexNumberLiteral.self)).value != 0.0
         default:
             return false
         }
     }
 
-    private func _staffDisplayProperties(_ importer: any IAlphaTexImporter, _ metaData: AlphaTexMetaDataNode, _ stylesheet: RenderStylesheet?, _ staff: Staff?, _ bar: Bar?) {
+    private func _staffDisplayProperties(_ importer: any IAlphaTexImporter, _ metaData: AlphaTexMetaDataNode, _ stylesheet: RenderStylesheet?, _ staff: Staff?, _ bar: Bar?) throws {
         if !TypeHelper.isTruthy(metaData.properties) {
             return
         }
         let staffTypes: List<AlphaTexStaffType> = List<AlphaTexStaffType>()
         if TypeHelper.isTruthy(metaData.arguments) {
             for a in metaData.arguments!.arguments {
-                staffTypes.push(AlphaTex1EnumMappings.alphaTexStaffType.get((a as! AlphaTexTextNode).text.lowercase())!)
+                try staffTypes.push(jsNonNull(AlphaTex1EnumMappings.alphaTexStaffType.get((jsCast(a, AlphaTexTextNode.self)).text.lowercase())))
             }
         }
         let isExplicit: Bool = staffTypes.length > 0
@@ -863,13 +863,13 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                 staffTypes.push(t)
             }
         }
-        let lookup: List<Map<String, List<AlphaTexSignatureDefinition>?>> = List<Map<String, List<AlphaTexSignatureDefinition>?>>((AlphaTex1LanguageDefinitions.metaDataProperties.get(metaData.tag.tag.text.lowercase()) ?? nil)!)
+        let lookup: List<Map<String, List<AlphaTexSignatureDefinition>?>> = try List<Map<String, List<AlphaTexSignatureDefinition>?>>(jsNonNull((AlphaTex1LanguageDefinitions.metaDataProperties.get(metaData.tag.tag.text.lowercase()) ?? nil)))
         for p in metaData.properties!.properties {
-            if !self._checkProperty(importer, lookup, p) {
+            if try !self._checkProperty(importer, lookup, p) {
                 continue
             }
             for t in staffTypes {
-                if !AlphaTex1LanguageHandler._applyStaffDisplayProperty(p, t, stylesheet, staff, bar) && isExplicit {
+                if try !AlphaTex1LanguageHandler._applyStaffDisplayProperty(p, t, stylesheet, staff, bar) && isExplicit {
                     importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Warning, code: AlphaTexDiagnosticCode.AT307, message: "The property '\((p.property.text).toTemplate())' has no effect on the staff type '\((AlphaTex1EnumMappings.alphaTexStaffTypeReversed.get(t)).toTemplate())'", start: p.start, end: p.end))
                 }
             }
@@ -880,71 +880,71 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
      * Applies the property to the display settings of the staff type on the stylesheet, staff or bar
      * (created on demand). Returns false if the staff type has no such setting.
      */
-    private static func _applyStaffDisplayProperty(_ p: AlphaTexPropertyNode, _ t: AlphaTexStaffType, _ stylesheet: RenderStylesheet?, _ staff: Staff?, _ bar: Bar?) -> Bool {
+    private static func _applyStaffDisplayProperty(_ p: AlphaTexPropertyNode, _ t: AlphaTexStaffType, _ stylesheet: RenderStylesheet?, _ staff: Staff?, _ bar: Bar?) throws -> Bool {
         let name: String = p.property.text.lowercase()
-        let value: () -> String = { () -> String in
-            return (p.arguments!.arguments[0] as! AlphaTexTextNode).text.lowercase()
+        let value: () throws -> String = { () -> String in
+            return try (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexTextNode.self)).text.lowercase()
         }
         var applied: Bool = name == "barnumber"
-        let barNumber: (BarNumberDisplay?) -> BarNumberDisplay? = { (v: BarNumberDisplay?) -> BarNumberDisplay? in
-            return name == "barnumber" ? AlphaTex1EnumMappings.barNumberDisplay.get(value())! : v
+        let barNumber: (BarNumberDisplay?) throws -> BarNumberDisplay? = { (v: BarNumberDisplay?) -> BarNumberDisplay? in
+            return try name == "barnumber" ? jsNonNull(AlphaTex1EnumMappings.barNumberDisplay.get(value())) : v
         }
-        let element: (String, ElementDisplay?) -> ElementDisplay? = { (prefix: String, display: ElementDisplay?) -> ElementDisplay? in
+        let element: (String, ElementDisplay?) throws -> ElementDisplay? = { (prefix: String, display: ElementDisplay?) -> ElementDisplay? in
             if !name.startsWith(prefix) {
                 return display
             }
             applied = true
             let d: ElementDisplay = display ?? ElementDisplay()
             if name.endsWith("visibility") {
-                d.isVisible = TypeHelper.isTruthy(p.arguments) ? AlphaTex1LanguageHandler._booleanLikeValue(p.arguments!.arguments, 0.0) : true
+                try d.isVisible = TypeHelper.isTruthy(p.arguments) ? AlphaTex1LanguageHandler._booleanLikeValue(p.arguments!.arguments, 0.0) : true
             } else if name.endsWith("placement") {
-                d.staffPlacement = AlphaTex1EnumMappings.staffPlacement.get(value())!
+                try d.staffPlacement = jsNonNull(AlphaTex1EnumMappings.staffPlacement.get(value()))
             } else {
-                d.systemDisplay = AlphaTex1EnumMappings.systemDisplay.get(value())!
+                try d.systemDisplay = jsNonNull(AlphaTex1EnumMappings.systemDisplay.get(value()))
             }
             return d
         }
         if TypeHelper.isTruthy(TypeHelper.isTruthy(bar) && t == AlphaTexStaffType.Score) {
             let c: ScoreBarOverride = bar!.scoreDisplay ?? ScoreBarOverride()
-            c.clef = element("clef", c.clef)
-            c.keySignature = element("ks", c.keySignature)
-            c.timeSignature = element("ts", c.timeSignature)
-            c.barNumber = barNumber(c.barNumber)
+            try c.clef = element("clef", c.clef)
+            try c.keySignature = element("ks", c.keySignature)
+            try c.timeSignature = element("ts", c.timeSignature)
+            try c.barNumber = barNumber(c.barNumber)
             bar!.scoreDisplay = applied ? c : bar!.scoreDisplay
         } else if TypeHelper.isTruthy(TypeHelper.isTruthy(bar) && t == AlphaTexStaffType.Tabs) {
             let c: TabBarOverride = bar!.tabDisplay ?? TabBarOverride()
-            c.clef = element("clef", c.clef)
-            c.timeSignature = element("ts", c.timeSignature)
-            c.barNumber = barNumber(c.barNumber)
+            try c.clef = element("clef", c.clef)
+            try c.timeSignature = element("ts", c.timeSignature)
+            try c.barNumber = barNumber(c.barNumber)
             bar!.tabDisplay = applied ? c : bar!.tabDisplay
         } else if TypeHelper.isTruthy(TypeHelper.isTruthy(bar) && t == AlphaTexStaffType.Slash) {
             let c: SlashBarOverride = bar!.slashDisplay ?? SlashBarOverride()
-            c.keySignature = element("ks", c.keySignature)
-            c.timeSignature = element("ts", c.timeSignature)
-            c.barNumber = barNumber(c.barNumber)
+            try c.keySignature = element("ks", c.keySignature)
+            try c.timeSignature = element("ts", c.timeSignature)
+            try c.barNumber = barNumber(c.barNumber)
             bar!.slashDisplay = applied ? c : bar!.slashDisplay
         } else if TypeHelper.isTruthy(bar) {
             let c: NumberedBarOverride = bar!.numberedDisplay ?? NumberedBarOverride()
-            c.timeSignature = element("ts", c.timeSignature)
-            c.barNumber = barNumber(c.barNumber)
+            try c.timeSignature = element("ts", c.timeSignature)
+            try c.barNumber = barNumber(c.barNumber)
             bar!.numberedDisplay = applied ? c : bar!.numberedDisplay
         } else if t == AlphaTexStaffType.Score {
             let c: ScoreStaffConfig = staff?.scoreConfig ?? stylesheet?.scoreConfig ?? ScoreStaffConfig()
-            c.clef = element("clef", c.clef)
-            c.keySignature = element("ks", c.keySignature)
-            c.timeSignature = element("ts", c.timeSignature)
-            c.barNumber = barNumber(c.barNumber)
+            try c.clef = element("clef", c.clef)
+            try c.keySignature = element("ks", c.keySignature)
+            try c.timeSignature = element("ts", c.timeSignature)
+            try c.barNumber = barNumber(c.barNumber)
             if TypeHelper.isTruthy(TypeHelper.isTruthy(staff) && applied) {
                 staff!.scoreConfig = c
             }
         } else if t == AlphaTexStaffType.Tabs {
             let c: TabStaffConfig = staff?.tabConfig ?? stylesheet?.tabConfig ?? TabStaffConfig()
-            c.clef = element("clef", c.clef)
-            c.timeSignature = element("ts", c.timeSignature)
-            c.rests = element("rests", c.rests)
-            c.barNumber = barNumber(c.barNumber)
+            try c.clef = element("clef", c.clef)
+            try c.timeSignature = element("ts", c.timeSignature)
+            try c.rests = element("rests", c.rests)
+            try c.barNumber = barNumber(c.barNumber)
             if name == "rhythm" {
-                c.rhythm = AlphaTex1EnumMappings.tabRhythmMode.get(value())!
+                try c.rhythm = jsNonNull(AlphaTex1EnumMappings.tabRhythmMode.get(value()))
                 applied = true
             }
             if TypeHelper.isTruthy(TypeHelper.isTruthy(staff) && applied) {
@@ -952,16 +952,16 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             }
         } else if t == AlphaTexStaffType.Slash {
             let c: SlashStaffConfig = staff?.slashConfig ?? stylesheet?.slashConfig ?? SlashStaffConfig()
-            c.keySignature = element("ks", c.keySignature)
-            c.timeSignature = element("ts", c.timeSignature)
-            c.barNumber = barNumber(c.barNumber)
+            try c.keySignature = element("ks", c.keySignature)
+            try c.timeSignature = element("ts", c.timeSignature)
+            try c.barNumber = barNumber(c.barNumber)
             if TypeHelper.isTruthy(TypeHelper.isTruthy(staff) && applied) {
                 staff!.slashConfig = c
             }
         } else {
             let c: NumberedStaffConfig = staff?.numberedConfig ?? stylesheet?.numberedConfig ?? NumberedStaffConfig()
-            c.timeSignature = element("ts", c.timeSignature)
-            c.barNumber = barNumber(c.barNumber)
+            try c.timeSignature = element("ts", c.timeSignature)
+            try c.barNumber = barNumber(c.barNumber)
             if TypeHelper.isTruthy(TypeHelper.isTruthy(staff) && applied) {
                 staff!.numberedConfig = c
             }
@@ -969,8 +969,8 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         return applied
     }
 
-    public func applyStructuralMetaData(_ importer: any IAlphaTexImporter, _ metaData: AlphaTexMetaDataNode) -> ApplyStructuralMetaDataResult {
-        let result: ApplyNodeResult? = self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.structuralMetaDataSignatures), metaData, metaData.tag.tag.text.lowercase(), metaData.arguments)
+    public func applyStructuralMetaData(_ importer: any IAlphaTexImporter, _ metaData: AlphaTexMetaDataNode) throws -> ApplyStructuralMetaDataResult {
+        let result: ApplyNodeResult? = try self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.structuralMetaDataSignatures), metaData, metaData.tag.tag.text.lowercase(), metaData.arguments)
         if result != nil {
             switch result! {
             case ApplyNodeResult.NotAppliedSemanticError:
@@ -983,29 +983,29 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         }
         switch metaData.tag.tag.text.lowercase() {
         case "staff":
-            let staff: Staff = importer.startNewStaff()
-            self._staffProperties(importer, staff, metaData)
+            let staff: Staff = try importer.startNewStaff()
+            try self._staffProperties(importer, staff, metaData)
             return ApplyStructuralMetaDataResult.AppliedNewStaff
         case "track":
-            let track: Track = importer.startNewTrack()
+            let track: Track = try importer.startNewTrack()
             if TypeHelper.isTruthy(TypeHelper.isTruthy(metaData.arguments) && metaData.arguments!.arguments.length > 0) {
-                track.name = (metaData.arguments!.arguments[0] as! AlphaTexTextNode).text
+                try track.name = (jsCast(metaData.arguments!.arguments[0], AlphaTexTextNode.self)).text
                 if metaData.arguments!.arguments.length > 1 {
-                    track.shortName = (metaData.arguments!.arguments[1] as! AlphaTexTextNode).text
+                    try track.shortName = (jsCast(metaData.arguments!.arguments[1], AlphaTexTextNode.self)).text
                 }
             }
-            self._trackProperties(importer, track, metaData)
+            try self._trackProperties(importer, track, metaData)
             return ApplyStructuralMetaDataResult.AppliedNewTrack
         case "voice":
-            importer.startNewVoice()
+            try importer.startNewVoice()
             return ApplyStructuralMetaDataResult.AppliedNewVoice
         default:
             return ApplyStructuralMetaDataResult.NotAppliedUnrecognizedMarker
         }
     }
 
-    private func _checkProperty(_ importer: any IAlphaTexImporter, _ lookupList: List<Map<String, List<AlphaTexSignatureDefinition>?>>, _ p: AlphaTexPropertyNode) -> Bool {
-        let result: ApplyNodeResult? = self._checkArgumentTypes(importer, lookupList, p, p.property.text.lowercase(), p.arguments)
+    private func _checkProperty(_ importer: any IAlphaTexImporter, _ lookupList: List<Map<String, List<AlphaTexSignatureDefinition>?>>, _ p: AlphaTexPropertyNode) throws -> Bool {
+        let result: ApplyNodeResult? = try self._checkArgumentTypes(importer, lookupList, p, p.property.text.lowercase(), p.arguments)
         if result != nil {
             switch result! {
             case ApplyNodeResult.Applied, ApplyNodeResult.NotAppliedSemanticError:
@@ -1023,7 +1023,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         return true
     }
 
-    private func _staffProperties(_ importer: any IAlphaTexImporter, _ staff: Staff, _ metaData: AlphaTexMetaDataNode) {
+    private func _staffProperties(_ importer: any IAlphaTexImporter, _ staff: Staff, _ metaData: AlphaTexMetaDataNode) throws {
         if !TypeHelper.isTruthy(metaData.properties) {
             return
         }
@@ -1032,14 +1032,14 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         var showSlash: Bool = false
         var showNumbered: Bool = false
         for p in metaData.properties!.properties {
-            if !self._checkProperty(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>((AlphaTex1LanguageDefinitions.metaDataProperties.get("staff") ?? nil)!), p) {
+            if try !self._checkProperty(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(jsNonNull((AlphaTex1LanguageDefinitions.metaDataProperties.get("staff") ?? nil))), p) {
                 continue
             }
             switch p.property.text.lowercase() {
             case "score":
                 showStandardNotation = true
                 if TypeHelper.isTruthy(TypeHelper.isTruthy(p.arguments) && p.arguments!.arguments.length > 0) {
-                    staff.standardNotationLineCount = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                    try staff.standardNotationLineCount = (jsCast(p.arguments!.arguments[0], AlphaTexNumberLiteral.self)).value
                 }
             case "tabs":
                 showTabs = true
@@ -1059,31 +1059,31 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         }
     }
 
-    private func _trackProperties(_ importer: any IAlphaTexImporter, _ track: Track, _ metaData: AlphaTexMetaDataNode) {
+    private func _trackProperties(_ importer: any IAlphaTexImporter, _ track: Track, _ metaData: AlphaTexMetaDataNode) throws {
         if !TypeHelper.isTruthy(metaData.properties) {
             return
         }
         for p in metaData.properties!.properties {
-            if !self._checkProperty(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>((AlphaTex1LanguageDefinitions.metaDataProperties.get("track") ?? nil)!), p) {
+            if try !self._checkProperty(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(jsNonNull((AlphaTex1LanguageDefinitions.metaDataProperties.get("track") ?? nil))), p) {
                 continue
             }
             switch p.property.text.lowercase() {
             case "color":
                 do {
-                    try track.color = Color.fromJson((p.arguments!.arguments[0] as! AlphaTexTextNode).text)!
+                    try track.color = jsNonNull(Color.fromJson((jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexTextNode.self)).text))
                 } catch {
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT213, message: "Invalid format for color", start: p.arguments!.arguments[0].start, end: p.arguments!.arguments[0].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT213, message: "Invalid format for color", start: jsNonNull(p.arguments).arguments.jsElement(0).start, end: jsNonNull(p.arguments).arguments.jsElement(0).end))
                 }
             case "defaultsystemslayout":
-                track.defaultSystemsLayout = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                try track.defaultSystemsLayout = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             case "systemslayout":
-                track.systemsLayout = p.arguments!.arguments.map({ (v: any IAlphaTexArgumentValue) -> Double in
-                    return (v as! AlphaTexNumberLiteral).value
+                try track.systemsLayout = jsNonNull(p.arguments).arguments.map({ (v: any IAlphaTexArgumentValue) -> Double in
+                    return try (jsCast(v, AlphaTexNumberLiteral.self)).value
                 })
             case "volume":
-                track.playbackInfo.volume = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                try track.playbackInfo.volume = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             case "balance":
-                track.playbackInfo.balance = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                try track.playbackInfo.balance = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             case "mute":
                 track.playbackInfo.isMute = true
             case "solo":
@@ -1094,31 +1094,31 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                 }
                 track.score.stylesheet.perTrackMultiBarRest!.add(track.index)
             case "instrument":
-                self._readTrackInstrument(importer, track, p.arguments!)
+                try self._readTrackInstrument(importer, track, jsNonNull(p.arguments))
             case "bank":
-                track.playbackInfo.bank = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                try track.playbackInfo.bank = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             default:
                 break
             }
         }
     }
 
-    public func applyBeatDurationProperty(_ importer: any IAlphaTexImporter, _ p: AlphaTexPropertyNode) -> ApplyNodeResult {
-        let result: ApplyNodeResult? = self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.durationChangeProperties), p, p.property.text.lowercase(), p.arguments)
+    public func applyBeatDurationProperty(_ importer: any IAlphaTexImporter, _ p: AlphaTexPropertyNode) throws -> ApplyNodeResult {
+        let result: ApplyNodeResult? = try self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.durationChangeProperties), p, p.property.text.lowercase(), p.arguments)
         if result != nil {
             return result!
         }
         switch p.property.text.lowercase() {
         case "tu":
-            if p.arguments!.arguments.length == 2.0 {
-                importer.state.currentTupletNumerator = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
-                importer.state.currentTupletDenominator = (p.arguments!.arguments[1] as! AlphaTexNumberLiteral).value
+            if try jsNonNull(p.arguments).arguments.length == 2.0 {
+                try importer.state.currentTupletNumerator = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
+                try importer.state.currentTupletDenominator = (jsCast(jsNonNull(p.arguments).arguments[1], AlphaTexNumberLiteral.self)).value
             } else {
-                let numerator: Double = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                let numerator: Double = try (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
                 importer.state.currentTupletNumerator = numerator
                 let denominator: Double = AlphaTex1LanguageHandler._getTupletDenominator(numerator)
                 if denominator < 0 {
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected default tuplet value '\((numerator).toTemplate())', expected: 3, 5, 6, 7, 9, 10, 11 or 12", start: p.arguments!.arguments[0].start, end: p.arguments!.arguments[0].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected default tuplet value '\((numerator).toTemplate())', expected: 3, 5, 6, 7, 9, 10, 11 or 12", start: jsNonNull(p.arguments).arguments.jsElement(0).start, end: jsNonNull(p.arguments).arguments.jsElement(0).end))
                     importer.state.currentTupletNumerator = -1.0
                     importer.state.currentTupletDenominator = -1.0
                 } else {
@@ -1249,9 +1249,9 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         }
     }
 
-    public func applyBeatProperty(_ importer: any IAlphaTexImporter, _ beat: Beat, _ p: AlphaTexPropertyNode) -> ApplyNodeResult {
+    public func applyBeatProperty(_ importer: any IAlphaTexImporter, _ beat: Beat, _ p: AlphaTexPropertyNode) throws -> ApplyNodeResult {
         let tag: String = p.property.text.lowercase()
-        let result: ApplyNodeResult? = self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.beatProperties), p, tag, p.arguments)
+        let result: ApplyNodeResult? = try self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.beatProperties), p, tag, p.arguments)
         if result != nil {
             return result!
         }
@@ -1281,26 +1281,26 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             beat.tap = true
             return ApplyNodeResult.Applied
         case "txt":
-            beat.text = (p.arguments!.arguments[0] as! AlphaTexTextNode).text
+            try beat.text = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexTextNode.self)).text
             return ApplyNodeResult.Applied
         case "restdisplaypitch":
-            let tuning: TuningParseResult? = ModelUtils.parseTuning((p.arguments!.arguments[0] as! AlphaTexTextNode).text)
+            let tuning: TuningParseResult? = try ModelUtils.parseTuning((jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexTextNode.self)).text)
             if tuning != nil {
                 beat.restDisplayTone = tuning!.tone.noteValue
                 beat.restDisplayOctave = tuning!.octave - 1.0
             } else {
-                importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT212, message: "Invalid pitch value '\(((p.arguments!.arguments[0] as! AlphaTexTextNode).text).toTemplate())', expected format like 'C5' or 'G4'", start: p.arguments!.arguments[0].start, end: p.arguments!.arguments[0].end))
+                try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT212, message: "Invalid pitch value '\(((jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexTextNode.self)).text).toTemplate())', expected format like 'C5' or 'G4'", start: jsNonNull(p.arguments).arguments.jsElement(0).start, end: jsNonNull(p.arguments).arguments.jsElement(0).end))
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             return ApplyNodeResult.Applied
         case "lyrics":
             var lyricsLine: Double = 0.0
             var lyricsText: String = ""
-            if p.arguments!.arguments.length == 2.0 {
-                lyricsLine = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
-                lyricsText = (p.arguments!.arguments[1] as! AlphaTexTextNode).text
+            if try jsNonNull(p.arguments).arguments.length == 2.0 {
+                try lyricsLine = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
+                try lyricsText = (jsCast(jsNonNull(p.arguments).arguments[1], AlphaTexTextNode.self)).text
             } else {
-                lyricsText = (p.arguments!.arguments[0] as! AlphaTexTextNode).text
+                try lyricsText = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexTextNode.self)).text
             }
             if !TypeHelper.isTruthy(beat.lyrics) {
                 beat.lyrics = List<String>()
@@ -1323,15 +1323,15 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             beat.pickStroke = PickStroke.Down
             return ApplyNodeResult.Applied
         case "tu":
-            if p.arguments!.arguments.length == 2.0 {
-                beat.tupletNumerator = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
-                beat.tupletDenominator = (p.arguments!.arguments[1] as! AlphaTexNumberLiteral).value
+            if try jsNonNull(p.arguments).arguments.length == 2.0 {
+                try beat.tupletNumerator = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
+                try beat.tupletDenominator = (jsCast(jsNonNull(p.arguments).arguments[1], AlphaTexNumberLiteral.self)).value
             } else {
-                let numerator: Double = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                let numerator: Double = try (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
                 beat.tupletNumerator = numerator
                 let denominator: Double = AlphaTex1LanguageHandler._getTupletDenominator(numerator)
                 if denominator < 0 {
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected default tuplet value '\((numerator).toTemplate())', expected: 3, 5, 6, 7, 9, 10, 11 or 12", start: p.arguments!.arguments[0].start, end: p.arguments!.arguments[0].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected default tuplet value '\((numerator).toTemplate())', expected: 3, 5, 6, 7, 9, 10, 11 or 12", start: jsNonNull(p.arguments).arguments.jsElement(0).start, end: jsNonNull(p.arguments).arguments.jsElement(0).end))
                     beat.tupletNumerator = -1.0
                     beat.tupletDenominator = -1.0
                     return ApplyNodeResult.NotAppliedSemanticError
@@ -1345,21 +1345,21 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             var typeAndStyle: Bool = true
             var typeSet: Bool = false
             while typeAndStyle {
-                switch p.arguments!.arguments[(tbi).toInt()].nodeType {
+                switch try jsNonNull(p.arguments).arguments.jsElement((tbi).toInt()).nodeType {
                 case AlphaTexNodeType.Ident, AlphaTexNodeType.String:
-                    let txt: String = (p.arguments!.arguments[(tbi).toInt()] as! AlphaTexTextNode).text.lowercase()
+                    let txt: String = try (jsCast(jsNonNull(p.arguments).arguments[(tbi).toInt()], AlphaTexTextNode.self)).text.lowercase()
                     if AlphaTex1EnumMappings.whammyType.has(txt) {
-                        beat.whammyBarType = AlphaTex1EnumMappings.whammyType.get(txt)!
+                        try beat.whammyBarType = jsNonNull(AlphaTex1EnumMappings.whammyType.get(txt))
                         typeSet = true
                         tbi += 1
                     } else if AlphaTex1EnumMappings.bendStyle.has(txt) {
-                        beat.whammyStyle = AlphaTex1EnumMappings.bendStyle.get(txt)!
+                        try beat.whammyStyle = jsNonNull(AlphaTex1EnumMappings.bendStyle.get(txt))
                         tbi += 1
                     } else {
                         if typeSet {
-                            AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "whammy style", AlphaTex1EnumMappings.bendStyle, tbi)
+                            try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(p.arguments), "whammy style", AlphaTex1EnumMappings.bendStyle, tbi)
                         } else {
-                            AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "whammy type", AlphaTex1EnumMappings.whammyType, tbi)
+                            try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(p.arguments), "whammy type", AlphaTex1EnumMappings.whammyType, tbi)
                         }
                         return ApplyNodeResult.NotAppliedSemanticError
                     }
@@ -1367,7 +1367,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                     typeAndStyle = false
                 }
             }
-            let points: List<BendPoint>? = self._getBendPoints(importer, p, tbi, tag == "tbe")
+            let points: List<BendPoint>? = try self._getBendPoints(importer, p, tbi, tag == "tbe")
             if TypeHelper.isTruthy(points) {
                 for point in points! {
                     beat.addWhammyBarPoint(point)
@@ -1375,19 +1375,19 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             }
             return ApplyNodeResult.Applied
         case "bu":
-            AlphaTex1LanguageHandler._applyBrush(beat, p, BrushType.BrushUp, 0.25)
+            try AlphaTex1LanguageHandler._applyBrush(beat, p, BrushType.BrushUp, 0.25)
             return ApplyNodeResult.Applied
         case "bd":
-            AlphaTex1LanguageHandler._applyBrush(beat, p, BrushType.BrushDown, 0.25)
+            try AlphaTex1LanguageHandler._applyBrush(beat, p, BrushType.BrushDown, 0.25)
             return ApplyNodeResult.Applied
         case "au":
-            AlphaTex1LanguageHandler._applyBrush(beat, p, BrushType.ArpeggioUp, 1.0)
+            try AlphaTex1LanguageHandler._applyBrush(beat, p, BrushType.ArpeggioUp, 1.0)
             return ApplyNodeResult.Applied
         case "ad":
-            AlphaTex1LanguageHandler._applyBrush(beat, p, BrushType.ArpeggioDown, 1.0)
+            try AlphaTex1LanguageHandler._applyBrush(beat, p, BrushType.ArpeggioDown, 1.0)
             return ApplyNodeResult.Applied
         case "ch":
-            let chordName: String = (p.arguments!.arguments[0] as! AlphaTexTextNode).text
+            let chordName: String = try (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexTextNode.self)).text
             let chordId: String = AlphaTex1LanguageHandler._getChordId(beat.voice.bar.staff, chordName)
             if !beat.voice.bar.staff.hasChord(chordId) {
                 let chord: Chord = Chord()
@@ -1399,7 +1399,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             return ApplyNodeResult.Applied
         case "gr":
             if TypeHelper.isTruthy(TypeHelper.isTruthy(p.arguments) && p.arguments!.arguments.length > 0) {
-                let graceType: GraceType? = AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "whammy style", AlphaTex1EnumMappings.graceType)
+                let graceType: GraceType? = try AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "whammy style", AlphaTex1EnumMappings.graceType)
                 if graceType == nil {
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
@@ -1409,7 +1409,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             }
             return ApplyNodeResult.Applied
         case "dy":
-            let dyn: DynamicValue? = AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "dynamic", AlphaTex1EnumMappings.dynamicValue)
+            let dyn: DynamicValue? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(p.arguments), "dynamic", AlphaTex1EnumMappings.dynamicValue)
             if dyn == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
@@ -1423,20 +1423,20 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             beat.crescendo = CrescendoType.Decrescendo
             return ApplyNodeResult.Applied
         case "tempo":
-            let tempo: Double = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            let tempo: Double = try (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             var tempoLabel: String = ""
             var isVisible: Bool = true
-            if p.arguments!.arguments.length > 2 {
-                tempoLabel = (p.arguments!.arguments[1] as! AlphaTexTextNode).text
-                let hideText: String = (p.arguments!.arguments[2] as! AlphaTexTextNode).text
+            if try jsNonNull(p.arguments).arguments.length > 2 {
+                try tempoLabel = (jsCast(jsNonNull(p.arguments).arguments[1], AlphaTexTextNode.self)).text
+                let hideText: String = try (jsCast(jsNonNull(p.arguments).arguments[2], AlphaTexTextNode.self)).text
                 if hideText == "hide" {
                     isVisible = false
                 } else {
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected third tempo property value '\((hideText).toTemplate())', expected: 'hide'", start: p.arguments!.arguments[2].start, end: p.arguments!.arguments[2].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected third tempo property value '\((hideText).toTemplate())', expected: 'hide'", start: jsNonNull(p.arguments).arguments.jsElement(2).start, end: jsNonNull(p.arguments).arguments.jsElement(2).end))
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
-            } else if p.arguments!.arguments.length > 1 {
-                tempoLabel = (p.arguments!.arguments[1] as! AlphaTexTextNode).text
+            } else if try jsNonNull(p.arguments).arguments.length > 1 {
+                try tempoLabel = (jsCast(jsNonNull(p.arguments).arguments[1], AlphaTexTextNode.self)).text
                 if tempoLabel == "hide" {
                     isVisible = false
                     tempoLabel = ""
@@ -1455,14 +1455,14 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             let volumeAutomation: Automation = Automation()
             volumeAutomation.isLinear = true
             volumeAutomation.type = AutomationType.Volume
-            volumeAutomation.value = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try volumeAutomation.value = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             beat.automations.push(volumeAutomation)
             return ApplyNodeResult.Applied
         case "balance":
             let balanceAutomation: Automation = Automation()
             balanceAutomation.isLinear = true
             balanceAutomation.type = AutomationType.Balance
-            balanceAutomation.value = ModelUtils.clamp((p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value, 0.0, 16.0)
+            try balanceAutomation.value = ModelUtils.clamp((jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value, 0.0, 16.0)
             beat.automations.push(balanceAutomation)
             return ApplyNodeResult.Applied
         case "tp":
@@ -1470,7 +1470,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             beat.tremoloPicking = tremolo
             if TypeHelper.isTruthy(TypeHelper.isTruthy(p.arguments) && p.arguments!.arguments.length > 0) {
                 if p.arguments!.arguments.length > 0 {
-                    let tremoloMarks: Double = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                    let tremoloMarks: Double = try (jsCast(p.arguments!.arguments[0], AlphaTexNumberLiteral.self)).value
                     if tremoloMarks >= TremoloPickingEffect.minMarks && tremoloMarks <= TremoloPickingEffect.maxMarks {
                         tremolo.marks = tremoloMarks
                     } else {
@@ -1482,13 +1482,13 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                         case 32.0:
                             tremolo.marks = 3.0
                         default:
-                            importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected tremolo marks value '\((tremoloMarks).toTemplate()), expected: \((TremoloPickingEffect.minMarks).toTemplate())-\((TremoloPickingEffect.maxMarks).toTemplate()), or legacy: 8, 16 or 32", start: p.arguments!.arguments[0].start, end: p.arguments!.arguments[0].end))
+                            try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected tremolo marks value '\((tremoloMarks).toTemplate()), expected: \((TremoloPickingEffect.minMarks).toTemplate())-\((TremoloPickingEffect.maxMarks).toTemplate()), or legacy: 8, 16 or 32", start: p.arguments!.arguments.jsElement(0).start, end: p.arguments!.arguments.jsElement(0).end))
                             return ApplyNodeResult.NotAppliedSemanticError
                         }
                     }
                 }
                 if p.arguments!.arguments.length > 1 {
-                    let tremoloStyle: TremoloPickingStyle? = AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "tremolo picking style", AlphaTex1EnumMappings.tremoloPickingStyle, 1.0)
+                    let tremoloStyle: TremoloPickingStyle? = try AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "tremolo picking style", AlphaTex1EnumMappings.tremoloPickingStyle, 1.0)
                     if tremoloStyle == nil {
                         return ApplyNodeResult.NotAppliedSemanticError
                     }
@@ -1513,7 +1513,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             return ApplyNodeResult.Applied
         case "ds":
             beat.deadSlapped = true
-            if beat.notes.length == 1.0 && beat.notes[0].isDead {
+            if try beat.notes.length == 1.0 && beat.notes.jsElement(0).isDead {
                 beat.removeNote(beat.notes[0])
             }
             return ApplyNodeResult.Applied
@@ -1530,10 +1530,10 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             beat.wahPedal = WahPedal.Closed
             return ApplyNodeResult.Applied
         case "barre":
-            beat.barreFret = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try beat.barreFret = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             beat.barreShape = BarreShape.Full
-            if p.arguments!.arguments.length > 1 {
-                let barreShape: BarreShape? = AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "barre shape", AlphaTex1EnumMappings.barreShape, 1.0)
+            if try jsNonNull(p.arguments).arguments.length > 1 {
+                let barreShape: BarreShape? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(p.arguments), "barre shape", AlphaTex1EnumMappings.barreShape, 1.0)
                 if barreShape == nil {
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
@@ -1541,14 +1541,14 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             }
             return ApplyNodeResult.Applied
         case "rasg":
-            let rasg: Rasgueado? = AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "rasgueado pattern", AlphaTex1EnumMappings.rasgueado)
+            let rasg: Rasgueado? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(p.arguments), "rasgueado pattern", AlphaTex1EnumMappings.rasgueado)
             if rasg == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             beat.rasgueado = rasg!
             return ApplyNodeResult.Applied
         case "ot":
-            let ottava: Ottavia? = AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "ottava", AlphaTex1EnumMappings.ottavia)
+            let ottava: Ottavia? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(p.arguments), "ottava", AlphaTex1EnumMappings.ottavia)
             if ottava == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
@@ -1559,11 +1559,11 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             return ApplyNodeResult.Applied
         case "instrument":
             var program: Double = 0.0
-            switch p.arguments!.arguments[0].nodeType {
+            switch try jsNonNull(p.arguments).arguments.jsElement(0).nodeType {
             case AlphaTexNodeType.Ident, AlphaTexNodeType.String:
-                program = GeneralMidi.getValue((p.arguments!.arguments[0] as! AlphaTexTextNode).text)
+                try program = GeneralMidi.getValue((jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexTextNode.self)).text)
             case AlphaTexNodeType.Number:
-                program = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+                try program = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             default:
                 break
             }
@@ -1577,23 +1577,23 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             let bankAutomation: Automation = Automation()
             bankAutomation.isLinear = false
             bankAutomation.type = AutomationType.Bank
-            bankAutomation.value = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try bankAutomation.value = (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             beat.automations.push(bankAutomation)
             return ApplyNodeResult.Applied
         case "fermata":
-            let fermataType: FermataType? = AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "fermata", AlphaTex1EnumMappings.fermataType)
+            let fermataType: FermataType? = try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(p.arguments), "fermata", AlphaTex1EnumMappings.fermataType)
             if fermataType == nil {
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             let fermata: Fermata = Fermata()
             fermata.type = fermataType!
-            if p.arguments!.arguments.length > 1 {
-                fermata.length = (p.arguments!.arguments[1] as! AlphaTexNumberLiteral).value
+            if try jsNonNull(p.arguments).arguments.length > 1 {
+                try fermata.length = (jsCast(jsNonNull(p.arguments).arguments[1], AlphaTexNumberLiteral.self)).value
             }
             beat.fermata = fermata
             return ApplyNodeResult.Applied
         case "beam":
-            let beamMode: String = (p.arguments!.arguments[0] as! AlphaTexTextNode).text
+            let beamMode: String = try (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexTextNode.self)).text
             switch beamMode.lowercase() {
             case "invert":
                 beat.invertBeamDirection = true
@@ -1611,7 +1611,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                 beat.beamingMode = BeatBeamingMode.ForceSplitOnSecondaryToNext
             default:
                 let allowedValues: List<String> = List<String>("invert", "up", "down", "auto", "split", "merge", "splitsecondary")
-                importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected beam value '\((beamMode).toTemplate())', expected: \((allowedValues.join(",")).toTemplate())", start: p.arguments!.arguments[0].start, end: p.arguments!.arguments[0].end))
+                try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected beam value '\((beamMode).toTemplate())', expected: \((allowedValues.join(",")).toTemplate())", start: jsNonNull(p.arguments).arguments.jsElement(0).start, end: jsNonNull(p.arguments).arguments.jsElement(0).end))
                 return ApplyNodeResult.NotAppliedSemanticError
             }
             return ApplyNodeResult.Applied
@@ -1636,19 +1636,19 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         beat.voice.bar.sustainPedals.push(sustainPedal)
     }
 
-    private static func _applyBrush(_ beat: Beat, _ p: AlphaTexPropertyNode, _ brushType: BrushType, _ durationFactor: Double) {
+    private static func _applyBrush(_ beat: Beat, _ p: AlphaTexPropertyNode, _ brushType: BrushType, _ durationFactor: Double) throws {
         beat.brushType = brushType
         if TypeHelper.isTruthy(TypeHelper.isTruthy(p.arguments) && p.arguments!.arguments.length > 0) {
-            beat.brushDuration = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            try beat.brushDuration = (jsCast(p.arguments!.arguments[0], AlphaTexNumberLiteral.self)).value
         } else {
             beat.updateDurations()
             beat.brushDuration = (beat.playbackDuration * durationFactor) / beat.notes.length
         }
     }
 
-    public func applyNoteProperty(_ importer: any IAlphaTexImporter, _ note: Note, _ p: AlphaTexPropertyNode) -> ApplyNodeResult {
+    public func applyNoteProperty(_ importer: any IAlphaTexImporter, _ note: Note, _ p: AlphaTexPropertyNode) throws -> ApplyNodeResult {
         let tag: String = p.property.text.lowercase()
-        let result: ApplyNodeResult? = self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.noteProperties), p, tag, p.arguments)
+        let result: ApplyNodeResult? = try self._checkArgumentTypes(importer, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.noteProperties), p, tag, p.arguments)
         if result != nil {
             return result!
         }
@@ -1658,21 +1658,21 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             var typeAndStyle: Bool = true
             var typeSet: Bool = false
             while typeAndStyle {
-                switch p.arguments!.arguments[(tbi).toInt()].nodeType {
+                switch try jsNonNull(p.arguments).arguments.jsElement((tbi).toInt()).nodeType {
                 case AlphaTexNodeType.Ident, AlphaTexNodeType.String:
-                    let txt: String = (p.arguments!.arguments[(tbi).toInt()] as! AlphaTexTextNode).text.lowercase()
+                    let txt: String = try (jsCast(jsNonNull(p.arguments).arguments[(tbi).toInt()], AlphaTexTextNode.self)).text.lowercase()
                     if AlphaTex1EnumMappings.bendType.has(txt) {
-                        note.bendType = AlphaTex1EnumMappings.bendType.get(txt)!
+                        try note.bendType = jsNonNull(AlphaTex1EnumMappings.bendType.get(txt))
                         typeSet = true
                         tbi += 1
                     } else if AlphaTex1EnumMappings.bendStyle.has(txt) {
-                        note.bendStyle = AlphaTex1EnumMappings.bendStyle.get(txt)!
+                        try note.bendStyle = jsNonNull(AlphaTex1EnumMappings.bendStyle.get(txt))
                         tbi += 1
                     } else {
                         if typeSet {
-                            AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "bend style", AlphaTex1EnumMappings.bendStyle, tbi)
+                            try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(p.arguments), "bend style", AlphaTex1EnumMappings.bendStyle, tbi)
                         } else {
-                            AlphaTex1LanguageHandler._parseEnumValue(importer, p.arguments!, "bend type", AlphaTex1EnumMappings.bendType, tbi)
+                            try AlphaTex1LanguageHandler._parseEnumValue(importer, jsNonNull(p.arguments), "bend type", AlphaTex1EnumMappings.bendType, tbi)
                         }
                         return ApplyNodeResult.NotAppliedSemanticError
                     }
@@ -1680,7 +1680,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                     typeAndStyle = false
                 }
             }
-            let points: List<BendPoint>? = self._getBendPoints(importer, p, tbi, tag == "be")
+            let points: List<BendPoint>? = try self._getBendPoints(importer, p, tbi, tag == "be")
             if TypeHelper.isTruthy(points) {
                 for point in points! {
                     note.addBendPoint(point)
@@ -1693,29 +1693,29 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             return ApplyNodeResult.Applied
         case "ah":
             note.harmonicType = HarmonicType.Artificial
-            note.harmonicValue = AlphaTex1LanguageHandler._harmonicValue(p.arguments, note.harmonicValue)
+            try note.harmonicValue = AlphaTex1LanguageHandler._harmonicValue(p.arguments, note.harmonicValue)
             return ApplyNodeResult.Applied
         case "th":
             note.harmonicType = HarmonicType.Tap
-            note.harmonicValue = AlphaTex1LanguageHandler._harmonicValue(p.arguments, note.harmonicValue)
+            try note.harmonicValue = AlphaTex1LanguageHandler._harmonicValue(p.arguments, note.harmonicValue)
             return ApplyNodeResult.Applied
         case "ph":
             note.harmonicType = HarmonicType.Pinch
-            note.harmonicValue = AlphaTex1LanguageHandler._harmonicValue(p.arguments, note.harmonicValue)
+            try note.harmonicValue = AlphaTex1LanguageHandler._harmonicValue(p.arguments, note.harmonicValue)
             return ApplyNodeResult.Applied
         case "sh":
             note.harmonicType = HarmonicType.Semi
-            note.harmonicValue = AlphaTex1LanguageHandler._harmonicValue(p.arguments, note.harmonicValue)
+            try note.harmonicValue = AlphaTex1LanguageHandler._harmonicValue(p.arguments, note.harmonicValue)
             return ApplyNodeResult.Applied
         case "fh":
             note.harmonicType = HarmonicType.Feedback
-            note.harmonicValue = AlphaTex1LanguageHandler._harmonicValue(p.arguments, note.harmonicValue)
+            try note.harmonicValue = AlphaTex1LanguageHandler._harmonicValue(p.arguments, note.harmonicValue)
             return ApplyNodeResult.Applied
         case "tr":
-            let trillFret: Double = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral).value
+            let trillFret: Double = try (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexNumberLiteral.self)).value
             var trillDuration: Duration = Duration.Sixteenth
-            if p.arguments!.arguments.length > 1 {
-                let trillDurationValue: Double = (p.arguments!.arguments[1] as! AlphaTexNumberLiteral).value
+            if try jsNonNull(p.arguments).arguments.length > 1 {
+                let trillDurationValue: Double = try (jsCast(jsNonNull(p.arguments).arguments[1], AlphaTexNumberLiteral.self)).value
                 switch trillDurationValue {
                 case 16.0:
                     trillDuration = Duration.Sixteenth
@@ -1724,7 +1724,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                 case 64.0:
                     trillDuration = Duration.SixtyFourth
                 default:
-                    importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected trill duration value '\((trillDurationValue).toTemplate())', expected: 16, 32 or 64", start: p.arguments!.arguments[1].start, end: p.arguments!.arguments[1].end))
+                    try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected trill duration value '\((trillDurationValue).toTemplate())', expected: 16, 32 or 64", start: jsNonNull(p.arguments).arguments.jsElement(1).start, end: jsNonNull(p.arguments).arguments.jsElement(1).end))
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
             }
@@ -1797,7 +1797,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         case "lf":
             var leftFinger: Fingers = Fingers.Thumb
             if TypeHelper.isTruthy(TypeHelper.isTruthy(p.arguments) && p.arguments!.arguments.length > 0) {
-                let customFinger: Fingers? = AlphaTex1LanguageHandler._toFinger(importer, p.arguments!)
+                let customFinger: Fingers? = try AlphaTex1LanguageHandler._toFinger(importer, p.arguments!)
                 if customFinger == nil {
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
@@ -1808,7 +1808,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         case "rf":
             var rightFinger: Fingers = Fingers.Thumb
             if TypeHelper.isTruthy(TypeHelper.isTruthy(p.arguments) && p.arguments!.arguments.length > 0) {
-                let customFinger: Fingers? = AlphaTex1LanguageHandler._toFinger(importer, p.arguments!)
+                let customFinger: Fingers? = try AlphaTex1LanguageHandler._toFinger(importer, p.arguments!)
                 if customFinger == nil {
                     return ApplyNodeResult.NotAppliedSemanticError
                 }
@@ -1817,7 +1817,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             note.rightHandFinger = rightFinger
             return ApplyNodeResult.Applied
         case "acc":
-            note.accidentalMode = ModelUtils.parseAccidentalMode((p.arguments!.arguments[0] as! AlphaTexTextNode).text)
+            try note.accidentalMode = ModelUtils.parseAccidentalMode((jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexTextNode.self)).text)
             return ApplyNodeResult.Applied
         case "turn":
             note.ornament = NoteOrnament.Turn
@@ -1833,7 +1833,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             return ApplyNodeResult.Applied
         case "string":
             if TypeHelper.isTruthy(TypeHelper.isTruthy(p.arguments) && p.arguments!.arguments.length > 0) {
-                let stringArg: AlphaTexNumberLiteral = (p.arguments!.arguments[0] as! AlphaTexNumberLiteral)
+                let stringArg: AlphaTexNumberLiteral = try jsCast(p.arguments!.arguments[0], AlphaTexNumberLiteral.self)
                 if !note.isPiano {
                     importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT221, message: "A string number can only be specified on pitched notes, use the 'fret.string' syntax to specify the string of fretted notes.", start: stringArg.start, end: stringArg.end))
                     return ApplyNodeResult.NotAppliedSemanticError
@@ -1852,9 +1852,9 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             note.isVisible = false
             return ApplyNodeResult.Applied
         case "slur":
-            let slurId: String = (p.arguments!.arguments[0] as! AlphaTexTextNode).text
+            let slurId: String = try (jsCast(jsNonNull(p.arguments).arguments[0], AlphaTexTextNode.self)).text
             if importer.state.slurs.has(slurId) {
-                let slurOrigin: Note = importer.state.slurs.get(slurId)!
+                let slurOrigin: Note = try jsNonNull(importer.state.slurs.get(slurId))
                 slurOrigin.slurDestination = note
                 note.slurOrigin = slurOrigin
                 note.isSlurDestination = true
@@ -1863,13 +1863,13 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             }
             return ApplyNodeResult.Applied
         default:
-            return self.applyBeatProperty(importer, note.beat, p)
+            return try self.applyBeatProperty(importer, note.beat, p)
         }
         return ApplyNodeResult.NotAppliedUnrecognizedMarker
     }
 
-    private static func _toFinger(_ importer: any IAlphaTexImporter, _ args: AlphaTexArgumentList) -> Fingers? {
-        let value: Double = (args.arguments[0] as! AlphaTexNumberLiteral).value
+    private static func _toFinger(_ importer: any IAlphaTexImporter, _ args: AlphaTexArgumentList) throws -> Fingers? {
+        let value: Double = try (jsCast(args.arguments[0], AlphaTexNumberLiteral.self)).value
         switch value {
         case 1.0:
             return Fingers.Thumb
@@ -1882,26 +1882,26 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         case 5.0:
             return Fingers.LittleFinger
         default:
-            importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT211, message: "Value is out of valid range. Allowed range: 1-5, Actual Value: \((value).toTemplate())", start: args.arguments[0].start, end: args.arguments[0].end))
+            try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT211, message: "Value is out of valid range. Allowed range: 1-5, Actual Value: \((value).toTemplate())", start: args.arguments.jsElement(0).start, end: args.arguments.jsElement(0).end))
             return nil
         }
     }
 
-    private static func _harmonicValue(_ args: AlphaTexArgumentList?, _ harmonicValue: Double) -> Double {
-        var paramharmonicValue = harmonicValue
+    private static func _harmonicValue(_ args: AlphaTexArgumentList?, _ harmonicValue: Double) throws -> Double {
+        var paramharmonicValue = try harmonicValue
         if TypeHelper.isTruthy(args) {
-            paramharmonicValue = (args!.arguments[0] as! AlphaTexNumberLiteral).value
+            try paramharmonicValue = (jsCast(args!.arguments[0], AlphaTexNumberLiteral.self)).value
         }
         return paramharmonicValue
     }
 
-    private func _getBendPoints(_ importer: any IAlphaTexImporter, _ p: AlphaTexPropertyNode, _ argStartIndex: Double, _ exact: Bool) -> List<BendPoint>? {
-        var paramargStartIndex = argStartIndex
-        var args: List<any IAlphaTexArgumentValue> = p.arguments!.arguments
+    private func _getBendPoints(_ importer: any IAlphaTexImporter, _ p: AlphaTexPropertyNode, _ argStartIndex: Double, _ exact: Bool) throws -> List<BendPoint>? {
+        var paramargStartIndex = try argStartIndex
+        var args: List<any IAlphaTexArgumentValue> = try jsNonNull(p.arguments).arguments
         var remainingArgs: Double = args.length - paramargStartIndex
-        var errorNode: AlphaTexAstNode = p.arguments!
-        if remainingArgs > 0 && args[(paramargStartIndex).toInt()].nodeType == AlphaTexNodeType.Arguments {
-            args = (args[(paramargStartIndex).toInt()] as! AlphaTexArgumentList).arguments
+        var errorNode: AlphaTexAstNode = try jsNonNull(p.arguments)
+        if try remainingArgs > 0 && args.jsElement((paramargStartIndex).toInt()).nodeType == AlphaTexNodeType.Arguments {
+            try args = (jsCast(args[(paramargStartIndex).toInt()], AlphaTexArgumentList.self)).arguments
             paramargStartIndex = 0.0
             remainingArgs = args.length
             errorNode = (args[(paramargStartIndex).toInt()] as! AlphaTexAstNode)
@@ -1919,11 +1919,11 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             var offset: Double = 0.0
             var value: Double = 0.0
             if exact {
-                offset = (args[(jsPostInc(&vi)).toInt()] as! AlphaTexNumberLiteral).value
-                value = (args[(jsPostInc(&vi)).toInt()] as! AlphaTexNumberLiteral).value
+                try offset = (jsCast(args[(jsPostInc(&vi)).toInt()], AlphaTexNumberLiteral.self)).value
+                try value = (jsCast(args[(jsPostInc(&vi)).toInt()], AlphaTexNumberLiteral.self)).value
             } else {
                 offset = 0.0
-                value = (args[(jsPostInc(&vi)).toInt()] as! AlphaTexNumberLiteral).value
+                try value = (jsCast(args[(jsPostInc(&vi)).toInt()], AlphaTexNumberLiteral.self)).value
             }
             points.push(BendPoint(offset, value))
         }
@@ -1950,15 +1950,15 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         }
     }
 
-    private static func _parseEnumValue<TValue: IAlphaTabEnum>(_ importer: any IAlphaTexImporter, _ p: AlphaTexArgumentList, _ name: String, _ lookup: Map<String, TValue>, _ valueIndex: Double = 0.0) -> TValue? {
+    private static func _parseEnumValue<TValue: IAlphaTabEnum>(_ importer: any IAlphaTexImporter, _ p: AlphaTexArgumentList, _ name: String, _ lookup: Map<String, TValue>, _ valueIndex: Double = 0.0) throws -> TValue? {
         if valueIndex >= p.arguments.length {
             return nil
         }
-        let txt: String = (p.arguments[(valueIndex).toInt()] as! AlphaTexTextNode).text
+        let txt: String = try (jsCast(p.arguments[(valueIndex).toInt()], AlphaTexTextNode.self)).text
         if lookup.has(txt.lowercase()) {
-            return lookup.get(txt.lowercase())!
+            return try jsNonNull(lookup.get(txt.lowercase()))
         } else {
-            importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected \((name).toTemplate()) value '\((txt).toTemplate())', expected: \((Array.from(lookup.keys()).join(",")).toTemplate())", start: p.arguments[(valueIndex).toInt()].start, end: p.arguments[(valueIndex).toInt()].end))
+            try importer.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected \((name).toTemplate()) value '\((txt).toTemplate())', expected: \((Array.from(lookup.keys()).join(",")).toTemplate())", start: p.arguments.jsElement((valueIndex).toInt()).start, end: p.arguments.jsElement((valueIndex).toInt()).end))
             return nil
         }
     }
@@ -1967,69 +1967,69 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
 
     nonisolated(unsafe) private static let _defaultTrack: Track = Track()
 
-    public func buildScoreMetaDataNodes(_ score: Score) -> List<AlphaTexMetaDataNode> {
+    public func buildScoreMetaDataNodes(_ score: Score) throws -> List<AlphaTexMetaDataNode> {
         let nodes: List<AlphaTexMetaDataNode> = List<AlphaTexMetaDataNode>()
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "album", score, score.album, ScoreSubElement.Album)
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "artist", score, score.artist, ScoreSubElement.Artist)
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "copyright", score, score.copyright, ScoreSubElement.Copyright)
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "copyright2", score, nil, ScoreSubElement.CopyrightSecondLine)
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "wordsandmusic", score, nil, ScoreSubElement.WordsAndMusic, true)
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "instructions", score, score.instructions, nil)
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "music", score, score.music, ScoreSubElement.Music)
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "notices", score, score.notices, nil)
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "subtitle", score, score.subTitle, ScoreSubElement.SubTitle)
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "title", score, score.title, ScoreSubElement.Title)
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "words", score, score.words, ScoreSubElement.Words)
-        AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "tab", score, score.tab, ScoreSubElement.Transcriber)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "album", score, score.album, ScoreSubElement.Album)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "artist", score, score.artist, ScoreSubElement.Artist)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "copyright", score, score.copyright, ScoreSubElement.Copyright)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "copyright2", score, nil, ScoreSubElement.CopyrightSecondLine)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "wordsandmusic", score, nil, ScoreSubElement.WordsAndMusic, true)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "instructions", score, score.instructions, nil)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "music", score, score.music, ScoreSubElement.Music)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "notices", score, score.notices, nil)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "subtitle", score, score.subTitle, ScoreSubElement.SubTitle)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "title", score, score.title, ScoreSubElement.Title)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "words", score, score.words, ScoreSubElement.Words)
+        try AlphaTex1LanguageHandler._buildScoreInfoMeta(nodes, "tab", score, score.tab, ScoreSubElement.Transcriber)
         if score.defaultSystemsLayout != AlphaTex1LanguageHandler._defaultScore.defaultSystemsLayout {
-            nodes.push(Atnf.numberMeta("defaultSystemsLayout", score.defaultSystemsLayout))
+            try nodes.push(Atnf.numberMeta("defaultSystemsLayout", score.defaultSystemsLayout))
         }
         if score.systemsLayout.length > 0 {
             nodes.push(Atnf.meta("systemsLayout", Atnf.args(score.systemsLayout.map({ (l: Double) -> any IAlphaTexArgumentValue in
                 return (Atnf.number(l) as any IAlphaTexArgumentValue)
             }))))
         }
-        AlphaTex1LanguageHandler._buildStyleSheetMetaData(nodes, score.stylesheet)
+        try AlphaTex1LanguageHandler._buildStyleSheetMetaData(nodes, score.stylesheet)
         if nodes.length > 0 {
             nodes[0].leadingComments = List<AlphaTexComment>(AlphaTexComment(multiLine: false, text: "Score Metadata"))
         }
         return nodes
     }
 
-    private static func _buildStyleSheetMetaData(_ nodes: List<AlphaTexMetaDataNode>, _ stylesheet: RenderStylesheet) {
+    private static func _buildStyleSheetMetaData(_ nodes: List<AlphaTexMetaDataNode>, _ stylesheet: RenderStylesheet) throws {
         let firstStyleSheet: Double = nodes.length
         if stylesheet.hideDynamics {
             nodes.push(Atnf.meta("hideDynamics"))
         }
         if stylesheet.bracketExtendMode != AlphaTex1LanguageHandler._defaultScore.stylesheet.bracketExtendMode {
-            nodes.push(Atnf.identMeta("bracketExtendMode", AlphaTex1EnumMappings.bracketExtendModeReversed.get(stylesheet.bracketExtendMode)!))
+            try nodes.push(Atnf.identMeta("bracketExtendMode", jsNonNull(AlphaTex1EnumMappings.bracketExtendModeReversed.get(stylesheet.bracketExtendMode))))
         }
         if stylesheet.useSystemSignSeparator {
             nodes.push(Atnf.meta("useSystemSignSeparator"))
         }
         if stylesheet.tuningDisplayMode != TuningDisplayMode.Score {
-            nodes.push(Atnf.identMeta("tuningDisplayMode", AlphaTex1EnumMappings.tuningDisplayModeReversed.get(stylesheet.tuningDisplayMode)!))
+            try nodes.push(Atnf.identMeta("tuningDisplayMode", jsNonNull(AlphaTex1EnumMappings.tuningDisplayModeReversed.get(stylesheet.tuningDisplayMode))))
         }
         if stylesheet.multiTrackMultiBarRest {
             nodes.push(Atnf.meta("multiBarRest"))
         }
         if stylesheet.singleTrackTrackNamePolicy != AlphaTex1LanguageHandler._defaultScore.stylesheet.singleTrackTrackNamePolicy {
-            nodes.push(Atnf.identMeta("singleTrackTrackNamePolicy", AlphaTex1EnumMappings.trackNamePolicyReversed.get(stylesheet.singleTrackTrackNamePolicy)!))
+            try nodes.push(Atnf.identMeta("singleTrackTrackNamePolicy", jsNonNull(AlphaTex1EnumMappings.trackNamePolicyReversed.get(stylesheet.singleTrackTrackNamePolicy))))
         }
         if stylesheet.multiTrackTrackNamePolicy != AlphaTex1LanguageHandler._defaultScore.stylesheet.multiTrackTrackNamePolicy {
-            nodes.push(Atnf.identMeta("multiTrackTrackNamePolicy", AlphaTex1EnumMappings.trackNamePolicyReversed.get(stylesheet.multiTrackTrackNamePolicy)!))
+            try nodes.push(Atnf.identMeta("multiTrackTrackNamePolicy", jsNonNull(AlphaTex1EnumMappings.trackNamePolicyReversed.get(stylesheet.multiTrackTrackNamePolicy))))
         }
         if stylesheet.firstSystemTrackNameMode != AlphaTex1LanguageHandler._defaultScore.stylesheet.firstSystemTrackNameMode {
-            nodes.push(Atnf.identMeta("firstSystemTrackNameMode", AlphaTex1EnumMappings.trackNameModeReversed.get(stylesheet.firstSystemTrackNameMode)!))
+            try nodes.push(Atnf.identMeta("firstSystemTrackNameMode", jsNonNull(AlphaTex1EnumMappings.trackNameModeReversed.get(stylesheet.firstSystemTrackNameMode))))
         }
         if stylesheet.otherSystemsTrackNameMode != AlphaTex1LanguageHandler._defaultScore.stylesheet.otherSystemsTrackNameMode {
-            nodes.push(Atnf.identMeta("otherSystemsTrackNameMode", AlphaTex1EnumMappings.trackNameModeReversed.get(stylesheet.otherSystemsTrackNameMode)!))
+            try nodes.push(Atnf.identMeta("otherSystemsTrackNameMode", jsNonNull(AlphaTex1EnumMappings.trackNameModeReversed.get(stylesheet.otherSystemsTrackNameMode))))
         }
         if stylesheet.firstSystemTrackNameOrientation != AlphaTex1LanguageHandler._defaultScore.stylesheet.firstSystemTrackNameOrientation {
-            nodes.push(Atnf.identMeta("firstSystemTrackNameOrientation", AlphaTex1EnumMappings.trackNameOrientationReversed.get(stylesheet.firstSystemTrackNameOrientation)!))
+            try nodes.push(Atnf.identMeta("firstSystemTrackNameOrientation", jsNonNull(AlphaTex1EnumMappings.trackNameOrientationReversed.get(stylesheet.firstSystemTrackNameOrientation))))
         }
         if stylesheet.otherSystemsTrackNameOrientation != AlphaTex1LanguageHandler._defaultScore.stylesheet.otherSystemsTrackNameOrientation {
-            nodes.push(Atnf.identMeta("otherSystemsTrackNameOrientation", AlphaTex1EnumMappings.trackNameOrientationReversed.get(stylesheet.otherSystemsTrackNameOrientation)!))
+            try nodes.push(Atnf.identMeta("otherSystemsTrackNameOrientation", jsNonNull(AlphaTex1EnumMappings.trackNameOrientationReversed.get(stylesheet.otherSystemsTrackNameOrientation))))
         }
         if stylesheet.extendBarLines {
             nodes.push(Atnf.meta("extendBarLines"))
@@ -2046,13 +2046,13 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         if stylesheet.showSingleStaffBrackets {
             nodes.push(Atnf.meta("showSingleStaffBrackets"))
         }
-        AlphaTex1LanguageHandler._buildStaffDisplayNodes(nodes, stylesheet, nil, nil, false)
+        try AlphaTex1LanguageHandler._buildStaffDisplayNodes(nodes, stylesheet, nil, nil, false)
         if firstStyleSheet < nodes.length {
             nodes[(firstStyleSheet).toInt()].leadingComments = List<AlphaTexComment>(AlphaTexComment(multiLine: false, text: "Score Stylesheet"))
         }
     }
 
-    private static func _buildScoreInfoMeta(_ nodes: List<AlphaTexMetaDataNode>, _ tag: String, _ score: Score, _ value: String?, _ element: ScoreSubElement?, _ writeIfEmpty: Bool = false) {
+    private static func _buildScoreInfoMeta(_ nodes: List<AlphaTexMetaDataNode>, _ tag: String, _ score: Score, _ value: String?, _ element: ScoreSubElement?, _ writeIfEmpty: Bool = false) throws {
         if value != nil && value!.length == 0.0 && !writeIfEmpty {
             return
         }
@@ -2065,7 +2065,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             let defaultStyle: HeaderFooterStyle? = ScoreStyle.defaultHeaderAndFooter.has(element!) ? ScoreStyle.defaultHeaderAndFooter.get(element!) : nil
             if TypeHelper.isTruthy(TypeHelper.isTruthy(style) && (!TypeHelper.isTruthy(defaultStyle) || !HeaderFooterStyle.equals(defaultStyle!, style!))) {
                 args.push(Atnf.string(style!.isVisible == false ? "" : style!.template))
-                args.push(Atnf.ident(AlphaTex1EnumMappings.textAlignReversed.get(style!.textAlign)!))
+                try args.push(Atnf.ident(jsNonNull(AlphaTex1EnumMappings.textAlignReversed.get(style!.textAlign))))
             }
         }
         if value == nil && args.length == 0.0 {
@@ -2076,44 +2076,44 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         nodes.push(Atnf.meta(tag, Atnf.args((List<(any IAlphaTexArgumentValue)?>(widening: args)))))
     }
 
-    public func buildSyncPointNodes(_ score: Score) -> List<AlphaTexMetaDataNode> {
+    public func buildSyncPointNodes(_ score: Score) throws -> List<AlphaTexMetaDataNode> {
         let nodes: List<AlphaTexMetaDataNode> = List<AlphaTexMetaDataNode>()
-        let flatSyncPoints: List<FlatSyncPoint> = score.exportFlatSyncPoints()
+        let flatSyncPoints: List<FlatSyncPoint> = try score.exportFlatSyncPoints()
         for p in flatSyncPoints {
             nodes.push(Atnf.meta("sync", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.number(p.barIndex), Atnf.number(p.barOccurence), Atnf.number(p.millisecondOffset), p.barPosition > 0 ? Atnf.number(p.barPosition) : nil))))
         }
         return nodes
     }
 
-    public func buildBarMetaDataNodes(_ staff: Staff, _ bar: Bar?, _ voice: Double, _ isMultiVoice: Bool) -> List<AlphaTexMetaDataNode> {
+    public func buildBarMetaDataNodes(_ staff: Staff, _ bar: Bar?, _ voice: Double, _ isMultiVoice: Bool) throws -> List<AlphaTexMetaDataNode> {
         let nodes: List<AlphaTexMetaDataNode> = List<AlphaTexMetaDataNode>()
-        AlphaTex1LanguageHandler._buildStructuralMetaDataNodes(bar, staff, nodes, isMultiVoice, voice)
+        try AlphaTex1LanguageHandler._buildStructuralMetaDataNodes(bar, staff, nodes, isMultiVoice, voice)
         if !TypeHelper.isTruthy(bar) {
             return nodes
         }
         if voice == 0.0 {
             if staff.index == 0.0 && staff.track.index == 0.0 {
-                AlphaTex1LanguageHandler._buildMasterBarMetaDataNodes(nodes, bar!.masterBar)
+                try AlphaTex1LanguageHandler._buildMasterBarMetaDataNodes(nodes, bar!.masterBar)
             }
         }
         let firstBarMetaIndex: Double = nodes.length
         if voice == 0.0 && bar!.index == 0.0 && staff.index == 0.0 && staff.track.index == 0.0 {
-            nodes.push(Atnf.identMeta("accidentals", "auto"))
+            try nodes.push(Atnf.identMeta("accidentals", "auto"))
         }
         if bar!.index == 0.0 || bar!.clef != bar!.previousBar?.clef {
-            nodes.push(Atnf.identMeta("clef", AlphaTex1EnumMappings.clefReversed.get(bar!.clef)!))
+            try nodes.push(Atnf.identMeta("clef", jsNonNull(AlphaTex1EnumMappings.clefReversed.get(bar!.clef))))
         }
         if (bar!.index == 0.0 && bar!.clefOttava != Ottavia.Regular) || bar!.clefOttava != bar!.previousBar?.clefOttava {
-            nodes.push(Atnf.identMeta("ottava", AlphaTex1EnumMappings.ottaviaReversed.get(bar!.clefOttava)!))
+            try nodes.push(Atnf.identMeta("ottava", jsNonNull(AlphaTex1EnumMappings.ottaviaReversed.get(bar!.clefOttava))))
         }
         if (bar!.index == 0.0 && bar!.simileMark != SimileMark.None) || bar!.simileMark != bar!.previousBar?.simileMark {
-            nodes.push(Atnf.identMeta("simile", AlphaTex1EnumMappings.simileMarkReversed.get(bar!.simileMark)!))
+            try nodes.push(Atnf.identMeta("simile", jsNonNull(AlphaTex1EnumMappings.simileMarkReversed.get(bar!.simileMark))))
         }
         if bar!.displayScale != 1.0 {
-            nodes.push(Atnf.numberMeta("scale", bar!.displayScale))
+            try nodes.push(Atnf.numberMeta("scale", bar!.displayScale))
         }
         if bar!.displayWidth > 0 {
-            nodes.push(Atnf.numberMeta("width", bar!.displayWidth))
+            try nodes.push(Atnf.numberMeta("width", bar!.displayWidth))
         }
         for sp in bar!.sustainPedals {
             var pedalType: String = ""
@@ -2128,28 +2128,28 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                 break
             }
             if TypeHelper.isTruthy(pedalType) {
-                nodes.push(Atnf.numberMeta(pedalType, sp.ratioPosition))
+                try nodes.push(Atnf.numberMeta(pedalType, sp.ratioPosition))
             }
         }
         if bar!.barLineLeft != BarLineStyle.Automatic {
-            nodes.push(Atnf.identMeta("barLineLeft", AlphaTex1EnumMappings.barLineStyleReversed.get(bar!.barLineLeft)!))
+            try nodes.push(Atnf.identMeta("barLineLeft", jsNonNull(AlphaTex1EnumMappings.barLineStyleReversed.get(bar!.barLineLeft))))
         }
         if bar!.barLineRight != BarLineStyle.Automatic {
-            nodes.push(Atnf.identMeta("barLineRight", AlphaTex1EnumMappings.barLineStyleReversed.get(bar!.barLineRight)!))
+            try nodes.push(Atnf.identMeta("barLineRight", jsNonNull(AlphaTex1EnumMappings.barLineStyleReversed.get(bar!.barLineRight))))
         }
-        if bar!.index == 0.0 || bar!.keySignature != bar!.previousBar!.keySignature || bar!.keySignatureType != bar!.previousBar!.keySignatureType {
+        if try bar!.index == 0.0 || bar!.keySignature != jsNonNull(bar!.previousBar).keySignature || bar!.keySignatureType != jsNonNull(bar!.previousBar).keySignatureType {
             var ks: String = ""
             if bar!.keySignatureType == KeySignatureType.Minor {
-                ks = AlphaTex1EnumMappings.keySignaturesMinorReversed.get(bar!.keySignature)!
+                try ks = jsNonNull(AlphaTex1EnumMappings.keySignaturesMinorReversed.get(bar!.keySignature))
             } else {
-                ks = AlphaTex1EnumMappings.keySignaturesMajorReversed.get(bar!.keySignature)!
+                try ks = jsNonNull(AlphaTex1EnumMappings.keySignaturesMajorReversed.get(bar!.keySignature))
             }
-            nodes.push(Atnf.identMeta("ks", ks))
+            try nodes.push(Atnf.identMeta("ks", ks))
         }
         if firstBarMetaIndex < nodes.length {
             nodes[(firstBarMetaIndex).toInt()].leadingComments = List<AlphaTexComment>(AlphaTexComment(multiLine: false, text: "Bar \((bar!.index + 1.0).toTemplate()) Metadata"))
         }
-        AlphaTex1LanguageHandler._buildStaffDisplayNodes(nodes, nil, nil, bar!, AlphaTex1LanguageHandler._isImpliedBarNumberDisplay(staff, bar!, voice))
+        try AlphaTex1LanguageHandler._buildStaffDisplayNodes(nodes, nil, nil, bar!, AlphaTex1LanguageHandler._isImpliedBarNumberDisplay(staff, bar!, voice))
         return nodes
     }
 
@@ -2158,16 +2158,16 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
      * defaults (stylesheet) or implied by a custom bar number (bar) are skipped, a bar number display shared by all
      * staff types is written via the shorthand tag.
      */
-    private static func _buildStaffDisplayNodes(_ nodes: List<AlphaTexMetaDataNode>, _ stylesheet: RenderStylesheet?, _ staff: Staff?, _ bar: Bar?, _ isImpliedBarNumber: Bool) {
-        let element: (AlphaTexPropertiesNode, String, ElementDisplay?, ElementDisplay?) -> Void = { (props: AlphaTexPropertiesNode, prefix: String, v: ElementDisplay?, d: ElementDisplay?) in
+    private static func _buildStaffDisplayNodes(_ nodes: List<AlphaTexMetaDataNode>, _ stylesheet: RenderStylesheet?, _ staff: Staff?, _ bar: Bar?, _ isImpliedBarNumber: Bool) throws {
+        let element: (AlphaTexPropertiesNode, String, ElementDisplay?, ElementDisplay?) throws -> Void = { (props: AlphaTexPropertiesNode, prefix: String, v: ElementDisplay?, d: ElementDisplay?) in
             if v?.isVisible != nil && v!.isVisible! != d?.isVisible {
-                Atnf.prop(props.properties, "\((prefix).toTemplate())Visibility", Atnf.identValue(v!.isVisible! ? "true" : "false"))
+                try Atnf.prop(props.properties, "\((prefix).toTemplate())Visibility", Atnf.identValue(v!.isVisible! ? "true" : "false"))
             }
             if v?.staffPlacement != nil && v!.staffPlacement! != d?.staffPlacement {
-                Atnf.prop(props.properties, "\((prefix).toTemplate())Placement", Atnf.identValue(String(describing: v!.staffPlacement!)))
+                try Atnf.prop(props.properties, "\((prefix).toTemplate())Placement", Atnf.identValue(String(describing: v!.staffPlacement!)))
             }
             if v?.systemDisplay != nil && v!.systemDisplay! != d?.systemDisplay {
-                Atnf.prop(props.properties, "\((prefix).toTemplate())Systems", Atnf.identValue(String(describing: v!.systemDisplay!)))
+                try Atnf.prop(props.properties, "\((prefix).toTemplate())Systems", Atnf.identValue(String(describing: v!.systemDisplay!)))
             }
         }
         let score: AlphaTexPropertiesNode = Atnf.props(List<(String, AlphaTexArgumentList?)?>())
@@ -2176,36 +2176,36 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         let numbered: AlphaTexPropertiesNode = Atnf.props(List<(String, AlphaTexArgumentList?)?>())
         let barNumbers: List<BarNumberDisplay?> = List<BarNumberDisplay?>()
         if TypeHelper.isTruthy(bar) {
-            element(score, "clef", bar!.scoreDisplay?.clef, nil)
-            element(score, "ks", bar!.scoreDisplay?.keySignature, nil)
-            element(score, "ts", bar!.scoreDisplay?.timeSignature, nil)
-            element(tabs, "clef", bar!.tabDisplay?.clef, nil)
-            element(tabs, "ts", bar!.tabDisplay?.timeSignature, nil)
-            element(slash, "ks", bar!.slashDisplay?.keySignature, nil)
-            element(slash, "ts", bar!.slashDisplay?.timeSignature, nil)
-            element(numbered, "ts", bar!.numberedDisplay?.timeSignature, nil)
+            try element(score, "clef", bar!.scoreDisplay?.clef, nil)
+            try element(score, "ks", bar!.scoreDisplay?.keySignature, nil)
+            try element(score, "ts", bar!.scoreDisplay?.timeSignature, nil)
+            try element(tabs, "clef", bar!.tabDisplay?.clef, nil)
+            try element(tabs, "ts", bar!.tabDisplay?.timeSignature, nil)
+            try element(slash, "ks", bar!.slashDisplay?.keySignature, nil)
+            try element(slash, "ts", bar!.slashDisplay?.timeSignature, nil)
+            try element(numbered, "ts", bar!.numberedDisplay?.timeSignature, nil)
             barNumbers.push(bar!.scoreDisplay?.barNumber)
             barNumbers.push(bar!.tabDisplay?.barNumber)
             barNumbers.push(bar!.slashDisplay?.barNumber)
             barNumbers.push(bar!.numberedDisplay?.barNumber)
         } else {
             let defaults: RenderStylesheet? = TypeHelper.isTruthy(staff) ? nil : AlphaTex1LanguageHandler._defaultScore.stylesheet
-            let sc: ScoreStaffConfig? = TypeHelper.isTruthy(staff) ? staff!.scoreConfig : stylesheet!.scoreConfig
-            let tc: TabStaffConfig? = TypeHelper.isTruthy(staff) ? staff!.tabConfig : stylesheet!.tabConfig
-            let slc: SlashStaffConfig? = TypeHelper.isTruthy(staff) ? staff!.slashConfig : stylesheet!.slashConfig
-            let nc: NumberedStaffConfig? = TypeHelper.isTruthy(staff) ? staff!.numberedConfig : stylesheet!.numberedConfig
-            element(score, "clef", sc?.clef, defaults?.scoreConfig.clef)
-            element(score, "ks", sc?.keySignature, defaults?.scoreConfig.keySignature)
-            element(score, "ts", sc?.timeSignature, defaults?.scoreConfig.timeSignature)
-            element(tabs, "clef", tc?.clef, defaults?.tabConfig.clef)
-            element(tabs, "ts", tc?.timeSignature, defaults?.tabConfig.timeSignature)
-            element(tabs, "rests", tc?.rests, defaults?.tabConfig.rests)
+            let sc: ScoreStaffConfig? = try TypeHelper.isTruthy(staff) ? staff!.scoreConfig : jsNonNull(stylesheet).scoreConfig
+            let tc: TabStaffConfig? = try TypeHelper.isTruthy(staff) ? staff!.tabConfig : jsNonNull(stylesheet).tabConfig
+            let slc: SlashStaffConfig? = try TypeHelper.isTruthy(staff) ? staff!.slashConfig : jsNonNull(stylesheet).slashConfig
+            let nc: NumberedStaffConfig? = try TypeHelper.isTruthy(staff) ? staff!.numberedConfig : jsNonNull(stylesheet).numberedConfig
+            try element(score, "clef", sc?.clef, defaults?.scoreConfig.clef)
+            try element(score, "ks", sc?.keySignature, defaults?.scoreConfig.keySignature)
+            try element(score, "ts", sc?.timeSignature, defaults?.scoreConfig.timeSignature)
+            try element(tabs, "clef", tc?.clef, defaults?.tabConfig.clef)
+            try element(tabs, "ts", tc?.timeSignature, defaults?.tabConfig.timeSignature)
+            try element(tabs, "rests", tc?.rests, defaults?.tabConfig.rests)
             if tc?.rhythm != nil && tc!.rhythm! != defaults?.tabConfig.rhythm {
-                Atnf.prop(tabs.properties, "rhythm", Atnf.identValue(String(describing: tc!.rhythm!)))
+                try Atnf.prop(tabs.properties, "rhythm", Atnf.identValue(String(describing: tc!.rhythm!)))
             }
-            element(slash, "ks", slc?.keySignature, defaults?.slashConfig.keySignature)
-            element(slash, "ts", slc?.timeSignature, defaults?.slashConfig.timeSignature)
-            element(numbered, "ts", nc?.timeSignature, defaults?.numberedConfig.timeSignature)
+            try element(slash, "ks", slc?.keySignature, defaults?.slashConfig.keySignature)
+            try element(slash, "ts", slc?.timeSignature, defaults?.slashConfig.timeSignature)
+            try element(numbered, "ts", nc?.timeSignature, defaults?.numberedConfig.timeSignature)
             barNumbers.push(sc?.barNumber)
             barNumbers.push(tc?.barNumber)
             barNumbers.push(slc?.barNumber)
@@ -2221,7 +2221,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             return b == barNumbers[0]
         }).length == barNumbers.length
         if isShared && barNumbers[0] != nil && barNumbers[0] != defaultBarNumber {
-            nodes.push(Atnf.identMeta(TypeHelper.isTruthy(bar) ? "barNumberDisplay" : "defaultBarNumberDisplay", String(describing: barNumbers[0]!)))
+            try nodes.push(Atnf.identMeta(TypeHelper.isTruthy(bar) ? "barNumberDisplay" : "defaultBarNumberDisplay", String(describing: barNumbers[0]!)))
         }
         let tag: String = TypeHelper.isTruthy(bar) ? "barDisplay" : TypeHelper.isTruthy(staff) ? "staffDisplay" : "defaultStaffDisplay"
         let staffTypes: List<String> = List<String>("score", "tabs", "slash", "numbered")
@@ -2231,23 +2231,23 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             while i < all.length {
                 let barNumber: BarNumberDisplay? = barNumbers[(i).toInt()]
                 if !isShared && barNumber != nil && barNumber! != defaultBarNumber {
-                    Atnf.prop(all[(i).toInt()].properties, "barNumber", Atnf.identValue(String(describing: barNumber!)))
+                    try Atnf.prop(all.jsElement((i).toInt()).properties, "barNumber", Atnf.identValue(String(describing: barNumber!)))
                 }
-                if all[(i).toInt()].properties.length > 0 {
-                    nodes.push(Atnf.meta((tag as! String), Atnf.identValue(staffTypes[(i).toInt()]), all[(i).toInt()]))
+                if try all.jsElement((i).toInt()).properties.length > 0 {
+                    try nodes.push(Atnf.meta((tag as! String), Atnf.identValue(staffTypes[(i).toInt()]), all[(i).toInt()]))
                 }
                 i += 1
             }
         }
     }
 
-    private static func _buildStaffMetaDataNodes(_ nodes: List<AlphaTexMetaDataNode>, _ staff: Staff) {
+    private static func _buildStaffMetaDataNodes(_ nodes: List<AlphaTexMetaDataNode>, _ staff: Staff) throws {
         let firstStaffMetaIndex: Double = nodes.length
         if staff.capo != 0.0 {
-            nodes.push(Atnf.numberMeta("capo", staff.capo))
+            try nodes.push(Atnf.numberMeta("capo", staff.capo))
         }
         if staff.isPercussion {
-            nodes.push(Atnf.identMeta("articulation", "defaults"))
+            try nodes.push(Atnf.identMeta("articulation", "defaults"))
         } else if staff.isStringed {
             let tuning: AlphaTexMetaDataNode = Atnf.meta("tuning", Atnf.args(staff.stringTuning.tunings.map({ (t: Double) -> any IAlphaTexArgumentValue in
                 return (Atnf.ident(Tuning.getTextForTuning(t, true)) as any IAlphaTexArgumentValue)
@@ -2258,38 +2258,38 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             }
             if staff.stringTuning.name.length > 0 {
                 tuning.properties = tuning.properties ?? Atnf.props(List<(String, AlphaTexArgumentList?)?>())
-                Atnf.prop(tuning.properties!.properties, "label", Atnf.stringValue(staff.stringTuning.name))
+                try Atnf.prop(tuning.properties!.properties, "label", Atnf.stringValue(staff.stringTuning.name))
             }
         }
         if staff.transpositionPitch != 0.0 {
-            nodes.push(Atnf.numberMeta("transpose", -staff.transpositionPitch))
+            try nodes.push(Atnf.numberMeta("transpose", -staff.transpositionPitch))
         }
-        let defaultTransposition: Double = ModelUtils.displayTranspositionPitches.has(staff.track.playbackInfo.program) ? ModelUtils.displayTranspositionPitches.get(staff.track.playbackInfo.program)! : 0.0
+        let defaultTransposition: Double = try ModelUtils.displayTranspositionPitches.has(staff.track.playbackInfo.program) ? jsNonNull(ModelUtils.displayTranspositionPitches.get(staff.track.playbackInfo.program)) : 0.0
         if staff.displayTranspositionPitch != defaultTransposition {
-            nodes.push(Atnf.numberMeta("displaytranspose", -staff.displayTranspositionPitch))
+            try nodes.push(Atnf.numberMeta("displaytranspose", -staff.displayTranspositionPitch))
         }
         if staff.chords != nil {
             for (_, chord) in staff.chords! {
-                nodes.push(AlphaTex1LanguageHandler._buildChordNode(chord))
+                try nodes.push(AlphaTex1LanguageHandler._buildChordNode(chord))
             }
         }
-        AlphaTex1LanguageHandler._buildStaffDisplayNodes(nodes, nil, staff, nil, false)
+        try AlphaTex1LanguageHandler._buildStaffDisplayNodes(nodes, nil, staff, nil, false)
         if firstStaffMetaIndex < nodes.length {
             nodes[(firstStaffMetaIndex).toInt()].leadingComments = List<AlphaTexComment>(AlphaTexComment(multiLine: false, text: "Staff \((staff.index + 1.0).toTemplate()) Metadata"))
         }
     }
 
-    private static func _buildChordNode(_ chord: Chord) -> AlphaTexMetaDataNode {
-        let chordNode: AlphaTexMetaDataNode = Atnf.meta("chord", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.string(chord.name)), true), Atnf.props(List<(String, AlphaTexArgumentList?)?>(chord.firstFret >= 0 ? ("firstfret", Atnf.numberValue(chord.firstFret)) : nil, ("showdiagram", Atnf.identValue(chord.showDiagram ? "true" : "false")), ("showfingering", Atnf.identValue(chord.showFingering ? "true" : "false")), ("showname", Atnf.identValue(chord.showName ? "true" : "false")), chord.barreFrets.length > 0 ? ("barre", Atnf.args(chord.barreFrets.map({ (f: Double) -> any IAlphaTexArgumentValue in
+    private static func _buildChordNode(_ chord: Chord) throws -> AlphaTexMetaDataNode {
+        let chordNode: AlphaTexMetaDataNode = try Atnf.meta("chord", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.string(chord.name)), true), Atnf.props(List<(String, AlphaTexArgumentList?)?>(chord.firstFret >= 0 ? ("firstfret", Atnf.numberValue(chord.firstFret)) : nil, ("showdiagram", Atnf.identValue(chord.showDiagram ? "true" : "false")), ("showfingering", Atnf.identValue(chord.showFingering ? "true" : "false")), ("showname", Atnf.identValue(chord.showName ? "true" : "false")), chord.barreFrets.length > 0 ? ("barre", Atnf.args(chord.barreFrets.map({ (f: Double) -> any IAlphaTexArgumentValue in
             return (Atnf.number(f) as any IAlphaTexArgumentValue)
         }))) : nil)))
         do {
             var i: Double = 0.0
             while i < chord.staff.tuning.length {
                 if i < chord.strings.length && chord.strings[(i).toInt()] >= 0 {
-                    chordNode.arguments!.arguments.push(Atnf.number(chord.strings[(i).toInt()]))
+                    try jsNonNull(chordNode.arguments).arguments.push(Atnf.number(chord.strings[(i).toInt()]))
                 } else {
-                    chordNode.arguments!.arguments.push(Atnf.ident("x"))
+                    try jsNonNull(chordNode.arguments).arguments.push(Atnf.ident("x"))
                 }
                 i += 1
             }
@@ -2306,7 +2306,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         return (voice == 0.0 && staff.index == 0.0 && staff.track.index == 0.0 && (masterBar.customBarNumber != nil || masterBar.customBarNumberText != nil))
     }
 
-    private static func _buildMasterBarMetaDataNodes(_ nodes: List<AlphaTexMetaDataNode>, _ masterBar: MasterBar) {
+    private static func _buildMasterBarMetaDataNodes(_ nodes: List<AlphaTexMetaDataNode>, _ masterBar: MasterBar) throws {
         let firstMetaIndex: Double = nodes.length
         if masterBar.alternateEndings != 0.0 {
             nodes.push(Atnf.meta("ae", Atnf.args(ModelUtils.getAlternateEndingsList(masterBar.alternateEndings).map({ (i: Double) -> any IAlphaTexArgumentValue in
@@ -2317,11 +2317,11 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             nodes.push(Atnf.meta("ro"))
         }
         if masterBar.isRepeatEnd {
-            nodes.push(Atnf.numberMeta("rc", masterBar.repeatCount))
+            try nodes.push(Atnf.numberMeta("rc", masterBar.repeatCount))
         }
         if masterBar.index == 0.0 || masterBar.timeSignatureCommon != masterBar.previousMasterBar?.timeSignatureCommon || masterBar.timeSignatureNumerator != masterBar.previousMasterBar!.timeSignatureNumerator || masterBar.timeSignatureDenominator != masterBar.previousMasterBar!.timeSignatureDenominator {
             if masterBar.timeSignatureCommon {
-                nodes.push(Atnf.identMeta("ts", "common"))
+                try nodes.push(Atnf.identMeta("ts", "common"))
             } else {
                 nodes.push(Atnf.meta("ts", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.number(masterBar.timeSignatureNumerator), Atnf.number(masterBar.timeSignatureDenominator)))))
             }
@@ -2330,13 +2330,13 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             for (k, v) in masterBar.beamingRules!.groups {
                 let args: AlphaTexArgumentList? = Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.number((Double(k.rawValue)))), true)
                 for i in v {
-                    args!.arguments.push(Atnf.number(i))
+                    try jsNonNull(args).arguments.push(Atnf.number(i))
                 }
                 nodes.push(Atnf.meta("beaming", args))
             }
         }
         if (masterBar.index > 0 && masterBar.tripletFeel != masterBar.previousMasterBar?.tripletFeel) || (masterBar.index == 0.0 && masterBar.tripletFeel != TripletFeel.NoTripletFeel) {
-            nodes.push(Atnf.identMeta("tf", AlphaTex1EnumMappings.tripletFeelReversed.get(masterBar.tripletFeel)!))
+            try nodes.push(Atnf.identMeta("tf", jsNonNull(AlphaTex1EnumMappings.tripletFeelReversed.get(masterBar.tripletFeel))))
         }
         if masterBar.isFreeTime {
             nodes.push(Atnf.meta("ft"))
@@ -2348,26 +2348,26 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             nodes.push(Atnf.meta("ac"))
         }
         if masterBar.displayScale != 1.0 {
-            nodes.push(Atnf.numberMeta("scale", masterBar.displayScale))
+            try nodes.push(Atnf.numberMeta("scale", masterBar.displayScale))
         }
         if masterBar.displayWidth > 0 {
-            nodes.push(Atnf.numberMeta("width", masterBar.displayWidth))
+            try nodes.push(Atnf.numberMeta("width", masterBar.displayWidth))
         }
         if TypeHelper.isTruthy(masterBar.directions) {
             for d in masterBar.directions! {
-                nodes.push(Atnf.identMeta("jump", AlphaTex1EnumMappings.directionReversed.get(d)!))
+                try nodes.push(Atnf.identMeta("jump", jsNonNull(AlphaTex1EnumMappings.directionReversed.get(d))))
             }
         }
         for a in masterBar.tempoAutomations {
             let tempo: AlphaTexMetaDataNode = Atnf.meta("tempo", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.number(a.value), TypeHelper.isTruthy(a.text) ? Atnf.string(a.text) : nil, a.ratioPosition > 0 ? Atnf.number(a.ratioPosition) : nil, !a.isVisible ? Atnf.ident("hide") : nil)))
-            if tempo.arguments!.arguments.length == 1.0 {
-                tempo.arguments!.openParenthesis = nil
-                tempo.arguments!.closeParenthesis = nil
+            if try jsNonNull(tempo.arguments).arguments.length == 1.0 {
+                try jsNonNull(tempo.arguments).openParenthesis = nil
+                try jsNonNull(tempo.arguments).closeParenthesis = nil
             }
             nodes.push(tempo)
         }
         if masterBar.customBarNumber != nil {
-            nodes.push(Atnf.numberMeta("barNumber", masterBar.customBarNumber!))
+            try nodes.push(Atnf.numberMeta("barNumber", masterBar.customBarNumber!))
         }
         if masterBar.customBarNumberText != nil {
             nodes.push(Atnf.meta("barNumber", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.string(masterBar.barNumberText)))))
@@ -2377,14 +2377,14 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         }
     }
 
-    private static func _buildStructuralMetaDataNodes(_ bar: Bar?, _ staff: Staff, _ nodes: List<AlphaTexMetaDataNode>, _ isMultiVoice: Bool, _ voice: Double) {
+    private static func _buildStructuralMetaDataNodes(_ bar: Bar?, _ staff: Staff, _ nodes: List<AlphaTexMetaDataNode>, _ isMultiVoice: Bool, _ voice: Double) throws {
         if bar == nil || bar!.index == 0.0 {
             if voice == 0.0 {
                 if staff.index == 0.0 {
-                    nodes.push(AlphaTex1LanguageHandler._buildNewTrackNode(staff.track))
+                    try nodes.push(AlphaTex1LanguageHandler._buildNewTrackNode(staff.track))
                 }
                 nodes.push(AlphaTex1LanguageHandler._buildNewStaffNode(staff))
-                AlphaTex1LanguageHandler._buildStaffMetaDataNodes(nodes, staff)
+                try AlphaTex1LanguageHandler._buildStaffMetaDataNodes(nodes, staff)
             }
             if isMultiVoice {
                 let voiceNode: AlphaTexMetaDataNode = Atnf.meta("voice")
@@ -2402,8 +2402,8 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         return node
     }
 
-    private static func _buildNewTrackNode(_ track: Track) -> AlphaTexMetaDataNode {
-        let node: AlphaTexMetaDataNode = Atnf.meta("track", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.string(track.name), track.shortName.length > 0 ? Atnf.string(track.shortName) : nil)), Atnf.props(List<(String, AlphaTexArgumentList?)?>(track.color.rgba != AlphaTex1LanguageHandler._defaultTrack.color.rgba ? ("color", Atnf.stringValue(track.color.rgba)) : nil, track.defaultSystemsLayout != AlphaTex1LanguageHandler._defaultTrack.defaultSystemsLayout ? ("defaultSystemsLayout", Atnf.numberValue(track.defaultSystemsLayout)) : nil, TypeHelper.isTruthy(track.systemsLayout.length) ? ("systemsLayout", Atnf.args(track.systemsLayout.map({ (d: Double) -> any IAlphaTexArgumentValue in
+    private static func _buildNewTrackNode(_ track: Track) throws -> AlphaTexMetaDataNode {
+        let node: AlphaTexMetaDataNode = try Atnf.meta("track", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.string(track.name), track.shortName.length > 0 ? Atnf.string(track.shortName) : nil)), Atnf.props(List<(String, AlphaTexArgumentList?)?>(track.color.rgba != AlphaTex1LanguageHandler._defaultTrack.color.rgba ? ("color", Atnf.stringValue(track.color.rgba)) : nil, track.defaultSystemsLayout != AlphaTex1LanguageHandler._defaultTrack.defaultSystemsLayout ? ("defaultSystemsLayout", Atnf.numberValue(track.defaultSystemsLayout)) : nil, TypeHelper.isTruthy(track.systemsLayout.length) ? ("systemsLayout", Atnf.args(track.systemsLayout.map({ (d: Double) -> any IAlphaTexArgumentValue in
             return (Atnf.number(d) as any IAlphaTexArgumentValue)
         }))) : nil, ("volume", Atnf.numberValue(track.playbackInfo.volume)), ("balance", Atnf.numberValue(track.playbackInfo.balance)), track.playbackInfo.isMute ? (("mute", nil) as (String, AlphaTexArgumentList?)) : nil, track.playbackInfo.isSolo ? (("solo", nil) as (String, AlphaTexArgumentList?)) : nil, TypeHelper.isTruthy(TypeHelper.isTruthy(track.score.stylesheet.perTrackMultiBarRest) && track.score.stylesheet.perTrackMultiBarRest!.has(track.index)) ? (("multiBarRest", nil) as (String, AlphaTexArgumentList?)) : nil, ("instrument", Atnf.identValue(track.isPercussion ? "percussion" : GeneralMidi.getName(track.playbackInfo.program))), track.playbackInfo.bank > 0 ? ("bank", Atnf.numberValue(track.playbackInfo.bank)) : nil)))
         if TypeHelper.isTruthy(TypeHelper.isTruthy(node.properties) && node.properties!.properties.length > 0) {
@@ -2412,11 +2412,11 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         return node
     }
 
-    public func buildNoteEffects(_ note: Note) -> List<AlphaTexPropertyNode> {
+    public func buildNoteEffects(_ note: Note) throws -> List<AlphaTexPropertyNode> {
         let properties: List<AlphaTexPropertyNode> = List<AlphaTexPropertyNode>()
         if note.hasBend {
-            let beValue: AlphaTexArgumentList = Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.ident(AlphaTex1EnumMappings.bendTypeReversed.get(note.bendType)!), note.bendStyle != BendStyle.Default ? Atnf.ident(AlphaTex1EnumMappings.bendStyleReversed.get(note.bendStyle)!) : nil), true)!
-            for p in note.bendPoints! {
+            let beValue: AlphaTexArgumentList = try jsNonNull(Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.ident(jsNonNull(AlphaTex1EnumMappings.bendTypeReversed.get(note.bendType))), note.bendStyle != BendStyle.Default ? Atnf.ident(jsNonNull(AlphaTex1EnumMappings.bendStyleReversed.get(note.bendStyle))) : nil), true))
+            for p in try jsNonNull(note.bendPoints) {
                 beValue.arguments.push(Atnf.number(p.offset))
                 beValue.arguments.push(Atnf.number(p.value))
             }
@@ -2440,12 +2440,12 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             break
         }
         if TypeHelper.isTruthy(harmonicType) {
-            Atnf.prop(properties, harmonicType, Atnf.numberValue(note.harmonicValue))
+            try Atnf.prop(properties, harmonicType, Atnf.numberValue(note.harmonicValue))
         }
         if note.showStringNumber {
             if note.isPiano && !Number.isNaN(note.string) {
                 let stringNumber: Double = Note.getStringCount(note.beat.voice.bar.staff) - note.string + 1.0
-                Atnf.prop(properties, "string", Atnf.numberValue(stringNumber))
+                try Atnf.prop(properties, "string", Atnf.numberValue(stringNumber))
             } else {
                 Atnf.prop(properties, "string")
             }
@@ -2520,25 +2520,25 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             Atnf.prop(properties, "t")
         }
         if note.leftHandFinger >= Fingers.Thumb {
-            Atnf.prop(properties, "lf", Atnf.numberValue((Double(note.leftHandFinger.rawValue)) + 1.0))
+            try Atnf.prop(properties, "lf", Atnf.numberValue((Double(note.leftHandFinger.rawValue)) + 1.0))
         }
         if note.rightHandFinger >= Fingers.Thumb {
-            Atnf.prop(properties, "rf", Atnf.numberValue((Double(note.rightHandFinger.rawValue)) + 1.0))
+            try Atnf.prop(properties, "rf", Atnf.numberValue((Double(note.rightHandFinger.rawValue)) + 1.0))
         }
         if !note.isVisible {
             Atnf.prop(properties, "hide")
         }
         if note.isSlurOrigin {
             let slurId: String = "s\((note.id).toTemplate())"
-            Atnf.prop(properties, "slur", Atnf.identValue(slurId))
+            try Atnf.prop(properties, "slur", Atnf.identValue(slurId))
         }
         if note.isSlurDestination {
-            let slurId: String = "s\((note.slurOrigin!.id).toTemplate())"
-            Atnf.prop(properties, "slur", Atnf.identValue(slurId))
+            let slurId: String = try "s\((jsNonNull(note.slurOrigin).id).toTemplate())"
+            try Atnf.prop(properties, "slur", Atnf.identValue(slurId))
         }
-        let accidentalMode: NoteAccidentalMode = ModelUtils.simplifyAccidentalMode(note.beat.voice.bar.keySignature, note.displayValue, note.accidentalMode)
+        let accidentalMode: NoteAccidentalMode = try ModelUtils.simplifyAccidentalMode(note.beat.voice.bar.keySignature, note.displayValue, note.accidentalMode)
         if accidentalMode != NoteAccidentalMode.Default {
-            Atnf.prop(properties, "acc", Atnf.identValue(ModelUtils.reverseAccidentalModeMapping.get(accidentalMode)!))
+            try Atnf.prop(properties, "acc", Atnf.identValue(jsNonNull(ModelUtils.reverseAccidentalModeMapping.get(accidentalMode))))
         }
         switch note.ornament {
         case NoteOrnament.InvertedTurn:
@@ -2555,7 +2555,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         return properties
     }
 
-    public func buildBeatEffects(_ beat: Beat) -> List<AlphaTexPropertyNode> {
+    public func buildBeatEffects(_ beat: Beat) throws -> List<AlphaTexPropertyNode> {
         let properties: List<AlphaTexPropertyNode> = List<AlphaTexPropertyNode>()
         switch beat.fade {
         case FadeType.FadeIn:
@@ -2595,8 +2595,8 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             Atnf.prop(properties, "tu", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.number(beat.tupletNumerator), Atnf.number(beat.tupletDenominator))))
         }
         if beat.hasWhammyBar {
-            let tbeArgs: AlphaTexArgumentList = Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.ident(AlphaTex1EnumMappings.whammyTypeReversed.get(beat.whammyBarType)!), Atnf.ident(AlphaTex1EnumMappings.bendStyleReversed.get(beat.whammyStyle)!)), true)!
-            for p in beat.whammyBarPoints! {
+            let tbeArgs: AlphaTexArgumentList = try jsNonNull(Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.ident(jsNonNull(AlphaTex1EnumMappings.whammyTypeReversed.get(beat.whammyBarType))), Atnf.ident(jsNonNull(AlphaTex1EnumMappings.bendStyleReversed.get(beat.whammyStyle)))), true))
+            for p in try jsNonNull(beat.whammyBarPoints) {
                 tbeArgs.arguments.push(Atnf.number(p.offset))
                 tbeArgs.arguments.push(Atnf.number(p.value))
             }
@@ -2616,19 +2616,19 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             break
         }
         if TypeHelper.isTruthy(brushType) {
-            Atnf.prop(properties, brushType, Atnf.numberValue(beat.brushDuration))
+            try Atnf.prop(properties, brushType, Atnf.numberValue(beat.brushDuration))
         }
         if beat.chord != nil {
-            Atnf.prop(properties, "ch", Atnf.stringValue(beat.chord!.name))
+            try Atnf.prop(properties, "ch", Atnf.stringValue(beat.chord!.name))
         }
         if beat.ottava != Ottavia.Regular {
-            Atnf.prop(properties, "ot", Atnf.identValue(AlphaTex1EnumMappings.ottaviaReversed.get(beat.ottava)!))
+            try Atnf.prop(properties, "ot", Atnf.identValue(jsNonNull(AlphaTex1EnumMappings.ottaviaReversed.get(beat.ottava))))
         }
         if beat.hasRasgueado {
-            Atnf.prop(properties, "rasg", Atnf.identValue(AlphaTex1EnumMappings.rasgueadoReversed.get(beat.rasgueado)!))
+            try Atnf.prop(properties, "rasg", Atnf.identValue(jsNonNull(AlphaTex1EnumMappings.rasgueadoReversed.get(beat.rasgueado))))
         }
         if beat.text != nil {
-            Atnf.prop(properties, "txt", Atnf.stringValue(beat.text!))
+            try Atnf.prop(properties, "txt", Atnf.stringValue(beat.text!))
         }
         if beat.lyrics != nil && beat.lyrics!.length > 0 {
             if beat.lyrics!.length > 1 {
@@ -2640,16 +2640,16 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
                     }
                 }
             } else {
-                Atnf.prop(properties, "lyrics", Atnf.stringValue(beat.lyrics![0]))
+                try Atnf.prop(properties, "lyrics", Atnf.stringValue(beat.lyrics![0]))
             }
         }
         if beat.graceType != GraceType.None {
-            Atnf.prop(properties, "gr", beat.graceType == GraceType.BeforeBeat ? nil : Atnf.identValue(AlphaTex1EnumMappings.graceTypeReversed.get(beat.graceType)!))
+            try Atnf.prop(properties, "gr", beat.graceType == GraceType.BeforeBeat ? nil : Atnf.identValue(jsNonNull(AlphaTex1EnumMappings.graceTypeReversed.get(beat.graceType))))
         }
         if beat.isTremolo {
-            let values: List<any IAlphaTexArgumentValue> = List<any IAlphaTexArgumentValue>(Atnf.number(beat.tremoloPicking!.marks))
-            if beat.tremoloPicking!.style != TremoloPickingStyle.Default {
-                values.push(Atnf.ident(String(describing: beat.tremoloPicking!.style)))
+            let values: List<any IAlphaTexArgumentValue> = try List<any IAlphaTexArgumentValue>(Atnf.number(jsNonNull(beat.tremoloPicking).marks))
+            if try jsNonNull(beat.tremoloPicking).style != TremoloPickingStyle.Default {
+                try values.push(Atnf.ident(String(describing: jsNonNull(beat.tremoloPicking).style)))
             }
             Atnf.prop(properties, "tp", Atnf.args((List<(any IAlphaTexArgumentValue)?>(widening: values))))
         }
@@ -2662,11 +2662,11 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             break
         }
         if (beat.voice.bar.index == 0.0 && beat.index == 0.0) || beat.dynamics != beat.previousBeat?.dynamics {
-            Atnf.prop(properties, "dy", Atnf.identValue(AlphaTex1EnumMappings.dynamicValueReversed.get(beat.dynamics)!))
+            try Atnf.prop(properties, "dy", Atnf.identValue(jsNonNull(AlphaTex1EnumMappings.dynamicValueReversed.get(beat.dynamics))))
         }
         let fermata: Fermata? = beat.fermata
         if fermata != nil {
-            Atnf.prop(properties, "fermata", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.ident(AlphaTex1EnumMappings.fermataTypeReversed.get(beat.fermata!.type)!), Atnf.number(beat.fermata!.length))))
+            try Atnf.prop(properties, "fermata", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.ident(jsNonNull(AlphaTex1EnumMappings.fermataTypeReversed.get(jsNonNull(beat.fermata).type))), Atnf.number(jsNonNull(beat.fermata).length))))
         }
         if beat.isLegatoOrigin {
             Atnf.prop(properties, "legatoorigin")
@@ -2676,13 +2676,13 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             case AutomationType.Tempo:
                 Atnf.prop(properties, "tempo", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.number(automation.value), automation.text.length == 0.0 ? nil : Atnf.string(automation.text))))
             case AutomationType.Volume:
-                Atnf.prop(properties, "volume", Atnf.numberValue(automation.value))
+                try Atnf.prop(properties, "volume", Atnf.numberValue(automation.value))
             case AutomationType.Instrument:
                 if !beat.voice.bar.staff.isPercussion {
-                    Atnf.prop(properties, "instrument", Atnf.identValue(GeneralMidi.getName(automation.value)))
+                    try Atnf.prop(properties, "instrument", Atnf.identValue(GeneralMidi.getName(automation.value)))
                 }
             case AutomationType.Balance:
-                Atnf.prop(properties, "balance", Atnf.numberValue(automation.value))
+                try Atnf.prop(properties, "balance", Atnf.numberValue(automation.value))
             default:
                 break
             }
@@ -2696,7 +2696,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             break
         }
         if beat.isBarre {
-            Atnf.prop(properties, "barre", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.number(beat.barreFret), Atnf.ident(AlphaTex1EnumMappings.barreShapeReversed.get(beat.barreShape)!))))
+            try Atnf.prop(properties, "barre", Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.number(beat.barreFret), Atnf.ident(jsNonNull(AlphaTex1EnumMappings.barreShapeReversed.get(beat.barreShape))))))
         }
         if beat.slashed {
             Atnf.prop(properties, "slashed")
@@ -2713,9 +2713,9 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             break
         }
         if beat.invertBeamDirection {
-            Atnf.prop(properties, "beam", Atnf.identValue("invert"))
+            try Atnf.prop(properties, "beam", Atnf.identValue("invert"))
         } else if beat.preferredBeamDirection != nil {
-            Atnf.prop(properties, "beam", Atnf.identValue(String(describing: beat.preferredBeamDirection!)))
+            try Atnf.prop(properties, "beam", Atnf.identValue(String(describing: beat.preferredBeamDirection!)))
         }
         var beamingModeValue: String = ""
         switch beat.beamingMode {
@@ -2729,7 +2729,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             break
         }
         if TypeHelper.isTruthy(beamingModeValue) {
-            Atnf.prop(properties, "beam", Atnf.identValue(beamingModeValue))
+            try Atnf.prop(properties, "beam", Atnf.identValue(beamingModeValue))
         }
         if beat.showTimer {
             Atnf.prop(properties, "timer")

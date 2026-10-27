@@ -44,14 +44,14 @@ internal final class ComparisonHelpers {
      * Accidental modes are spelling hints, formats store them differently (e.g. Guitar Pro always stores the spelling).
      * This reduces them to the hints which matter for the rendering to compare them across formats.
      */
-    public static func simplifyAccidentalModes(_ score: Score) {
+    public static func simplifyAccidentalModes(_ score: Score) throws {
         for track in score.tracks {
             for staff in track.staves {
                 for bar in staff.bars {
                     for voice in bar.voices {
                         for beat in voice.beats {
                             for note in beat.notes {
-                                note.accidentalMode = ModelUtils.simplifyAccidentalMode(bar.keySignature, note.displayValue, note.accidentalMode)
+                                try note.accidentalMode = ModelUtils.simplifyAccidentalMode(bar.keySignature, note.displayValue, note.accidentalMode)
                             }
                         }
                     }
@@ -60,8 +60,8 @@ internal final class ComparisonHelpers {
         }
     }
 
-    public static func alphaTexExportRoundtripPrepare(_ expected: Score) {
-        ModelUtils.trimEmptyBarsAtEnd(expected)
+    public static func alphaTexExportRoundtripPrepare(_ expected: Score) throws {
+        try ModelUtils.trimEmptyBarsAtEnd(expected)
         for t in expected.tracks {
             for s in t.staves {
                 let filledVoices: Double = Math.max(s.filledVoices) + 1.0
@@ -76,10 +76,10 @@ internal final class ComparisonHelpers {
 
     public static func alphaTexExportRoundtripEqual(_ testName: String, _ actual: Score, _ expected: Score, _ ignoreKeys: List<String>? = nil) throws {
         var paramignoreKeys = try ignoreKeys
-        ComparisonHelpers.simplifyAccidentalModes(expected)
-        ComparisonHelpers.simplifyAccidentalModes(actual)
-        let expectedJson: Map<String, Any?>? = JsonConverter.scoreToJsObject(expected)
-        let actualJson: Map<String, Any?>? = JsonConverter.scoreToJsObject(actual)
+        try ComparisonHelpers.simplifyAccidentalModes(expected)
+        try ComparisonHelpers.simplifyAccidentalModes(actual)
+        let expectedJson: Map<String, Any?>? = try JsonConverter.scoreToJsObject(expected)
+        let actualJson: Map<String, Any?>? = try JsonConverter.scoreToJsObject(actual)
         let ignorePaths: List<RegExp> = List<RegExp>(TypeHelper.createRegex("^.*stringtuning\\.isstandard$", "i"), TypeHelper.createRegex("^.*masterbars.*\\.fermata$", "i"))
         ComparisonHelpers._removeEmptyVoices(expected)
         ComparisonHelpers._removeInitialAutomations(expected)

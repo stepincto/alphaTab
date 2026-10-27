@@ -55,6 +55,15 @@ public final class List<T>: Sequence {
         set { _data[index] = newValue }
     }
 
+    /// `xs[i].m` in a throwing function: out of range throws (Kotlin's `IndexOutOfBoundsException`;
+    /// JS reads `undefined` and throws a TypeError on the member access) instead of trapping.
+    public func jsElement(_ index: Int) throws -> T {
+        guard index >= 0 && index < _data.count else {
+            throw JsError("Index \(index) out of range for length \(_data.count)")
+        }
+        return _data[index]
+    }
+
     public func push(_ item: T) {
         _data.append(item)
     }

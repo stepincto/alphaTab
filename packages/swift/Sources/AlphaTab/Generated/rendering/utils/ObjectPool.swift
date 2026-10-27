@@ -26,10 +26,10 @@ internal class ObjectPool<T: IPoolable> {
         self._factory = factory
     }
 
-    public func acquire() -> T {
+    public func acquire() throws -> T {
         var obj: T
         if self._recycled.length > 0 {
-            obj = self._recycled.pop()!
+            try obj = jsNonNull(self._recycled.pop())
         } else if self._cursor < self._items.length {
             obj = self._items[(self._cursor).toInt()]
             self._cursor += 1

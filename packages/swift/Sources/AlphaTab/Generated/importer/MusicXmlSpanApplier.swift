@@ -24,7 +24,7 @@ internal final class MusicXmlSpanApplier {
 
     private var _beatSequence: Map<Beat, Double> = Map<Beat, Double>()
 
-    private var _voiceIndexOf: ((Staff, String) -> Double)!
+    private var _voiceIndexOf: ((Staff, String) throws -> Double)!
 
     private var _octaveStopInLastNote: Bool = false
 
@@ -32,7 +32,7 @@ internal final class MusicXmlSpanApplier {
 
     private var _pedalBars: List<Bar> = List<Bar>()
 
-    public init(_ track: Track, _ masterBars: List<MasterBar>, _ beats: List<Beat>, _ voiceIndexOf: @escaping (Staff, String) -> Double, _ octaveStopInLastNote: Bool) {
+    public init(_ track: Track, _ masterBars: List<MasterBar>, _ beats: List<Beat>, _ voiceIndexOf: @escaping (Staff, String) throws -> Double, _ octaveStopInLastNote: Bool) {
         self._track = track
         self._masterBars = masterBars
         self._beats = beats
@@ -62,11 +62,11 @@ internal final class MusicXmlSpanApplier {
         }
     }
 
-    public func apply(_ spans: List<MusicXmlSpan>) {
+    public func apply(_ spans: List<MusicXmlSpan>) throws {
         let ordered: List<MusicXmlSpan> = List<MusicXmlSpan>()
         for span in spans {
             var index: Double = ordered.length
-            while index > 0 && self._compareStart(ordered[(index - 1.0).toInt()], span) > 0 {
+            while try index > 0 && self._compareStart(ordered[(index - 1.0).toInt()], span) > 0 {
                 index -= 1
             }
             ordered.splice(index, 0.0, span)
@@ -74,11 +74,11 @@ internal final class MusicXmlSpanApplier {
         for span in ordered {
             switch span.kind {
             case MusicXmlSpanKind.SustainPedal:
-                self._applyPedal(span)
+                try self._applyPedal(span)
             case MusicXmlSpanKind.SimileSimple, MusicXmlSpanKind.SimileDouble:
-                self._applySimile(span)
+                try self._applySimile(span)
             default:
-                self._applyBeats(span)
+                try self._applyBeats(span)
             }
         }
         for bar in self._pedalBars {
@@ -88,19 +88,19 @@ internal final class MusicXmlSpanApplier {
         }
     }
 
-    private func _applyBeats(_ span: MusicXmlSpan) {
-        let start: MusicXmlSpanBound = self._bound(span.start!)
+    private func _applyBeats(_ span: MusicXmlSpan) throws {
+        let start: MusicXmlSpanBound = try self._bound(jsNonNull(span.start))
         var writtenBeat: Beat? = nil
         if span.kind == MusicXmlSpanKind.Crescendo || span.kind == MusicXmlSpanKind.Decrescendo {
-            writtenBeat = self._writtenBeat(span.start!)
+            try writtenBeat = self._writtenBeat(jsNonNull(span.start))
         }
         for staff in self._track.staves {
-            if span.start!.staffIndex != -1.0 && staff.index != span.start!.staffIndex {
+            if try jsNonNull(span.start).staffIndex != -1.0 && staff.index != jsNonNull(span.start).staffIndex {
                 continue
             }
             var voiceIndex: Double = -1.0
-            if span.start!.voice.length > 0 {
-                voiceIndex = self._voiceIndexOf(staff, span.start!.voice)
+            if try jsNonNull(span.start).voice.length > 0 {
+                try voiceIndex = self._voiceIndexOf(staff, jsNonNull(span.start).voice)
                 if voiceIndex == -1.0 {
                     continue
                 }
@@ -115,13 +115,13 @@ internal final class MusicXmlSpanApplier {
             do {
                 var barIndex: Double = start.barIndex
                 while barIndex <= lastBar {
-                    let voices: List<Voice> = staff.bars[(barIndex).toInt()].voices
+                    let voices: List<Voice> = try staff.bars.jsElement((barIndex).toInt()).voices
                     do {
                         var v: Double = 0.0
                         while v < voices.length {
                             if voiceIndex == -1.0 || v == voiceIndex {
-                                for beat in voices[(v).toInt()].beats {
-                                    if self._covers(start, end, barIndex, beat) {
+                                for beat in try voices.jsElement((v).toInt()).beats {
+                                    if try self._covers(start, end, barIndex, beat) {
                                         MusicXmlSpanApplier._applyBeat(span.kind, beat)
                                     }
                                 }
@@ -164,8 +164,8 @@ internal final class MusicXmlSpanApplier {
         }
     }
 
-    private func _covers(_ start: MusicXmlSpanBound, _ end: MusicXmlSpanBound?, _ barIndex: Double, _ beat: Beat) -> Bool {
-        let sequence: Double = self._beatSequence.has(beat) ? self._beatSequence.get(beat)! : -1.0
+    private func _covers(_ start: MusicXmlSpanBound, _ end: MusicXmlSpanBound?, _ barIndex: Double, _ beat: Beat) throws -> Bool {
+        let sequence: Double = try self._beatSequence.has(beat) ? jsNonNull(self._beatSequence.get(beat)) : -1.0
         if beat.displayEnd <= beat.displayStart {
             return (MusicXmlSpanApplier._isAtOrAfter(start, barIndex, beat, sequence) && (end == nil || !MusicXmlSpanApplier._isAtOrAfter(end!, barIndex, beat, sequence)))
         }
@@ -237,13 +237,13 @@ internal final class MusicXmlSpanApplier {
         return beat.voice.bar.staff.track === self._track ? beat : nil
     }
 
-    private func _applyPedal(_ span: MusicXmlSpan) {
-        let staffIndex: Double = span.start!.staffIndex == -1.0 ? 0.0 : span.start!.staffIndex
+    private func _applyPedal(_ span: MusicXmlSpan) throws {
+        let staffIndex: Double = try jsNonNull(span.start).staffIndex == -1.0 ? 0.0 : jsNonNull(span.start).staffIndex
         if staffIndex >= self._track.staves.length {
             return
         }
         let staff: Staff = self._track.staves[(staffIndex).toInt()]
-        self._addPedalMarker(staff, self._bound(span.start!), SustainPedalMarkerType.Down)
+        try self._addPedalMarker(staff, self._bound(jsNonNull(span.start)), SustainPedalMarkerType.Down)
         if span.end != nil {
             self._addPedalMarker(staff, self._bound(span.end!), SustainPedalMarkerType.Up)
         }
@@ -267,10 +267,10 @@ internal final class MusicXmlSpanApplier {
         return marker.pedalType == SustainPedalMarkerType.Up ? 0.0 : 1.0
     }
 
-    private func _applySimile(_ span: MusicXmlSpan) {
-        let startBar: Double = span.start!.position.barIndex
+    private func _applySimile(_ span: MusicXmlSpan) throws {
+        let startBar: Double = try jsNonNull(span.start).position.barIndex
         for staff in self._track.staves {
-            if span.start!.staffIndex != -1.0 && staff.index != span.start!.staffIndex {
+            if try jsNonNull(span.start).staffIndex != -1.0 && staff.index != jsNonNull(span.start).staffIndex {
                 continue
             }
             let endBar: Double = span.end == nil ? staff.bars.length : Math.min(span.end!.position.barIndex, staff.bars.length)
@@ -294,9 +294,9 @@ internal final class MusicXmlSpanApplier {
         }
     }
 
-    private func _compareStart(_ a: MusicXmlSpan, _ b: MusicXmlSpan) -> Double {
-        let pa: MusicXmlSpanPosition = a.start!.position
-        let pb: MusicXmlSpanPosition = b.start!.position
+    private func _compareStart(_ a: MusicXmlSpan, _ b: MusicXmlSpan) throws -> Double {
+        let pa: MusicXmlSpanPosition = try jsNonNull(a.start).position
+        let pb: MusicXmlSpanPosition = try jsNonNull(b.start).position
         return MusicXmlSpanApplier._compare(pa.barIndex, pa.ticks, pb.barIndex, pb.ticks)
     }
 

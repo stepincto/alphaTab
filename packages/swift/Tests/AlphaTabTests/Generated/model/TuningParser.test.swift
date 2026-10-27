@@ -12,14 +12,14 @@ import AlphaTabRuntime
 final class TuningParserTest {
     @Test("standard")
     func standard() async throws {
-        let standard: Tuning = Tuning.getDefaultTuningFor(6.0)!
+        let standard: Tuning = try jsNonNull(Tuning.getDefaultTuningFor(6.0))
         let tuningText: List<String> = List<String>("E4", "B3", "G3", "D3", "A2", "E2")
         let tuning: List<Double> = List<Double>((tuningText.length).toInt())
         let tuningText2: List<String> = List<String>((tuningText.length).toInt())
         do {
             var i: Double = 0.0
             while i < tuningText.length {
-                tuning[(i).toInt()] = ModelUtils.getTuningForText(tuningText[(i).toInt()])
+                try tuning[(i).toInt()] = ModelUtils.getTuningForText(tuningText[(i).toInt()])
                 tuningText2[(i).toInt()] = Tuning.getTextForTuning(tuning[(i).toInt()], true)
                 i += 1
             }

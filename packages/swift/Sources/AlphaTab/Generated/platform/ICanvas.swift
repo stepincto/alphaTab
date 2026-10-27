@@ -34,17 +34,17 @@ public protocol ICanvas: AnyObject {
 
     func endGroup()
 
-    func fillText(_ text: String, _ x: Double, _ y: Double)
+    func fillText(_ text: String, _ x: Double, _ y: Double) throws
 
-    func measureText(_ text: String) -> MeasuredText
+    func measureText(_ text: String) throws -> MeasuredText
 
-    func fillMusicFontSymbol(_ x: Double, _ y: Double, _ relativeScale: Double, _ symbol: MusicFontSymbol, _ centerAtPosition: Bool?)
+    func fillMusicFontSymbol(_ x: Double, _ y: Double, _ relativeScale: Double, _ symbol: MusicFontSymbol, _ centerAtPosition: Bool?) throws
 
-    func fillMusicFontSymbols(_ x: Double, _ y: Double, _ relativeScale: Double, _ symbols: List<MusicFontSymbol>, _ centerAtPosition: Bool?)
+    func fillMusicFontSymbols(_ x: Double, _ y: Double, _ relativeScale: Double, _ symbols: List<MusicFontSymbol>, _ centerAtPosition: Bool?) throws
 
     func beginRender(_ width: Double, _ height: Double) throws
 
-    func endRender() -> Any?
+    func endRender() throws -> Any?
 
     func onRenderFinished() -> Any?
 
@@ -72,12 +72,12 @@ public protocol ICanvas: AnyObject {
 }
 
 public extension ICanvas {
-    func fillMusicFontSymbol(_ x: Double, _ y: Double, _ relativeScale: Double, _ symbol: MusicFontSymbol) {
-        fillMusicFontSymbol(x, y, relativeScale, symbol, nil)
+    func fillMusicFontSymbol(_ x: Double, _ y: Double, _ relativeScale: Double, _ symbol: MusicFontSymbol) throws {
+        try fillMusicFontSymbol(x, y, relativeScale, symbol, nil)
     }
 
-    func fillMusicFontSymbols(_ x: Double, _ y: Double, _ relativeScale: Double, _ symbols: List<MusicFontSymbol>) {
-        fillMusicFontSymbols(x, y, relativeScale, symbols, nil)
+    func fillMusicFontSymbols(_ x: Double, _ y: Double, _ relativeScale: Double, _ symbols: List<MusicFontSymbol>) throws {
+        try fillMusicFontSymbols(x, y, relativeScale, symbols, nil)
     }
 }
 
@@ -142,21 +142,21 @@ public final class MeasuredText {
 }
 
 internal final class CanvasHelper {
-    public static func fillMusicFontSymbolSafe(_ canvas: any ICanvas, _ x: Double, _ y: Double, _ relativeScale: Double, _ symbol: MusicFontSymbol, _ centerAtPosition: Bool? = nil) {
-        if !canvas.settings.display.resources.engravingSettings.hasSymbol(symbol) {
+    public static func fillMusicFontSymbolSafe(_ canvas: any ICanvas, _ x: Double, _ y: Double, _ relativeScale: Double, _ symbol: MusicFontSymbol, _ centerAtPosition: Bool? = nil) throws {
+        if try !canvas.settings.display.resources.engravingSettings.hasSymbol(symbol) {
             return
         }
-        canvas.fillMusicFontSymbol(x, y, relativeScale, symbol, centerAtPosition)
+        try canvas.fillMusicFontSymbol(x, y, relativeScale, symbol, centerAtPosition)
     }
 
-    public static func fillMusicFontSymbolsSafe(_ canvas: any ICanvas, _ x: Double, _ y: Double, _ relativeScale: Double, _ symbols: List<MusicFontSymbol>, _ centerAtPosition: Bool? = nil) {
-        let symbolsToDraw: List<MusicFontSymbol> = symbols.filter({ (s: MusicFontSymbol) -> Bool in
-            return canvas.settings.display.resources.engravingSettings.hasSymbol(s)
+    public static func fillMusicFontSymbolsSafe(_ canvas: any ICanvas, _ x: Double, _ y: Double, _ relativeScale: Double, _ symbols: List<MusicFontSymbol>, _ centerAtPosition: Bool? = nil) throws {
+        let symbolsToDraw: List<MusicFontSymbol> = try symbols.filter({ (s: MusicFontSymbol) -> Bool in
+            return try canvas.settings.display.resources.engravingSettings.hasSymbol(s)
         })
         if symbolsToDraw.length == 0.0 {
             return
         }
-        canvas.fillMusicFontSymbols(x, y, relativeScale, symbolsToDraw, centerAtPosition)
+        try canvas.fillMusicFontSymbols(x, y, relativeScale, symbolsToDraw, centerAtPosition)
     }
 
     public init() {}

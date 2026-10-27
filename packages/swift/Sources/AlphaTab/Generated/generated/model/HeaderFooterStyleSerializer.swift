@@ -36,7 +36,7 @@ internal final class HeaderFooterStyleSerializer {
             obj.isVisible = (v as? Bool)
             return true
         case "textalign":
-            try obj.textAlign = JsonHelperPartials.parseEnum(v, TextAlign.self)!
+            try obj.textAlign = jsNonNull(JsonHelperPartials.parseEnum(v, TextAlign.self))
             return true
         default:
             break

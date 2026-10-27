@@ -10,11 +10,11 @@ import AlphaTabRuntime
 
 @Suite("AlphaTexLexerTest")
 final class AlphaTexLexerTest {
-    private static func lexerTest(_ source: String, _ diagnostics: Bool = false) {
+    private static func lexerTest(_ source: String, _ diagnostics: Bool = false) throws {
         let lexer: AlphaTexLexer = AlphaTexLexer(source)
         let actual: List<AlphaTexAstNode> = List<AlphaTexAstNode>()
         while true {
-            let token: AlphaTexAstNode? = lexer.peekToken()
+            let token: AlphaTexAstNode? = try lexer.peekToken()
             if !TypeHelper.isTruthy(token) {
                 break
             }
@@ -27,16 +27,16 @@ final class AlphaTexLexerTest {
         }
     }
 
-    private static func floatTest(_ source: String) {
+    private static func floatTest(_ source: String) throws {
         let lexer: AlphaTexLexer = AlphaTexLexer(source)
         let actual: List<AlphaTexAstNode> = List<AlphaTexAstNode>()
         while true {
-            let token: AlphaTexAstNode? = lexer.peekToken()
+            let token: AlphaTexAstNode? = try lexer.peekToken()
             if !TypeHelper.isTruthy(token) {
                 break
             }
             if token!.nodeType == AlphaTexNodeType.Number {
-                actual.push(lexer.extendToFloat((token as! AlphaTexNumberLiteral)))
+                try actual.push(lexer.extendToFloat(jsCast(token, AlphaTexNumberLiteral.self)))
             } else {
                 actual.push(token!)
             }
@@ -47,125 +47,125 @@ final class AlphaTexLexerTest {
 
     @Test("strings")
     func strings() async throws {
-        AlphaTexLexerTest.lexerTest("\"Double Quoted\"")
-        AlphaTexLexerTest.lexerTest("'Single Quoted'")
-        AlphaTexLexerTest.lexerTest("'Multiple' \"Strings\"")
-        AlphaTexLexerTest.lexerTest("\"Double \\\"Quoted\\\"\"")
-        AlphaTexLexerTest.lexerTest("'Single \\'Quoted\\''")
-        AlphaTexLexerTest.lexerTest("\"\\r\\n\\t\"")
-        AlphaTexLexerTest.lexerTest("\"\\R\\N\\T\"")
-        AlphaTexLexerTest.lexerTest("\"\\uD83D\\uDE38\"")
-        AlphaTexLexerTest.lexerTest("\"😸🤘🏻\"")
+        try AlphaTexLexerTest.lexerTest("\"Double Quoted\"")
+        try AlphaTexLexerTest.lexerTest("'Single Quoted'")
+        try AlphaTexLexerTest.lexerTest("'Multiple' \"Strings\"")
+        try AlphaTexLexerTest.lexerTest("\"Double \\\"Quoted\\\"\"")
+        try AlphaTexLexerTest.lexerTest("'Single \\'Quoted\\''")
+        try AlphaTexLexerTest.lexerTest("\"\\r\\n\\t\"")
+        try AlphaTexLexerTest.lexerTest("\"\\R\\N\\T\"")
+        try AlphaTexLexerTest.lexerTest("\"\\uD83D\\uDE38\"")
+        try AlphaTexLexerTest.lexerTest("\"😸🤘🏻\"")
     }
 
     @Test("numbers")
     func numbers() async throws {
-        AlphaTexLexerTest.lexerTest("1")
-        AlphaTexLexerTest.lexerTest("1234")
-        AlphaTexLexerTest.lexerTest("-1")
-        AlphaTexLexerTest.lexerTest("-1234")
-        AlphaTexLexerTest.lexerTest("1234 5678")
+        try AlphaTexLexerTest.lexerTest("1")
+        try AlphaTexLexerTest.lexerTest("1234")
+        try AlphaTexLexerTest.lexerTest("-1")
+        try AlphaTexLexerTest.lexerTest("-1234")
+        try AlphaTexLexerTest.lexerTest("1234 5678")
     }
 
     @Test("basic-tokens")
     func basicTokens() async throws {
-        AlphaTexLexerTest.lexerTest(".")
-        AlphaTexLexerTest.lexerTest(":")
-        AlphaTexLexerTest.lexerTest("(")
-        AlphaTexLexerTest.lexerTest(")")
-        AlphaTexLexerTest.lexerTest("{")
-        AlphaTexLexerTest.lexerTest("}")
-        AlphaTexLexerTest.lexerTest("|")
-        AlphaTexLexerTest.lexerTest("*")
-        AlphaTexLexerTest.lexerTest("@")
+        try AlphaTexLexerTest.lexerTest(".")
+        try AlphaTexLexerTest.lexerTest(":")
+        try AlphaTexLexerTest.lexerTest("(")
+        try AlphaTexLexerTest.lexerTest(")")
+        try AlphaTexLexerTest.lexerTest("{")
+        try AlphaTexLexerTest.lexerTest("}")
+        try AlphaTexLexerTest.lexerTest("|")
+        try AlphaTexLexerTest.lexerTest("*")
+        try AlphaTexLexerTest.lexerTest("@")
     }
 
     @Test("meta-command")
     func metaCommand() async throws {
-        AlphaTexLexerTest.lexerTest("\\title")
-        AlphaTexLexerTest.lexerTest("\\\\double")
-        AlphaTexLexerTest.lexerTest("\\withNumber123")
-        AlphaTexLexerTest.lexerTest("\\withUnicode😼")
-        AlphaTexLexerTest.lexerTest("\\withUnicode😼 . \\withNumber123")
+        try AlphaTexLexerTest.lexerTest("\\title")
+        try AlphaTexLexerTest.lexerTest("\\\\double")
+        try AlphaTexLexerTest.lexerTest("\\withNumber123")
+        try AlphaTexLexerTest.lexerTest("\\withUnicode😼")
+        try AlphaTexLexerTest.lexerTest("\\withUnicode😼 . \\withNumber123")
     }
 
     @Test("whitespace")
     func whitespace() async throws {
-        AlphaTexLexerTest.lexerTest("  .  \r\n\t\u{b}    .")
+        try AlphaTexLexerTest.lexerTest("  .  \r\n\t\u{b}    .")
     }
 
     @Test("identifiers")
     func identifiers() async throws {
-        AlphaTexLexerTest.lexerTest("true")
-        AlphaTexLexerTest.lexerTest("false")
-        AlphaTexLexerTest.lexerTest("HelloWorld")
-        AlphaTexLexerTest.lexerTest("C4")
-        AlphaTexLexerTest.lexerTest("C#4")
-        AlphaTexLexerTest.lexerTest("Cb4")
-        AlphaTexLexerTest.lexerTest("electricpiano1")
-        AlphaTexLexerTest.lexerTest("Unicodeöäü Unicode😸 Utf16🤘🏻")
-        AlphaTexLexerTest.lexerTest("dashed-identifier")
-        AlphaTexLexerTest.lexerTest("HelloWorld Multiple Identifiers")
+        try AlphaTexLexerTest.lexerTest("true")
+        try AlphaTexLexerTest.lexerTest("false")
+        try AlphaTexLexerTest.lexerTest("HelloWorld")
+        try AlphaTexLexerTest.lexerTest("C4")
+        try AlphaTexLexerTest.lexerTest("C#4")
+        try AlphaTexLexerTest.lexerTest("Cb4")
+        try AlphaTexLexerTest.lexerTest("electricpiano1")
+        try AlphaTexLexerTest.lexerTest("Unicodeöäü Unicode😸 Utf16🤘🏻")
+        try AlphaTexLexerTest.lexerTest("dashed-identifier")
+        try AlphaTexLexerTest.lexerTest("HelloWorld Multiple Identifiers")
     }
 
     @Test("floats")
     func floats() async throws {
-        AlphaTexLexerTest.floatTest("1.1")
-        AlphaTexLexerTest.floatTest("11.22 33.44")
-        AlphaTexLexerTest.floatTest("1.1.4")
-        AlphaTexLexerTest.floatTest("1.1 .4")
-        AlphaTexLexerTest.floatTest("1 .1.4")
-        AlphaTexLexerTest.floatTest("-1.1")
-        AlphaTexLexerTest.floatTest("-.1")
-        AlphaTexLexerTest.floatTest("1.1(")
-        AlphaTexLexerTest.floatTest("1.1{")
-        AlphaTexLexerTest.floatTest("1.1|")
-        AlphaTexLexerTest.floatTest("1.1a")
-        AlphaTexLexerTest.floatTest("1a.1")
-        AlphaTexLexerTest.floatTest("1.1\\test")
+        try AlphaTexLexerTest.floatTest("1.1")
+        try AlphaTexLexerTest.floatTest("11.22 33.44")
+        try AlphaTexLexerTest.floatTest("1.1.4")
+        try AlphaTexLexerTest.floatTest("1.1 .4")
+        try AlphaTexLexerTest.floatTest("1 .1.4")
+        try AlphaTexLexerTest.floatTest("-1.1")
+        try AlphaTexLexerTest.floatTest("-.1")
+        try AlphaTexLexerTest.floatTest("1.1(")
+        try AlphaTexLexerTest.floatTest("1.1{")
+        try AlphaTexLexerTest.floatTest("1.1|")
+        try AlphaTexLexerTest.floatTest("1.1a")
+        try AlphaTexLexerTest.floatTest("1a.1")
+        try AlphaTexLexerTest.floatTest("1.1\\test")
     }
 
     @Test("leading-comments")
     func leadingComments() async throws {
-        AlphaTexLexerTest.lexerTest("\n        // Single\n        true\n        /* Multi */\n        /* Multi2 */\n        // Single\n        false\n        ")
+        try AlphaTexLexerTest.lexerTest("\n        // Single\n        true\n        /* Multi */\n        /* Multi2 */\n        // Single\n        false\n        ")
     }
 
     @Test("trailing-comments")
     func trailingComments() async throws {
-        AlphaTexLexerTest.lexerTest("\n        true // Single After\n        false /* Multi After */\n        /* before */ true /* middle */ false // after\n        ")
+        try AlphaTexLexerTest.lexerTest("\n        true // Single After\n        false /* Multi After */\n        /* before */ true /* middle */ false // after\n        ")
     }
 
     @Suite("errors")
     final class ErrorsSuite {
         @Test("at001")
         func at001() async throws {
-            AlphaTexLexerTest.lexerTest("/a */", true)
+            try AlphaTexLexerTest.lexerTest("/a */", true)
         }
 
         @Test("at002")
         func at002() async throws {
-            AlphaTexLexerTest.lexerTest("\\ \"Test\"", true)
+            try AlphaTexLexerTest.lexerTest("\\ \"Test\"", true)
         }
 
         @Test("at003")
         func at003() async throws {
-            AlphaTexLexerTest.lexerTest("\"\\uAB\"", true)
+            try AlphaTexLexerTest.lexerTest("\"\\uAB\"", true)
         }
 
         @Test("at004")
         func at004() async throws {
-            AlphaTexLexerTest.lexerTest("\"\\uXXXX\"", true)
+            try AlphaTexLexerTest.lexerTest("\"\\uXXXX\"", true)
         }
 
         @Test("at005")
         func at005() async throws {
-            AlphaTexLexerTest.lexerTest("\"\\b01010101\"", true)
+            try AlphaTexLexerTest.lexerTest("\"\\b01010101\"", true)
         }
 
         @Test("at006")
         func at006() async throws {
-            AlphaTexLexerTest.lexerTest("\"double", true)
-            AlphaTexLexerTest.lexerTest("'single", true)
+            try AlphaTexLexerTest.lexerTest("\"double", true)
+            try AlphaTexLexerTest.lexerTest("'single", true)
         }
 
         init() {}

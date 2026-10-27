@@ -53,41 +53,41 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
         self.lexer = AlphaTexLexer(source)
     }
 
-    public func read() -> AlphaTexScoreNode {
-        self._score()
+    public func read() throws -> AlphaTexScoreNode {
+        try self._score()
         return self._scoreNode
     }
 
-    private func _score() {
+    private func _score() throws {
         self._scoreNode = AlphaTexScoreNode(nodeType: (AlphaTexNodeType.Score as! AlphaTexNodeType), bars: List<AlphaTexBarNode>(), start: self.lexer.currentTokenLocation())
         do {
             defer {
                 self._scoreNode.end = self.lexer.previousTokenEndLocation()
             }
-            self._bars()
+            try self._bars()
         }
     }
 
-    private func _bars() {
-        var token: AlphaTexAstNode? = self.lexer.peekToken()
+    private func _bars() throws {
+        var token: AlphaTexAstNode? = try self.lexer.peekToken()
         while TypeHelper.isTruthy(token) {
-            self._bar()
-            token = self.lexer.peekToken()
+            try self._bar()
+            try token = self.lexer.peekToken()
         }
     }
 
-    private func _bar() {
+    private func _bar() throws {
         let bar: AlphaTexBarNode = AlphaTexBarNode(nodeType: (AlphaTexNodeType.Bar as! AlphaTexNodeType), metaData: List<AlphaTexMetaDataNode>(), beats: List<AlphaTexBeatNode>(), start: self.lexer.currentTokenLocation(), pipe: nil)
         self._scoreNode.bars.push(bar)
         do {
             defer {
                 bar.end = self.lexer.previousTokenEndLocation()
             }
-            self._barMetaData(bar)
-            self._barBeats(bar)
-            let next: AlphaTexAstNode? = self.lexer.peekToken()
+            try self._barMetaData(bar)
+            try self._barBeats(bar)
+            let next: AlphaTexAstNode? = try self.lexer.peekToken()
             if next?.nodeType == AlphaTexNodeType.Pipe {
-                bar.pipe = (next as! AlphaTexPipeTokenNode)
+                try bar.pipe = jsCast(next, AlphaTexPipeTokenNode.self)
                 self.lexer.advance()
             }
             if TypeHelper.isTruthy(bar.metaData.length > 0 || bar.beats.length > 0 || TypeHelper.isTruthy(bar.pipe)) {
@@ -96,64 +96,64 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
         }
     }
 
-    private func _barMetaData(_ bar: AlphaTexBarNode) {
-        var token: AlphaTexAstNode? = self.lexer.peekToken()
+    private func _barMetaData(_ bar: AlphaTexBarNode) throws {
+        var token: AlphaTexAstNode? = try self.lexer.peekToken()
         while TypeHelper.isTruthy(TypeHelper.isTruthy(token) && (token!.nodeType == AlphaTexNodeType.Tag || token!.nodeType == AlphaTexNodeType.Dot)) {
             if token!.nodeType == AlphaTexNodeType.Dot {
                 self.lexer.advance()
                 self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Hint, code: AlphaTexDiagnosticCode.AT400, message: "The dots separating score metadata, score contents and the sync points can be removed.", start: token!.start, end: token!.end))
             } else {
-                self._metaData(bar.metaData)
+                try self._metaData(bar.metaData)
             }
-            token = self.lexer.peekToken()
+            try token = self.lexer.peekToken()
         }
     }
 
-    private func _barBeats(_ bar: AlphaTexBarNode) {
-        var token: AlphaTexAstNode? = self.lexer.peekToken()
+    private func _barBeats(_ bar: AlphaTexBarNode) throws {
+        var token: AlphaTexAstNode? = try self.lexer.peekToken()
         while TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(token) && token!.nodeType != AlphaTexNodeType.Pipe) && token!.nodeType != AlphaTexNodeType.Dot) && token!.nodeType != AlphaTexNodeType.Tag) {
-            let beat: AlphaTexBeatNode? = self._beat()
+            let beat: AlphaTexBeatNode? = try self._beat()
             if TypeHelper.isTruthy(beat) {
                 bar.beats.push(beat!)
             }
-            token = self.lexer.peekToken()
+            try token = self.lexer.peekToken()
         }
     }
 
-    private func _beat() -> AlphaTexBeatNode? {
-        let beat: AlphaTexBeatNode = AlphaTexBeatNode(nodeType: (AlphaTexNodeType.Beat as! AlphaTexNodeType), start: self.lexer.peekToken()?.start, durationChange: nil, notes: nil, rest: nil, beatMultiplier: nil, beatMultiplierValue: nil, beatEffects: nil)
+    private func _beat() throws -> AlphaTexBeatNode? {
+        let beat: AlphaTexBeatNode = try AlphaTexBeatNode(nodeType: (AlphaTexNodeType.Beat as! AlphaTexNodeType), start: self.lexer.peekToken()?.start, durationChange: nil, notes: nil, rest: nil, beatMultiplier: nil, beatMultiplierValue: nil, beatEffects: nil)
         do {
             defer {
                 beat.end = self.lexer.previousTokenEndLocation()
             }
-            self._beatDurationChange(beat)
-            self._beatContent(beat)
+            try self._beatDurationChange(beat)
+            try self._beatContent(beat)
             if !TypeHelper.isTruthy(beat.notes) && !TypeHelper.isTruthy(beat.rest) {
                 return beat
             }
-            self._beatDuration(beat)
-            self._beatMultiplier(beat)
-            beat.beatEffects = self._properties({ (property: AlphaTexPropertyNode) -> AlphaTexArgumentList? in
-                return self._metaDataReader.readBeatPropertyArguments(self, property)
+            try self._beatDuration(beat)
+            try self._beatMultiplier(beat)
+            try beat.beatEffects = self._properties({ (property: AlphaTexPropertyNode) -> AlphaTexArgumentList? in
+                return try self._metaDataReader.readBeatPropertyArguments(self, property)
             })
             if TypeHelper.isTruthy(beat.beatMultiplierValue != nil && TypeHelper.isTruthy(beat.beatEffects?.openBrace)) {
-                self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Warning, code: AlphaTexDiagnosticCode.AT304, message: "The beat multiplier should be specified after the beat effects.", start: beat.beatMultiplier!.start, end: beat.beatMultiplierValue!.end))
+                try self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Warning, code: AlphaTexDiagnosticCode.AT304, message: "The beat multiplier should be specified after the beat effects.", start: jsNonNull(beat.beatMultiplier).start, end: beat.beatMultiplierValue!.end))
             }
-            self._beatMultiplier(beat)
+            try self._beatMultiplier(beat)
         }
         return beat
     }
 
-    private func _beatDuration(_ beat: AlphaTexBeatNode) {
-        let dot: AlphaTexAstNode? = self.lexer.peekToken()
+    private func _beatDuration(_ beat: AlphaTexBeatNode) throws {
+        let dot: AlphaTexAstNode? = try self.lexer.peekToken()
         if dot?.nodeType != AlphaTexNodeType.Dot {
             return
         }
-        beat.durationDot = (dot as! AlphaTexDotTokenNode)
+        try beat.durationDot = jsCast(dot, AlphaTexDotTokenNode.self)
         self.lexer.advance()
-        let durationValue: AlphaTexAstNode? = self.lexer.peekToken()
+        let durationValue: AlphaTexAstNode? = try self.lexer.peekToken()
         if durationValue?.nodeType == AlphaTexNodeType.Number {
-            beat.durationValue = (durationValue as! AlphaTexNumberLiteral)
+            try beat.durationValue = jsCast(durationValue, AlphaTexNumberLiteral.self)
             self.lexer.advance()
             return
         } else if durationValue?.nodeType == AlphaTexNodeType.Tag {
@@ -166,66 +166,66 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
         }
     }
 
-    private func _beatDurationChange(_ beat: AlphaTexBeatNode) {
-        let colon: AlphaTexAstNode? = self.lexer.peekToken()
+    private func _beatDurationChange(_ beat: AlphaTexBeatNode) throws {
+        let colon: AlphaTexAstNode? = try self.lexer.peekToken()
         if colon?.nodeType != AlphaTexNodeType.Colon {
             return
         }
         self.lexer.advance()
-        let durationChange: AlphaTexBeatDurationChangeNode = AlphaTexBeatDurationChangeNode(nodeType: (AlphaTexNodeType.Duration as! AlphaTexNodeType), colon: (colon as! AlphaTexColonTokenNode), start: colon!.start, value: nil, properties: nil)
+        let durationChange: AlphaTexBeatDurationChangeNode = try AlphaTexBeatDurationChangeNode(nodeType: (AlphaTexNodeType.Duration as! AlphaTexNodeType), colon: jsCast(colon, AlphaTexColonTokenNode.self), start: colon!.start, value: nil, properties: nil)
         beat.durationChange = durationChange
         do {
             defer {
                 durationChange.end = self.lexer.previousTokenEndLocation()
             }
-            let durationValue: AlphaTexAstNode? = self.lexer.peekToken()
+            let durationValue: AlphaTexAstNode? = try self.lexer.peekToken()
             if !TypeHelper.isTruthy(durationValue) || durationValue!.nodeType != AlphaTexNodeType.Number {
                 self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT201, message: "Missing duration value after ':'.", start: colon!.start, end: colon!.end))
                 return
             }
             self.lexer.advance()
-            durationChange.value = (durationValue as! AlphaTexNumberLiteral)
-            durationChange.properties = self._properties({ (property: AlphaTexPropertyNode) -> AlphaTexArgumentList? in
-                return self._metaDataReader.readDurationChangePropertyArguments(self, property)
+            try durationChange.value = jsCast(durationValue, AlphaTexNumberLiteral.self)
+            try durationChange.properties = self._properties({ (property: AlphaTexPropertyNode) -> AlphaTexArgumentList? in
+                return try self._metaDataReader.readDurationChangePropertyArguments(self, property)
             })
         }
     }
 
-    private func _beatContent(_ beat: AlphaTexBeatNode) {
-        let notes: AlphaTexAstNode? = self.lexer.peekToken()
+    private func _beatContent(_ beat: AlphaTexBeatNode) throws {
+        let notes: AlphaTexAstNode? = try self.lexer.peekToken()
         if !TypeHelper.isTruthy(notes) {
             return
         }
-        if notes!.nodeType == AlphaTexNodeType.Ident && (notes as! AlphaTexIdentifier).text == "r" {
-            beat.rest = (notes as! AlphaTexIdentifier)
+        if try notes!.nodeType == AlphaTexNodeType.Ident && (jsCast(notes, AlphaTexIdentifier.self)).text == "r" {
+            try beat.rest = jsCast(notes, AlphaTexIdentifier.self)
             self.lexer.advance()
         } else if notes!.nodeType == AlphaTexNodeType.LParen {
-            beat.notes = self._noteList((notes as! AlphaTexParenthesisOpenTokenNode))
+            try beat.notes = self._noteList(jsCast(notes, AlphaTexParenthesisOpenTokenNode.self))
         } else {
-            let note: AlphaTexNoteNode? = self._note(notes!)
+            let note: AlphaTexNoteNode? = try self._note(notes!)
             if TypeHelper.isTruthy(note) {
                 beat.notes = (AlphaTexNoteListNode(nodeType: (AlphaTexNodeType.NoteList as! AlphaTexNodeType), notes: List<AlphaTexNoteNode>(note!), start: note!.start, end: note!.end, openParenthesis: nil, closeParenthesis: nil) as AlphaTexNoteListNode)
             }
         }
     }
 
-    private func _beatMultiplier(_ beat: AlphaTexBeatNode) {
-        let multiplier: AlphaTexAstNode? = self.lexer.peekToken()
+    private func _beatMultiplier(_ beat: AlphaTexBeatNode) throws {
+        let multiplier: AlphaTexAstNode? = try self.lexer.peekToken()
         if !TypeHelper.isTruthy(multiplier) || multiplier!.nodeType != AlphaTexNodeType.Asterisk {
             return
         }
         self.lexer.advance()
-        beat.beatMultiplier = (multiplier as! AlphaTexAsteriskTokenNode)
-        let multiplierValue: AlphaTexAstNode? = self.lexer.peekToken()
+        try beat.beatMultiplier = jsCast(multiplier, AlphaTexAsteriskTokenNode.self)
+        let multiplierValue: AlphaTexAstNode? = try self.lexer.peekToken()
         if !TypeHelper.isTruthy(multiplierValue) || multiplierValue!.nodeType != AlphaTexNodeType.Number {
             self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT200, message: "Missing beat multiplier value after '*'.", start: beat.beatMultiplier!.start, end: beat.beatMultiplier!.end))
             return
         }
-        beat.beatMultiplierValue = (multiplierValue as! AlphaTexNumberLiteral)
+        try beat.beatMultiplierValue = jsCast(multiplierValue, AlphaTexNumberLiteral.self)
         self.lexer.advance()
     }
 
-    private func _noteList(_ openParenthesis: AlphaTexParenthesisOpenTokenNode) -> AlphaTexNoteListNode {
+    private func _noteList(_ openParenthesis: AlphaTexParenthesisOpenTokenNode) throws -> AlphaTexNoteListNode {
         let noteList: AlphaTexNoteListNode = AlphaTexNoteListNode(nodeType: (AlphaTexNodeType.NoteList as! AlphaTexNodeType), notes: List<AlphaTexNoteNode>(), start: self.lexer.currentTokenLocation(), openParenthesis: nil, closeParenthesis: nil)
         do {
             defer {
@@ -233,19 +233,19 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
             }
             noteList.openParenthesis = (openParenthesis as! AlphaTexParenthesisOpenTokenNode)
             self.lexer.advance()
-            var token: AlphaTexAstNode? = self.lexer.peekToken()
+            var token: AlphaTexAstNode? = try self.lexer.peekToken()
             while TypeHelper.isTruthy(TypeHelper.isTruthy(token) && token!.nodeType != AlphaTexNodeType.RParen) {
-                let note: AlphaTexNoteNode? = self._note(token!)
+                let note: AlphaTexNoteNode? = try self._note(token!)
                 if TypeHelper.isTruthy(note) {
                     noteList.notes.push(note!)
                 } else {
                     break
                 }
-                token = self.lexer.peekToken()
+                try token = self.lexer.peekToken()
             }
-            let closeParenthesis: AlphaTexAstNode? = self.lexer.peekToken()
+            let closeParenthesis: AlphaTexAstNode? = try self.lexer.peekToken()
             if closeParenthesis?.nodeType == AlphaTexNodeType.RParen {
-                noteList.closeParenthesis = (closeParenthesis as! AlphaTexParenthesisCloseTokenNode)
+                try noteList.closeParenthesis = jsCast(closeParenthesis, AlphaTexParenthesisCloseTokenNode.self)
                 self.lexer.advance()
             } else {
                 self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT206, message: "Unexpected end of file. Group not closed.", start: closeParenthesis?.start ?? self.lexer.currentTokenLocation(), end: closeParenthesis?.end ?? self.lexer.currentTokenLocation()))
@@ -254,7 +254,7 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
         return noteList
     }
 
-    private func _note(_ noteValue: AlphaTexAstNode) -> AlphaTexNoteNode? {
+    private func _note(_ noteValue: AlphaTexAstNode) throws -> AlphaTexNoteNode? {
         let note: AlphaTexNoteNode = AlphaTexNoteNode(nodeType: (AlphaTexNodeType.Note as! AlphaTexNodeType), noteValue: (AlphaTexIdentifier(nodeType: (AlphaTexNodeType.Ident as! AlphaTexNodeType), text: "") as AlphaTexIdentifier), start: noteValue.start)
         do {
             defer {
@@ -263,22 +263,22 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
             var canHaveStringDot: Bool = false
             switch noteValue.nodeType {
             case AlphaTexNodeType.Number:
-                note.noteValue = (noteValue as! AlphaTexNumberLiteral)
+                try note.noteValue = jsCast(noteValue, AlphaTexNumberLiteral.self)
                 self.lexer.advance()
                 canHaveStringDot = true
             case AlphaTexNodeType.String:
-                note.noteValue = (noteValue as! AlphaTexStringLiteral)
+                try note.noteValue = jsCast(noteValue, AlphaTexStringLiteral.self)
                 self.lexer.advance()
-                switch (note.noteValue as! AlphaTexStringLiteral).text {
+                switch try (jsCast(note.noteValue, AlphaTexStringLiteral.self)).text {
                 case "x", "-":
                     canHaveStringDot = true
                 default:
                     break
                 }
             case AlphaTexNodeType.Ident:
-                note.noteValue = (noteValue as! AlphaTexIdentifier)
+                try note.noteValue = jsCast(noteValue, AlphaTexIdentifier.self)
                 self.lexer.advance()
-                switch (note.noteValue as! AlphaTexIdentifier).text {
+                switch try (jsCast(note.noteValue, AlphaTexIdentifier.self)).text {
                 case "x", "-":
                     canHaveStringDot = true
                 default:
@@ -288,11 +288,11 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
                 self.unexpectedToken(noteValue, List<AlphaTexNodeType>(AlphaTexNodeType.Number, AlphaTexNodeType.String, AlphaTexNodeType.Ident), true)
                 return nil
             }
-            let separator: AlphaTexAstNode? = self.lexer.peekToken()
+            let separator: AlphaTexAstNode? = try self.lexer.peekToken()
             if (canHaveStringDot && separator?.nodeType == AlphaTexNodeType.Dot) || separator?.nodeType == AlphaTexNodeType.At {
                 let noteStringSeparator: any IAlphaTexStringSeparatorNode = (separator as! any IAlphaTexStringSeparatorNode)
                 self.lexer.advance()
-                let noteString: AlphaTexAstNode? = self.lexer.peekToken()
+                let noteString: AlphaTexAstNode? = try self.lexer.peekToken()
                 if !TypeHelper.isTruthy(noteString) {
                     self.unexpectedToken(noteString, List<AlphaTexNodeType>(AlphaTexNodeType.Number), true)
                     return nil
@@ -301,15 +301,15 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
                     return note
                 } else if noteString!.nodeType == AlphaTexNodeType.Number {
                     note.noteStringSeparator = noteStringSeparator
-                    note.noteString = (noteString as! AlphaTexNumberLiteral)
+                    try note.noteString = jsCast(noteString, AlphaTexNumberLiteral.self)
                     self.lexer.advance()
                 } else {
                     self.unexpectedToken(noteString!, List<AlphaTexNodeType>(AlphaTexNodeType.Number), true)
                     return nil
                 }
             }
-            note.noteEffects = self._properties({ (property: AlphaTexPropertyNode) -> AlphaTexArgumentList? in
-                return self._metaDataReader.readNotePropertyArguments(self, property)
+            try note.noteEffects = self._properties({ (property: AlphaTexPropertyNode) -> AlphaTexArgumentList? in
+                return try self._metaDataReader.readNotePropertyArguments(self, property)
             })
         }
         return note
@@ -317,12 +317,12 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
 
     nonisolated(unsafe) private static let _allowValuesAfterProperties: Set<String> = Set<String>(["chord"])
 
-    private func _metaData(_ metaDataList: List<AlphaTexMetaDataNode>) -> AlphaTexMetaDataNode? {
-        let tag: AlphaTexAstNode? = self.lexer.peekToken()
+    private func _metaData(_ metaDataList: List<AlphaTexMetaDataNode>) throws -> AlphaTexMetaDataNode? {
+        let tag: AlphaTexAstNode? = try self.lexer.peekToken()
         if !TypeHelper.isTruthy(tag) || tag!.nodeType != AlphaTexNodeType.Tag {
             return nil
         }
-        let metaData: AlphaTexMetaDataNode = AlphaTexMetaDataNode(nodeType: (AlphaTexNodeType.Meta as! AlphaTexNodeType), tag: (tag as! AlphaTexMetaDataTagNode), propertiesBeforeArguments: false, start: tag!.start, properties: nil)
+        let metaData: AlphaTexMetaDataNode = try AlphaTexMetaDataNode(nodeType: (AlphaTexNodeType.Meta as! AlphaTexNodeType), tag: jsCast(tag, AlphaTexMetaDataTagNode.self), propertiesBeforeArguments: false, start: tag!.start, properties: nil)
         self.lexer.advance()
         metaDataList.push(metaData)
         do {
@@ -330,15 +330,15 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
                 metaData.end = self.lexer.previousTokenEndLocation()
             }
             let allowValuesAfterProperties: Bool = AlphaTexParser._allowValuesAfterProperties.has(metaData.tag.tag.text)
-            let braceCandidate: AlphaTexAstNode? = self.lexer.peekToken()
+            let braceCandidate: AlphaTexAstNode? = try self.lexer.peekToken()
             if allowValuesAfterProperties && braceCandidate?.nodeType == AlphaTexNodeType.LBrace {
                 metaData.propertiesBeforeArguments = true
-                metaData.properties = self._properties({ (property: AlphaTexPropertyNode) -> AlphaTexArgumentList? in
-                    return self._metaDataReader.readMetaDataPropertyArguments(self, metaData.tag, property)
+                try metaData.properties = self._properties({ (property: AlphaTexPropertyNode) -> AlphaTexArgumentList? in
+                    return try self._metaDataReader.readMetaDataPropertyArguments(self, metaData.tag, property)
                 })
-                metaData.arguments = self.argumentList()
+                try metaData.arguments = self.argumentList()
                 if !TypeHelper.isTruthy(metaData.arguments) {
-                    metaData.arguments = self._metaDataReader.readMetaDataArguments(self, metaData.tag)
+                    try metaData.arguments = self._metaDataReader.readMetaDataArguments(self, metaData.tag)
                     if TypeHelper.isTruthy(TypeHelper.isTruthy(metaData.arguments) && metaData.arguments!.arguments.length > 1) {
                         self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Warning, code: AlphaTexDiagnosticCode.AT301, message: "Metadata arguments should be wrapped into parenthesis.", start: metaData.arguments!.start ?? metaData.start, end: metaData.arguments!.end ?? metaData.end))
                         self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Warning, code: AlphaTexDiagnosticCode.AT302, message: "Metadata arguments should be placed before metadata properties.", start: metaData.arguments!.start ?? metaData.start, end: metaData.arguments!.end ?? metaData.end))
@@ -346,41 +346,41 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
                 }
             } else {
                 if self._metaDataReader.hasMetaDataArguments(metaData.tag) {
-                    metaData.arguments = self.argumentList()
+                    try metaData.arguments = self.argumentList()
                     if !TypeHelper.isTruthy(metaData.arguments) {
-                        metaData.arguments = self._metaDataReader.readMetaDataArguments(self, metaData.tag)
+                        try metaData.arguments = self._metaDataReader.readMetaDataArguments(self, metaData.tag)
                         if TypeHelper.isTruthy(TypeHelper.isTruthy(metaData.arguments) && metaData.arguments!.arguments.length > 1) {
                             self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Warning, code: AlphaTexDiagnosticCode.AT301, message: "Metadata arguments should be wrapped into parenthesis.", start: metaData.arguments!.start ?? metaData.start, end: metaData.arguments!.end ?? metaData.end))
                         }
                     }
                 }
-                metaData.properties = self._properties({ (property: AlphaTexPropertyNode) -> AlphaTexArgumentList? in
-                    return self._metaDataReader.readMetaDataPropertyArguments(self, metaData.tag, property)
+                try metaData.properties = self._properties({ (property: AlphaTexPropertyNode) -> AlphaTexArgumentList? in
+                    return try self._metaDataReader.readMetaDataPropertyArguments(self, metaData.tag, property)
                 })
             }
         }
         return metaData
     }
 
-    private func _properties(_ readPropertyArgs: @escaping (AlphaTexPropertyNode) -> AlphaTexArgumentList?) -> AlphaTexPropertiesNode? {
-        let braceOpen: AlphaTexAstNode? = self.lexer.peekToken()
+    private func _properties(_ readPropertyArgs: @escaping (AlphaTexPropertyNode) throws -> AlphaTexArgumentList?) throws -> AlphaTexPropertiesNode? {
+        let braceOpen: AlphaTexAstNode? = try self.lexer.peekToken()
         if !TypeHelper.isTruthy(braceOpen) || braceOpen!.nodeType != AlphaTexNodeType.LBrace {
             return nil
         }
-        let properties: AlphaTexPropertiesNode = AlphaTexPropertiesNode(nodeType: (AlphaTexNodeType.Props as! AlphaTexNodeType), properties: List<AlphaTexPropertyNode>(), start: braceOpen!.start, openBrace: (braceOpen as! AlphaTexBraceOpenTokenNode), closeBrace: nil)
+        let properties: AlphaTexPropertiesNode = try AlphaTexPropertiesNode(nodeType: (AlphaTexNodeType.Props as! AlphaTexNodeType), properties: List<AlphaTexPropertyNode>(), start: braceOpen!.start, openBrace: jsCast(braceOpen, AlphaTexBraceOpenTokenNode.self), closeBrace: nil)
         self.lexer.advance()
         do {
             defer {
                 properties.end = self.lexer.previousTokenEndLocation()
             }
-            var token: AlphaTexAstNode? = self.lexer.peekToken()
+            var token: AlphaTexAstNode? = try self.lexer.peekToken()
             while token?.nodeType == AlphaTexNodeType.Ident {
-                properties.properties.push(self._property((token as! AlphaTexIdentifier), readPropertyArgs))
-                token = self.lexer.peekToken()
+                try properties.properties.push(self._property(jsCast(token, AlphaTexIdentifier.self), readPropertyArgs))
+                try token = self.lexer.peekToken()
             }
-            let braceClose: AlphaTexAstNode? = self.lexer.peekToken()
+            let braceClose: AlphaTexAstNode? = try self.lexer.peekToken()
             if braceClose?.nodeType == AlphaTexNodeType.RBrace {
-                properties.closeBrace = (braceClose as! AlphaTexBraceCloseTokenNode)
+                try properties.closeBrace = jsCast(braceClose, AlphaTexBraceCloseTokenNode.self)
                 self.lexer.advance()
             } else {
                 self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT206, message: "Unexpected end of file. Group not closed.", start: self.lexer.currentTokenLocation(), end: self.lexer.currentTokenLocation()))
@@ -389,7 +389,7 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
         return properties
     }
 
-    private func _property(_ identifier: AlphaTexIdentifier, _ readPropertyArgs: @escaping (AlphaTexPropertyNode) -> AlphaTexArgumentList?) -> AlphaTexPropertyNode {
+    private func _property(_ identifier: AlphaTexIdentifier, _ readPropertyArgs: @escaping (AlphaTexPropertyNode) throws -> AlphaTexArgumentList?) throws -> AlphaTexPropertyNode {
         let property: AlphaTexPropertyNode = AlphaTexPropertyNode(nodeType: (AlphaTexNodeType.Prop as! AlphaTexNodeType), property: (identifier as! AlphaTexIdentifier), arguments: nil)
         self.lexer.advance()
         property.start = property.property.start
@@ -397,9 +397,9 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
             defer {
                 property.end = self.lexer.previousTokenEndLocation()
             }
-            property.arguments = self.argumentList()
+            try property.arguments = self.argumentList()
             if !TypeHelper.isTruthy(property.arguments) {
-                property.arguments = readPropertyArgs(property)
+                try property.arguments = readPropertyArgs(property)
                 if TypeHelper.isTruthy(TypeHelper.isTruthy(property.arguments) && property.arguments!.arguments.length > 1) {
                     self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Warning, code: AlphaTexDiagnosticCode.AT303, message: "Property args should be wrapped into parenthesis.", start: property.arguments!.start, end: property.arguments!.end))
                 }
@@ -408,38 +408,38 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
         return property
     }
 
-    public func argumentList() -> AlphaTexArgumentList? {
-        let openParenthesis: AlphaTexAstNode? = self.lexer.peekToken()
+    public func argumentList() throws -> AlphaTexArgumentList? {
+        let openParenthesis: AlphaTexAstNode? = try self.lexer.peekToken()
         if openParenthesis?.nodeType != AlphaTexNodeType.LParen {
             return nil
         }
-        let valueList: AlphaTexArgumentList = AlphaTexArgumentList(nodeType: (AlphaTexNodeType.Arguments as! AlphaTexNodeType), arguments: List<any IAlphaTexArgumentValue>(), start: openParenthesis!.start, openParenthesis: (openParenthesis as! AlphaTexParenthesisOpenTokenNode), closeParenthesis: nil)
+        let valueList: AlphaTexArgumentList = try AlphaTexArgumentList(nodeType: (AlphaTexNodeType.Arguments as! AlphaTexNodeType), arguments: List<any IAlphaTexArgumentValue>(), start: openParenthesis!.start, openParenthesis: jsCast(openParenthesis, AlphaTexParenthesisOpenTokenNode.self), closeParenthesis: nil)
         self.lexer.advance()
         do {
             defer {
                 valueList.end = self.lexer.previousTokenEndLocation()
             }
-            var token: AlphaTexAstNode? = self.lexer.peekToken()
+            var token: AlphaTexAstNode? = try self.lexer.peekToken()
             while TypeHelper.isTruthy(TypeHelper.isTruthy(token) && token!.nodeType != AlphaTexNodeType.RParen) {
                 switch token!.nodeType {
                 case AlphaTexNodeType.Ident:
-                    valueList.arguments.push((token as! AlphaTexIdentifier))
+                    try valueList.arguments.push(jsCast(token, AlphaTexIdentifier.self))
                     self.lexer.advance()
                 case AlphaTexNodeType.String:
-                    valueList.arguments.push((token as! AlphaTexStringLiteral))
+                    try valueList.arguments.push(jsCast(token, AlphaTexStringLiteral.self))
                     self.lexer.advance()
                 case AlphaTexNodeType.Number:
-                    valueList.arguments.push(self.lexer.extendToFloat((token as! AlphaTexNumberLiteral)))
+                    try valueList.arguments.push(self.lexer.extendToFloat(jsCast(token, AlphaTexNumberLiteral.self)))
                     self.lexer.advance()
                 default:
                     self.unexpectedToken(token!, List<AlphaTexNodeType>(AlphaTexNodeType.Ident, AlphaTexNodeType.String, AlphaTexNodeType.Number), false)
                     self.lexer.advance()
                 }
-                token = self.lexer.peekToken()
+                try token = self.lexer.peekToken()
             }
-            let closeParenthesis: AlphaTexAstNode? = self.lexer.peekToken()
+            let closeParenthesis: AlphaTexAstNode? = try self.lexer.peekToken()
             if closeParenthesis?.nodeType == AlphaTexNodeType.RParen {
-                valueList.closeParenthesis = (closeParenthesis as! AlphaTexParenthesisCloseTokenNode)
+                try valueList.closeParenthesis = jsCast(closeParenthesis, AlphaTexParenthesisCloseTokenNode.self)
                 self.lexer.advance()
             } else {
                 self.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT206, message: "Unexpected end of file. Group not closed.", start: self.lexer.currentTokenLocation(), end: self.lexer.currentTokenLocation()))

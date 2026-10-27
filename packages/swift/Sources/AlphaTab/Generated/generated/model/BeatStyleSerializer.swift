@@ -36,7 +36,7 @@ internal final class BeatStyleSerializer {
         case "colors":
             obj.colors = Map<BeatSubElement, Color?>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try (obj.colors as! Map<BeatSubElement, Color?>).set(JsonHelperPartials.parseEnum(k, BeatSubElement.self)!, Color.fromJson(v))
+                try (obj.colors as! Map<BeatSubElement, Color?>).set(jsNonNull(JsonHelperPartials.parseEnum(k, BeatSubElement.self)), Color.fromJson(v))
             })
             return true
         default:

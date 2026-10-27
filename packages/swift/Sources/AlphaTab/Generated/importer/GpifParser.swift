@@ -85,7 +85,7 @@ internal final class GpifParser {
 
     private var _keySignatures: Map<Double, (KeySignature, KeySignatureType)> = Map<Double, (KeySignature, KeySignatureType)>()
 
-    public var loadAsset: ((String) -> Uint8Array?)? = nil
+    public var loadAsset: ((String) throws -> Uint8Array?)? = nil
 
     public func parseXml(_ xml: String, _ settings: Settings) throws {
         self._masterTrackAutomations = Map<Double, List<Automation>>()
@@ -116,15 +116,15 @@ internal final class GpifParser {
             throw UnsupportedFormatError("Could not parse XML", (e as! JsError))
         }
         try self._parseDom(dom)
-        self._buildModel()
-        ModelUtils.consolidate(self.score)
+        try self._buildModel()
+        try ModelUtils.consolidate(self.score)
         if self.isGp6 {
             try self._assignFingeringForGp6()
         }
-        self.score.finish(settings)
+        try self.score.finish(settings)
         if !self._skipApplyLyrics && self._lyricsByTrack.size > 0 {
             for (t, lyrics) in self._lyricsByTrack {
-                let track: Track = self._tracksById.get(t)!
+                let track: Track = try jsNonNull(self._tracksById.get(t))
                 track.applyLyrics(lyrics)
             }
         }
@@ -150,25 +150,25 @@ internal final class GpifParser {
                 case "Score":
                     self._parseScoreNode(n)
                 case "MasterTrack":
-                    self._parseMasterTrackNode(n)
+                    try self._parseMasterTrackNode(n)
                 case "BackingTrack":
                     self._parseBackingTrackNode(n)
                 case "Tracks":
-                    self._parseTracksNode(n)
+                    try self._parseTracksNode(n)
                 case "MasterBars":
-                    self._parseMasterBarsNode(n)
+                    try self._parseMasterBarsNode(n)
                 case "Bars":
-                    self._parseBars(n)
+                    try self._parseBars(n)
                 case "Voices":
-                    self._parseVoices(n)
+                    try self._parseVoices(n)
                 case "Beats":
-                    self._parseBeats(n)
+                    try self._parseBeats(n)
                 case "Notes":
-                    self._parseNotes(n)
+                    try self._parseNotes(n)
                 case "Rhythms":
-                    self._parseRhythms(n)
+                    try self._parseRhythms(n)
                 case "Assets":
-                    self._parseAssets(n)
+                    try self._parseAssets(n)
                 default:
                     break
                 }
@@ -178,12 +178,12 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseAssets(_ element: XmlNode) {
+    private func _parseAssets(_ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "Asset":
-                if c.getAttribute("id") == self._backingTrackAssetId {
-                    self._parseBackingTrackAsset(c)
+                if try c.getAttribute("id") == self._backingTrackAssetId {
+                    try self._parseBackingTrackAsset(c)
                 }
             default:
                 break
@@ -191,7 +191,7 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseBackingTrackAsset(_ element: XmlNode) {
+    private func _parseBackingTrackAsset(_ element: XmlNode) throws {
         var embeddedFilePath: String = ""
         for c in element.childElements() {
             switch c.localName! {
@@ -201,11 +201,11 @@ internal final class GpifParser {
                 break
             }
         }
-        let loadAsset: ((String) -> Uint8Array?)? = self.loadAsset
+        let loadAsset: ((String) throws -> Uint8Array?)? = self.loadAsset
         if TypeHelper.isTruthy(loadAsset) {
-            let assetData: Uint8Array? = loadAsset!(embeddedFilePath)
+            let assetData: Uint8Array? = try loadAsset!(embeddedFilePath)
             if TypeHelper.isTruthy(assetData) {
-                self.score.backingTrack!.rawAudioFile = assetData!
+                try jsNonNull(self.score.backingTrack).rawAudioFile = assetData!
             } else {
                 self.score.backingTrack = nil
             }
@@ -315,11 +315,11 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseMasterTrackNode(_ node: XmlNode) {
+    private func _parseMasterTrackNode(_ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Automations":
-                self._parseAutomations(c, self._masterTrackAutomations, nil, nil)
+                try self._parseAutomations(c, self._masterTrackAutomations, nil, nil)
             case "Tracks":
                 self._tracksMapping = GpifParser._splitSafe(c.innerText)
             case "Anacrusis":
@@ -330,18 +330,18 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseAutomations(_ node: XmlNode, _ automations: Map<Double, List<Automation>>, _ sounds: Map<String, GpifSound>?, _ sustainPedals: Map<Double, List<SustainPedalMarker>>?) {
+    private func _parseAutomations(_ node: XmlNode, _ automations: Map<Double, List<Automation>>, _ sounds: Map<String, GpifSound>?, _ sustainPedals: Map<Double, List<SustainPedalMarker>>?) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Automation":
-                self._parseAutomation(c, automations, sounds, sustainPedals)
+                try self._parseAutomation(c, automations, sounds, sustainPedals)
             default:
                 break
             }
         }
     }
 
-    private func _parseAutomation(_ node: XmlNode, _ automations: Map<Double, List<Automation>>, _ sounds: Map<String, GpifSound>?, _ sustainPedals: Map<Double, List<SustainPedalMarker>>?) {
+    private func _parseAutomation(_ node: XmlNode, _ automations: Map<Double, List<Automation>>, _ sounds: Map<String, GpifSound>?, _ sustainPedals: Map<Double, List<SustainPedalMarker>>?) throws {
         var type: String? = nil
         var isLinear: Bool = false
         var barIndex: Double = -1.0
@@ -418,17 +418,17 @@ internal final class GpifParser {
                 let bankChange: Automation = Automation()
                 bankChange.type = AutomationType.Bank
                 bankChange.ratioPosition = ratioPosition
-                bankChange.value = sounds!.get(textValue!)!.bank
+                try bankChange.value = jsNonNull(sounds!.get(textValue!)).bank
                 bankChange.isVisible = isVisible
                 newAutomations.push(bankChange)
-                let programChange: Automation = Automation.buildInstrumentAutomation(isLinear, ratioPosition, sounds!.get(textValue!)!.program)
+                let programChange: Automation = try Automation.buildInstrumentAutomation(isLinear, ratioPosition, jsNonNull(sounds!.get(textValue!)).program)
                 newAutomations.push(programChange)
             }
         case "SustainPedal":
             if TypeHelper.isTruthy(sustainPedals) {
                 var v: List<SustainPedalMarker>
                 if sustainPedals!.has(barIndex) {
-                    v = sustainPedals!.get(barIndex)!
+                    try v = jsNonNull(sustainPedals!.get(barIndex))
                 } else {
                     v = List<SustainPedalMarker>()
                     sustainPedals!.set(barIndex, v)
@@ -459,28 +459,28 @@ internal final class GpifParser {
                     automations.set(barIndex, List<Automation>())
                 }
                 for a in newAutomations {
-                    automations.get(barIndex)!.push(a)
+                    try jsNonNull(automations.get(barIndex)).push(a)
                 }
             }
         }
     }
 
-    private func _parseTracksNode(_ node: XmlNode) {
+    private func _parseTracksNode(_ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Track":
-                self._parseTrack(c)
+                try self._parseTrack(c)
             default:
                 break
             }
         }
     }
 
-    private func _parseTrack(_ node: XmlNode) {
+    private func _parseTrack(_ node: XmlNode) throws {
         self._articulationByName = Map<String, InstrumentArticulation>()
         let track: Track = Track()
         track.ensureStaveCount(1.0)
-        let trackId: String = node.getAttribute("id")
+        let trackId: String = try node.getAttribute("id")
         for c in node.childElements() {
             switch c.localName! {
             case "Name":
@@ -494,15 +494,15 @@ internal final class GpifParser {
                     track.color = Color(r, g, b, 255.0)
                 }
             case "Instrument":
-                let instrumentName: String = c.getAttribute("ref")
+                let instrumentName: String = try c.getAttribute("ref")
                 if instrumentName.endsWith("-gs") || instrumentName.endsWith("GrandStaff") {
                     track.ensureStaveCount(2.0)
                     track.staves[1].showStandardNotation = true
                 }
             case "InstrumentSet":
-                self._parseInstrumentSet(track, c)
+                try self._parseInstrumentSet(track, c)
             case "NotationPatch":
-                self._parseNotationPatch(track, c)
+                try self._parseNotationPatch(track, c)
             case "ShortName":
                 track.shortName = c.innerText
             case "SystemsDefautLayout":
@@ -514,11 +514,11 @@ internal final class GpifParser {
             case "Lyrics":
                 self._parseLyrics(trackId, c)
             case "Properties":
-                self._parseTrackProperties(track, c)
+                try self._parseTrackProperties(track, c)
             case "GeneralMidi", "MidiConnection", "MIDISettings":
-                self._parseGeneralMidi(track, c)
+                try self._parseGeneralMidi(track, c)
             case "Sounds":
-                self._parseSounds(trackId, track, c)
+                try self._parseSounds(trackId, track, c)
             case "PlaybackState":
                 let state: String = c.innerText
                 track.playbackInfo.isSolo = state == "Solo"
@@ -526,13 +526,13 @@ internal final class GpifParser {
             case "PartSounding":
                 self._parsePartSounding(trackId, track, c)
             case "Staves":
-                self._parseStaves(track, c)
+                try self._parseStaves(track, c)
             case "Transpose":
                 self._parseTranspose(trackId, track, c)
             case "RSE":
                 self._parseRSE(track, c)
             case "Automations":
-                self._parseTrackAutomations(trackId, c)
+                try self._parseTrackAutomations(trackId, c)
             default:
                 break
             }
@@ -540,15 +540,15 @@ internal final class GpifParser {
         self._tracksById.set(trackId, track)
     }
 
-    private func _parseTrackAutomations(_ trackId: String, _ c: XmlNode) {
+    private func _parseTrackAutomations(_ trackId: String, _ c: XmlNode) throws {
         let trackAutomations: Map<Double, List<Automation>> = Map<Double, List<Automation>>()
         self._automationsPerTrackIdAndBarIndex.set(trackId, trackAutomations)
         let sustainPedals: Map<Double, List<SustainPedalMarker>> = Map<Double, List<SustainPedalMarker>>()
         self._sustainPedalsPerTrackIdAndBarIndex.set(trackId, sustainPedals)
-        self._parseAutomations(c, trackAutomations, self._soundsByTrack.get(trackId)!, sustainPedals)
+        try self._parseAutomations(c, trackAutomations, jsNonNull(self._soundsByTrack.get(trackId)), sustainPedals)
     }
 
-    private func _parseNotationPatch(_ track: Track, _ node: XmlNode) {
+    private func _parseNotationPatch(_ track: Track, _ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "LineCount":
@@ -557,14 +557,14 @@ internal final class GpifParser {
                     staff.standardNotationLineCount = lineCount
                 }
             case "Elements":
-                self._parseElements(track, c, false)
+                try self._parseElements(track, c, false)
             default:
                 break
             }
         }
     }
 
-    private func _parseInstrumentSet(_ track: Track, _ node: XmlNode) {
+    private func _parseInstrumentSet(_ track: Track, _ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Type":
@@ -574,7 +574,7 @@ internal final class GpifParser {
                     }
                 }
             case "Elements":
-                self._parseElements(track, c, true)
+                try self._parseElements(track, c, true)
             case "LineCount":
                 let lineCount: Double = GpifParser._parseIntSafe(c.innerText, 5.0)
                 for staff in track.staves {
@@ -586,41 +586,41 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseElements(_ track: Track, _ node: XmlNode, _ isInstrumentSet: Bool) {
+    private func _parseElements(_ track: Track, _ node: XmlNode, _ isInstrumentSet: Bool) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Element":
-                self._parseElement(track, c, isInstrumentSet)
+                try self._parseElement(track, c, isInstrumentSet)
             default:
                 break
             }
         }
     }
 
-    private func _parseElement(_ track: Track, _ node: XmlNode, _ isInstrumentSet: Bool) {
+    private func _parseElement(_ track: Track, _ node: XmlNode, _ isInstrumentSet: Bool) throws {
         let name: String = node.findChildElement("Name")?.innerText ?? ""
         for c in node.childElements() {
             switch c.localName! {
             case "Name", "Articulations":
-                self._parseArticulations(track, c, isInstrumentSet, name)
+                try self._parseArticulations(track, c, isInstrumentSet, name)
             default:
                 break
             }
         }
     }
 
-    private func _parseArticulations(_ track: Track, _ node: XmlNode, _ isInstrumentSet: Bool, _ elementName: String) {
+    private func _parseArticulations(_ track: Track, _ node: XmlNode, _ isInstrumentSet: Bool, _ elementName: String) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Articulation":
-                self._parseArticulation(track, c, isInstrumentSet, elementName)
+                try self._parseArticulation(track, c, isInstrumentSet, elementName)
             default:
                 break
             }
         }
     }
 
-    private func _parseArticulation(_ track: Track, _ node: XmlNode, _ isInstrumentSet: Bool, _ elementName: String) {
+    private func _parseArticulation(_ track: Track, _ node: XmlNode, _ isInstrumentSet: Bool, _ elementName: String) throws {
         let articulation: InstrumentArticulation = InstrumentArticulation()
         articulation.outputMidiNumber = -1.0
         articulation.elementType = elementName
@@ -666,7 +666,7 @@ internal final class GpifParser {
             track.percussionArticulations.push(articulation)
             self._articulationByName.set(fullName, articulation)
         } else if self._articulationByName.has(fullName) {
-            self._articulationByName.get(fullName)!.staffLine = articulation.staffLine
+            try jsNonNull(self._articulationByName.get(fullName)).staffLine = articulation.staffLine
         }
     }
 
@@ -756,14 +756,14 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseStaves(_ track: Track, _ node: XmlNode) {
+    private func _parseStaves(_ track: Track, _ node: XmlNode) throws {
         var staffIndex: Double = 0.0
         for c in node.childElements() {
             switch c.localName! {
             case "Staff":
                 track.ensureStaveCount(staffIndex + 1.0)
                 let staff: Staff = track.staves[(staffIndex).toInt()]
-                self._parseStaff(staff, c)
+                try self._parseStaff(staff, c)
                 staffIndex += 1
             default:
                 break
@@ -771,30 +771,30 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseStaff(_ staff: Staff, _ node: XmlNode) {
+    private func _parseStaff(_ staff: Staff, _ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Properties":
-                self._parseStaffProperties(staff, c)
+                try self._parseStaffProperties(staff, c)
             default:
                 break
             }
         }
     }
 
-    private func _parseStaffProperties(_ staff: Staff, _ node: XmlNode) {
+    private func _parseStaffProperties(_ staff: Staff, _ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Property":
-                self._parseStaffProperty(staff, c)
+                try self._parseStaffProperty(staff, c)
             default:
                 break
             }
         }
     }
 
-    private func _parseStaffProperty(_ staff: Staff, _ node: XmlNode) {
-        let propertyName: String = node.getAttribute("name")
+    private func _parseStaffProperty(_ staff: Staff, _ node: XmlNode) throws {
+        let propertyName: String = try node.getAttribute("name")
         switch propertyName {
         case "Tuning":
             for c in node.childElements() {
@@ -817,7 +817,7 @@ internal final class GpifParser {
                 }
             }
         case "DiagramCollection", "ChordCollection":
-            self._parseDiagramCollectionForStaff(staff, node)
+            try self._parseDiagramCollectionForStaff(staff, node)
         case "CapoFret":
             let capo: Double = GpifParser._parseIntSafe(node.findChildElement("Fret")?.innerText, 0.0)
             staff.capo = capo
@@ -854,13 +854,13 @@ internal final class GpifParser {
         return lyrics
     }
 
-    private func _parseDiagramCollectionForTrack(_ track: Track, _ node: XmlNode) {
+    private func _parseDiagramCollectionForTrack(_ track: Track, _ node: XmlNode) throws {
         let items: XmlNode? = node.findChildElement("Items")
         if TypeHelper.isTruthy(items) {
             for c in items!.childElements() {
                 switch c.localName! {
                 case "Item":
-                    self._parseDiagramItemForTrack(track, c)
+                    try self._parseDiagramItemForTrack(track, c)
                 default:
                     break
                 }
@@ -868,13 +868,13 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseDiagramCollectionForStaff(_ staff: Staff, _ node: XmlNode) {
+    private func _parseDiagramCollectionForStaff(_ staff: Staff, _ node: XmlNode) throws {
         let items: XmlNode? = node.findChildElement("Items")
         if TypeHelper.isTruthy(items) {
             for c in items!.childElements() {
                 switch c.localName! {
                 case "Item":
-                    self._parseDiagramItemForStaff(staff, c)
+                    try self._parseDiagramItemForStaff(staff, c)
                 default:
                     break
                 }
@@ -882,32 +882,32 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseDiagramItemForTrack(_ track: Track, _ node: XmlNode) {
+    private func _parseDiagramItemForTrack(_ track: Track, _ node: XmlNode) throws {
         let chord: Chord = Chord()
-        let chordId: String = node.getAttribute("id")
+        let chordId: String = try node.getAttribute("id")
         for staff in track.staves {
             staff.addChord(chordId, chord)
         }
-        self._parseDiagramItemForChord(chord, node)
+        try self._parseDiagramItemForChord(chord, node)
     }
 
-    private func _parseDiagramItemForStaff(_ staff: Staff, _ node: XmlNode) {
+    private func _parseDiagramItemForStaff(_ staff: Staff, _ node: XmlNode) throws {
         let chord: Chord = Chord()
-        let chordId: String = node.getAttribute("id")
+        let chordId: String = try node.getAttribute("id")
         staff.addChord(chordId, chord)
-        self._parseDiagramItemForChord(chord, node)
+        try self._parseDiagramItemForChord(chord, node)
     }
 
-    private func _parseDiagramItemForChord(_ chord: Chord, _ node: XmlNode) {
-        chord.name = node.getAttribute("name")
+    private func _parseDiagramItemForChord(_ chord: Chord, _ node: XmlNode) throws {
+        try chord.name = node.getAttribute("name")
         let diagram: XmlNode? = node.findChildElement("Diagram")
         if !TypeHelper.isTruthy(diagram) {
             chord.showDiagram = false
             chord.showFingering = false
             return
         }
-        let stringCount: Double = GpifParser._parseIntSafe(diagram!.getAttribute("stringCount"), 6.0)
-        let baseFret: Double = GpifParser._parseIntSafe(diagram!.getAttribute("baseFret"), 0.0)
+        let stringCount: Double = try GpifParser._parseIntSafe(diagram!.getAttribute("stringCount"), 6.0)
+        let baseFret: Double = try GpifParser._parseIntSafe(diagram!.getAttribute("baseFret"), 0.0)
         chord.firstFret = baseFret + 1.0
         do {
             var i: Double = 0.0
@@ -919,16 +919,16 @@ internal final class GpifParser {
         for c in diagram!.childElements() {
             switch c.localName! {
             case "Fret":
-                let guitarString: Double = GpifParser._parseIntSafe(c.getAttribute("string"), 0.0)
-                chord.strings[(stringCount - guitarString - 1.0).toInt()] = baseFret + GpifParser._parseIntSafe(c.getAttribute("fret"), 0.0)
+                let guitarString: Double = try GpifParser._parseIntSafe(c.getAttribute("string"), 0.0)
+                try chord.strings[(stringCount - guitarString - 1.0).toInt()] = baseFret + GpifParser._parseIntSafe(c.getAttribute("fret"), 0.0)
             case "Fingering":
                 let existingFingers: Map<Fingers, Bool> = Map<Fingers, Bool>()
                 for p in c.childElements() {
                     switch p.localName! {
                     case "Position":
                         var finger: Fingers = Fingers.Unknown
-                        let fret: Double = baseFret + GpifParser._parseIntSafe(p.getAttribute("fret"), 0.0)
-                        switch p.getAttribute("finger") {
+                        let fret: Double = try baseFret + GpifParser._parseIntSafe(p.getAttribute("fret"), 0.0)
+                        switch try p.getAttribute("finger") {
                         case "Index":
                             finger = Fingers.IndexFinger
                         case "Middle":
@@ -956,13 +956,13 @@ internal final class GpifParser {
                     }
                 }
             case "Property":
-                switch c.getAttribute("name") {
+                switch try c.getAttribute("name") {
                 case "ShowName":
-                    chord.showName = c.getAttribute("value") == "true"
+                    try chord.showName = c.getAttribute("value") == "true"
                 case "ShowDiagram":
-                    chord.showDiagram = c.getAttribute("value") == "true"
+                    try chord.showDiagram = c.getAttribute("value") == "true"
                 case "ShowFingering":
-                    chord.showFingering = c.getAttribute("value") == "true"
+                    try chord.showFingering = c.getAttribute("value") == "true"
                 default:
                     break
                 }
@@ -972,19 +972,19 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseTrackProperties(_ track: Track, _ node: XmlNode) {
+    private func _parseTrackProperties(_ track: Track, _ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Property":
-                self._parseTrackProperty(track, c)
+                try self._parseTrackProperty(track, c)
             default:
                 break
             }
         }
     }
 
-    private func _parseTrackProperty(_ track: Track, _ node: XmlNode) {
-        let propertyName: String = node.getAttribute("name")
+    private func _parseTrackProperty(_ track: Track, _ node: XmlNode) throws {
+        let propertyName: String = try node.getAttribute("name")
         switch propertyName {
         case "Tuning":
             let tuningParts: List<String> = GpifParser._splitSafe(node.findChildElement("Pitches")?.innerText)
@@ -1000,7 +1000,7 @@ internal final class GpifParser {
                 staff.stringTuning.tunings = tuning
             }
         case "DiagramCollection", "ChordCollection":
-            self._parseDiagramCollectionForTrack(track, node)
+            try self._parseDiagramCollectionForTrack(track, node)
         case "CapoFret":
             let capo: Double = GpifParser._parseIntSafe(node.findChildElement("Fret")?.innerText, 0.0)
             for staff in track.staves {
@@ -1011,7 +1011,7 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseGeneralMidi(_ track: Track, _ node: XmlNode) {
+    private func _parseGeneralMidi(_ track: Track, _ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Program":
@@ -1026,7 +1026,7 @@ internal final class GpifParser {
                 break
             }
         }
-        let isPercussion: Bool = node.getAttribute("table") == "Percussion"
+        let isPercussion: Bool = try node.getAttribute("table") == "Percussion"
         if isPercussion {
             for staff in track.staves {
                 staff.isPercussion = true
@@ -1034,18 +1034,18 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseSounds(_ trackId: String, _ track: Track, _ node: XmlNode) {
+    private func _parseSounds(_ trackId: String, _ track: Track, _ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Sound":
-                self._parseSound(trackId, track, c)
+                try self._parseSound(trackId, track, c)
             default:
                 break
             }
         }
     }
 
-    private func _parseSound(_ trackId: String, _ track: Track, _ node: XmlNode) {
+    private func _parseSound(_ trackId: String, _ track: Track, _ node: XmlNode) throws {
         let sound: GpifSound = GpifSound()
         for c in node.childElements() {
             switch c.localName! {
@@ -1066,7 +1066,7 @@ internal final class GpifParser {
             track.playbackInfo.program = sound.program
             track.playbackInfo.bank = sound.bank
         }
-        self._soundsByTrack.get(trackId)!.set(sound.uniqueId, sound)
+        try jsNonNull(self._soundsByTrack.get(trackId)).set(sound.uniqueId, sound)
     }
 
     private func _parseSoundMidi(_ sound: GpifSound, _ node: XmlNode) {
@@ -1159,18 +1159,18 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseMasterBarsNode(_ node: XmlNode) {
+    private func _parseMasterBarsNode(_ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "MasterBar":
-                self._parseMasterBar(c)
+                try self._parseMasterBar(c)
             default:
                 break
             }
         }
     }
 
-    private func _parseMasterBar(_ node: XmlNode) {
+    private func _parseMasterBar(_ node: XmlNode) throws {
         let masterBar: MasterBar = MasterBar()
         if self._masterBars.length == 0.0 && self._hasAnacrusis {
             masterBar.isAnacrusis = true
@@ -1191,11 +1191,11 @@ internal final class GpifParser {
                 masterBar.section!.marker = c.findChildElement("Letter")?.innerText ?? ""
                 masterBar.section!.text = c.findChildElement("Text")?.innerText ?? ""
             case "Repeat":
-                if c.getAttribute("start").lowercase() == "true" {
+                if try c.getAttribute("start").lowercase() == "true" {
                     masterBar.isRepeatStart = true
                 }
-                if TypeHelper.isTruthy(c.getAttribute("end").lowercase() == "true" && TypeHelper.isTruthy(c.getAttribute("count"))) {
-                    masterBar.repeatCount = GpifParser._parseIntSafe(c.getAttribute("count"), 1.0)
+                if try TypeHelper.isTruthy(c.getAttribute("end").lowercase() == "true" && TypeHelper.isTruthy(c.getAttribute("count"))) {
+                    try masterBar.repeatCount = GpifParser._parseIntSafe(c.getAttribute("count"), 1.0)
                 }
             case "AlternateEndings":
                 let alternateEndings: List<String> = GpifParser._splitSafe(c.innerText)
@@ -1247,7 +1247,7 @@ internal final class GpifParser {
             case "Fermatas":
                 self._parseFermatas(masterBar, c)
             case "XProperties":
-                self._parseMasterBarXProperties(masterBar, c)
+                try self._parseMasterBarXProperties(masterBar, c)
             case "Directions":
                 self._parseDirections(masterBar, c)
             default:
@@ -1357,20 +1357,20 @@ internal final class GpifParser {
         masterBar.addFermata(offset, fermata)
     }
 
-    private func _parseBars(_ node: XmlNode) {
+    private func _parseBars(_ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Bar":
-                self._parseBar(c)
+                try self._parseBar(c)
             default:
                 break
             }
         }
     }
 
-    private func _parseBar(_ node: XmlNode) {
+    private func _parseBar(_ node: XmlNode) throws {
         let bar: Bar = Bar()
-        let barId: String = node.getAttribute("id")
+        let barId: String = try node.getAttribute("id")
         for c in node.childElements() {
             switch c.localName! {
             case "Voices":
@@ -1415,7 +1415,7 @@ internal final class GpifParser {
                     break
                 }
             case "XProperties":
-                self._parseBarXProperties(c, bar)
+                try self._parseBarXProperties(c, bar)
             default:
                 break
             }
@@ -1423,20 +1423,20 @@ internal final class GpifParser {
         self._barsById.set(barId, bar)
     }
 
-    private func _parseVoices(_ node: XmlNode) {
+    private func _parseVoices(_ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Voice":
-                self._parseVoice(c)
+                try self._parseVoice(c)
             default:
                 break
             }
         }
     }
 
-    private func _parseVoice(_ node: XmlNode) {
+    private func _parseVoice(_ node: XmlNode) throws {
         let voice: Voice = Voice()
-        let voiceId: String = node.getAttribute("id")
+        let voiceId: String = try node.getAttribute("id")
         for c in node.childElements() {
             switch c.localName! {
             case "Beats":
@@ -1448,26 +1448,26 @@ internal final class GpifParser {
         self._voiceById.set(voiceId, voice)
     }
 
-    private func _parseBeats(_ node: XmlNode) {
+    private func _parseBeats(_ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Beat":
-                self._parseBeat(c)
+                try self._parseBeat(c)
             default:
                 break
             }
         }
     }
 
-    private func _parseBeat(_ node: XmlNode) {
+    private func _parseBeat(_ node: XmlNode) throws {
         let beat: Beat = Beat()
-        let beatId: String = node.getAttribute("id")
+        let beatId: String = try node.getAttribute("id")
         for c in node.childElements() {
             switch c.localName! {
             case "Notes":
                 self._notesOfBeat.set(beatId, GpifParser._splitSafe(c.innerText))
             case "Rhythm":
-                self._rhythmOfBeat.set(beatId, c.getAttribute("ref"))
+                try self._rhythmOfBeat.set(beatId, c.getAttribute("ref"))
             case "Fadding":
                 switch c.innerText {
                 case "FadeIn":
@@ -1510,9 +1510,9 @@ internal final class GpifParser {
                     beat.brushType = BrushType.ArpeggioDown
                 }
             case "Properties":
-                self._parseBeatProperties(c, beat)
+                try self._parseBeatProperties(c, beat)
             case "XProperties":
-                self._parseBeatXProperties(c, beat)
+                try self._parseBeatXProperties(c, beat)
             case "FreeText":
                 beat.text = c.innerText
             case "TransposedPitchStemOrientation":
@@ -1555,25 +1555,25 @@ internal final class GpifParser {
                     break
                 }
             case "Legato":
-                if c.getAttribute("origin") == "true" {
+                if try c.getAttribute("origin") == "true" {
                     beat.isLegatoOrigin = true
                 }
             case "Whammy":
                 let whammyOrigin: BendPoint = BendPoint(0.0, 0.0)
-                whammyOrigin.value = self._toBendValue(GpifParser._parseFloatSafe(c.getAttribute("originValue"), 0.0))
-                whammyOrigin.offset = self._toBendOffset(GpifParser._parseFloatSafe(c.getAttribute("originOffset"), 0.0))
+                try whammyOrigin.value = self._toBendValue(GpifParser._parseFloatSafe(c.getAttribute("originValue"), 0.0))
+                try whammyOrigin.offset = self._toBendOffset(GpifParser._parseFloatSafe(c.getAttribute("originOffset"), 0.0))
                 beat.addWhammyBarPoint(whammyOrigin)
                 let whammyMiddle1: BendPoint = BendPoint(0.0, 0.0)
-                whammyMiddle1.value = self._toBendValue(GpifParser._parseFloatSafe(c.getAttribute("middleValue"), 0.0))
-                whammyMiddle1.offset = self._toBendOffset(GpifParser._parseFloatSafe(c.getAttribute("middleOffset1"), 0.0))
+                try whammyMiddle1.value = self._toBendValue(GpifParser._parseFloatSafe(c.getAttribute("middleValue"), 0.0))
+                try whammyMiddle1.offset = self._toBendOffset(GpifParser._parseFloatSafe(c.getAttribute("middleOffset1"), 0.0))
                 beat.addWhammyBarPoint(whammyMiddle1)
                 let whammyMiddle2: BendPoint = BendPoint(0.0, 0.0)
-                whammyMiddle2.value = self._toBendValue(GpifParser._parseFloatSafe(c.getAttribute("middleValue"), 0.0))
-                whammyMiddle2.offset = self._toBendOffset(GpifParser._parseFloatSafe(c.getAttribute("middleOffset2"), 0.0))
+                try whammyMiddle2.value = self._toBendValue(GpifParser._parseFloatSafe(c.getAttribute("middleValue"), 0.0))
+                try whammyMiddle2.offset = self._toBendOffset(GpifParser._parseFloatSafe(c.getAttribute("middleOffset2"), 0.0))
                 beat.addWhammyBarPoint(whammyMiddle2)
                 let whammyDestination: BendPoint = BendPoint(0.0, 0.0)
-                whammyDestination.value = self._toBendValue(GpifParser._parseFloatSafe(c.getAttribute("destinationValue"), 0.0))
-                whammyDestination.offset = self._toBendOffset(GpifParser._parseFloatSafe(c.getAttribute("destinationOffset"), 0.0))
+                try whammyDestination.value = self._toBendValue(GpifParser._parseFloatSafe(c.getAttribute("destinationValue"), 0.0))
+                try whammyDestination.offset = self._toBendOffset(GpifParser._parseFloatSafe(c.getAttribute("destinationOffset"), 0.0))
                 beat.addWhammyBarPoint(whammyDestination)
             case "Ottavia":
                 switch c.innerText {
@@ -1648,11 +1648,11 @@ internal final class GpifParser {
         return lines
     }
 
-    private func _parseBeatXProperties(_ node: XmlNode, _ beat: Beat) {
+    private func _parseBeatXProperties(_ node: XmlNode, _ beat: Beat) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "XProperty":
-                let id: String = c.getAttribute("id")
+                let id: String = try c.getAttribute("id")
                 var value: Double = 0.0
                 switch id {
                 case "1124204546":
@@ -1690,11 +1690,11 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseBarXProperties(_ node: XmlNode, _ bar: Bar) {
+    private func _parseBarXProperties(_ node: XmlNode, _ bar: Bar) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "XProperty":
-                let id: String = c.getAttribute("id")
+                let id: String = try c.getAttribute("id")
                 switch id {
                 case "1124139520":
                     let childNode: XmlNode? = c.findChildElement("Double") ?? c.findChildElement("Float")
@@ -1708,13 +1708,13 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseMasterBarXProperties(_ masterBar: MasterBar, _ node: XmlNode) {
+    private func _parseMasterBarXProperties(_ masterBar: MasterBar, _ node: XmlNode) throws {
         var beamingRuleDuration: Double = Number.NaN
         var beamingRuleGroups: List<Double>? = nil
         for c in node.childElements() {
             switch c.localName! {
             case "XProperty":
-                let id: String = c.getAttribute("id")
+                let id: String = try c.getAttribute("id")
                 switch id {
                 case "1124073984":
                     masterBar.displayScale = GpifParser._parseFloatSafe(c.findChildElement("Double")?.innerText, 1.0)
@@ -1745,7 +1745,7 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseBeatProperties(_ node: XmlNode, _ beat: Beat) {
+    private func _parseBeatProperties(_ node: XmlNode, _ beat: Beat) throws {
         var isWhammy: Bool = false
         var whammyOrigin: BendPoint? = nil
         var whammyMiddleValue: Double? = nil
@@ -1755,7 +1755,7 @@ internal final class GpifParser {
         for c in node.childElements() {
             switch c.localName! {
             case "Property":
-                let name: String = c.getAttribute("name")
+                let name: String = try c.getAttribute("name")
                 switch name {
                 case "Brush":
                     if c.findChildElement("Direction")?.innerText == "Up" {
@@ -1896,24 +1896,24 @@ internal final class GpifParser {
         }
     }
 
-    private func _parseNotes(_ node: XmlNode) {
+    private func _parseNotes(_ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Note":
-                self._parseNote(c)
+                try self._parseNote(c)
             default:
                 break
             }
         }
     }
 
-    private func _parseNote(_ node: XmlNode) {
+    private func _parseNote(_ node: XmlNode) throws {
         let note: Note = Note()
-        let noteId: String = node.getAttribute("id")
+        let noteId: String = try node.getAttribute("id")
         for c in node.childElements() {
             switch c.localName! {
             case "Properties":
-                self._parseNoteProperties(c, note, noteId)
+                try self._parseNoteProperties(c, note, noteId)
             case "AntiAccent":
                 if c.innerText.lowercase() == "normal" {
                     note.isGhost = true
@@ -1938,7 +1938,7 @@ internal final class GpifParser {
                     note.accentuated = AccentuationType.Tenuto
                 }
             case "Tie":
-                if c.getAttribute("destination").lowercase() == "true" {
+                if try c.getAttribute("destination").lowercase() == "true" {
                     note.isTieDestination = true
                 }
             case "Vibrato":
@@ -2002,7 +2002,7 @@ internal final class GpifParser {
         self._noteById.set(noteId, note)
     }
 
-    private func _parseNoteProperties(_ node: XmlNode, _ note: Note, _ noteId: String) {
+    private func _parseNoteProperties(_ node: XmlNode, _ note: Note, _ noteId: String) throws {
         var isBended: Bool = false
         var bendOrigin: BendPoint? = nil
         var bendMiddleValue: Double? = nil
@@ -2015,7 +2015,7 @@ internal final class GpifParser {
         for c in node.childElements() {
             switch c.localName! {
             case "Property":
-                let name: String = c.getAttribute("name")
+                let name: String = try c.getAttribute("name")
                 switch name {
                 case "ShowStringNumber":
                     if TypeHelper.isTruthy(c.findChildElement("Enable")) {
@@ -2204,20 +2204,20 @@ internal final class GpifParser {
         return gpxOffset * GpifParser._bendPointPositionFactor
     }
 
-    private func _parseRhythms(_ node: XmlNode) {
+    private func _parseRhythms(_ node: XmlNode) throws {
         for c in node.childElements() {
             switch c.localName! {
             case "Rhythm":
-                self._parseRhythm(c)
+                try self._parseRhythm(c)
             default:
                 break
             }
         }
     }
 
-    private func _parseRhythm(_ node: XmlNode) {
+    private func _parseRhythm(_ node: XmlNode) throws {
         let rhythm: GpifRhythm = GpifRhythm()
-        let rhythmId: String = node.getAttribute("id")
+        let rhythmId: String = try node.getAttribute("id")
         rhythm.id = rhythmId
         for c in node.childElements() {
             switch c.localName! {
@@ -2249,10 +2249,10 @@ internal final class GpifParser {
                     break
                 }
             case "PrimaryTuplet":
-                rhythm.tupletNumerator = GpifParser._parseIntSafe(c.getAttribute("num"), -1.0)
-                rhythm.tupletDenominator = GpifParser._parseIntSafe(c.getAttribute("den"), -1.0)
+                try rhythm.tupletNumerator = GpifParser._parseIntSafe(c.getAttribute("num"), -1.0)
+                try rhythm.tupletDenominator = GpifParser._parseIntSafe(c.getAttribute("den"), -1.0)
             case "AugmentationDot":
-                rhythm.dots = GpifParser._parseIntSafe(c.getAttribute("count"), 0.0)
+                try rhythm.dots = GpifParser._parseIntSafe(c.getAttribute("count"), 0.0)
             default:
                 break
             }
@@ -2260,11 +2260,11 @@ internal final class GpifParser {
         self._rhythmById.set(rhythmId, rhythm)
     }
 
-    private func _keyFor(_ trackId: String, _ base: (KeySignature, KeySignatureType)) -> (KeySignature, KeySignatureType) {
+    private func _keyFor(_ trackId: String, _ base: (KeySignature, KeySignatureType)) throws -> (KeySignature, KeySignatureType) {
         if !self._transposeKeySignaturePerTrack.has(trackId) {
             return base
         }
-        return (ModelUtils.transposeKey(base.0, self._transposeKeySignaturePerTrack.get(trackId)!), base.1)
+        return try (ModelUtils.transposeKey(base.0, jsNonNull(self._transposeKeySignaturePerTrack.get(trackId))), base.1)
     }
 
     private func _equalizeVoiceCount(_ staff: Staff, _ bar: Bar, _ staffVoiceLimits: Map<Staff, Double>) {
@@ -2279,8 +2279,8 @@ internal final class GpifParser {
         }
     }
 
-    private func _attachVoiceToBar(_ bar: Bar, _ voiceId: String, _ staff: Staff) {
-        let voice: Voice = self._voiceById.get(voiceId)!
+    private func _attachVoiceToBar(_ bar: Bar, _ voiceId: String, _ staff: Staff) throws {
+        let voice: Voice = try jsNonNull(self._voiceById.get(voiceId))
         bar.addVoice(voice)
         let beatIds: List<String>? = self._beatsOfVoice.get(voiceId)
         if !TypeHelper.isTruthy(beatIds) {
@@ -2288,16 +2288,16 @@ internal final class GpifParser {
         }
         for beatId in beatIds! {
             if beatId != GpifParser._invalidId {
-                self._attachBeatToVoice(voice, beatId, staff)
+                try self._attachBeatToVoice(voice, beatId, staff)
             }
         }
     }
 
-    private func _attachBeatToVoice(_ voice: Voice, _ beatId: String, _ staff: Staff) {
-        let beat: Beat = BeatCloner.clone(self._beatById.get(beatId)!)
+    private func _attachBeatToVoice(_ voice: Voice, _ beatId: String, _ staff: Staff) throws {
+        let beat: Beat = try BeatCloner.clone(jsNonNull(self._beatById.get(beatId)))
         voice.addBeat(beat)
-        let rhythmId: String = self._rhythmOfBeat.get(beatId)!
-        let rhythm: GpifRhythm = self._rhythmById.get(rhythmId)!
+        let rhythmId: String = try jsNonNull(self._rhythmOfBeat.get(beatId))
+        let rhythm: GpifRhythm = try jsNonNull(self._rhythmById.get(rhythmId))
         beat.duration = rhythm.value
         beat.dots = rhythm.dots
         beat.tupletNumerator = rhythm.tupletNumerator
@@ -2308,13 +2308,13 @@ internal final class GpifParser {
         }
         for noteId in noteIds! {
             if noteId != GpifParser._invalidId {
-                self._attachNoteToBeat(beat, noteId, staff)
+                try self._attachNoteToBeat(beat, noteId, staff)
             }
         }
     }
 
-    private func _attachNoteToBeat(_ beat: Beat, _ noteId: String, _ staff: Staff) {
-        let note: Note = NoteCloner.clone(self._noteById.get(noteId)!)
+    private func _attachNoteToBeat(_ beat: Beat, _ noteId: String, _ staff: Staff) throws {
+        let note: Note = try NoteCloner.clone(jsNonNull(self._noteById.get(noteId)))
         if staff.isPercussion {
             note.fret = Number.NaN
         } else {
@@ -2330,7 +2330,7 @@ internal final class GpifParser {
             if note.percussionArticulation < trackArticulations.length {
                 known = trackArticulations[(note.percussionArticulation).toInt()]
             } else {
-                known = PercussionMapper.getArticulationById(note.percussionArticulation)
+                try known = PercussionMapper.getArticulationById(note.percussionArticulation)
             }
             if known != nil {
                 note.percussionArticulation = staff.track.getOrRegisterPercussionArticulation(known!)
@@ -2349,7 +2349,7 @@ internal final class GpifParser {
                 if isPercussion {
                     staff.stringTuning.tunings = List<Double>(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
                 } else {
-                    let fallback: Tuning? = staff.index == 0.0 ? Tuning.getDefaultTuningFor(6.0) : Tuning.getDefaultTuningFor(5.0)
+                    let fallback: Tuning? = try staff.index == 0.0 ? Tuning.getDefaultTuningFor(6.0) : Tuning.getDefaultTuningFor(5.0)
                     if fallback != nil {
                         staff.stringTuning.tunings = fallback!.tunings.slice()
                         staff.stringTuning.name = fallback!.name
@@ -2364,7 +2364,7 @@ internal final class GpifParser {
                             assignersByVoiceIndex.set(voice.index, assigner!)
                         }
                         for beat in voice.beats {
-                            assigner!.assign(beat)
+                            try assigner!.assign(beat)
                         }
                     }
                 }
@@ -2372,7 +2372,7 @@ internal final class GpifParser {
         }
     }
 
-    private func _buildModel() {
+    private func _buildModel() throws {
         do {
             var i: Double = 0.0
             var j: Double = self._masterBars.length
@@ -2392,7 +2392,7 @@ internal final class GpifParser {
             if !TypeHelper.isTruthy(trackId) {
                 continue
             }
-            let track: Track = self._tracksById.get(trackId)!
+            let track: Track = try jsNonNull(self._tracksById.get(trackId))
             self.score.addTrack(track)
             trackIndexToTrackId.push(trackId)
         }
@@ -2401,7 +2401,7 @@ internal final class GpifParser {
         for barIds in self._barsOfMasterBar {
             var staffIndex: Double = 0.0
             var trackIndex: Double = 0.0
-            keySignature = self._keyFor(trackIndexToTrackId[0], (KeySignature.C, KeySignatureType.Major))
+            try keySignature = self._keyFor(trackIndexToTrackId[0], (KeySignature.C, KeySignatureType.Major))
             do {
                 var barIndex: Double = 0.0
                 while barIndex < barIds.length && trackIndex < self.score.tracks.length {
@@ -2411,13 +2411,13 @@ internal final class GpifParser {
                         barIndex += 1
                         continue
                     }
-                    let bar: Bar = self._barsById.get(barId)!
+                    let bar: Bar = try jsNonNull(self._barsById.get(barId))
                     let track: Track = self.score.tracks[(trackIndex).toInt()]
                     let staff: Staff = track.staves[(staffIndex).toInt()]
                     staff.addBar(bar)
                     let masterBarIndex: Double = staff.bars.length - 1.0
                     if self._keySignatures.has(masterBarIndex) {
-                        keySignature = self._keyFor(trackIndexToTrackId[(trackIndex).toInt()], self._keySignatures.get(masterBarIndex)!)
+                        try keySignature = self._keyFor(trackIndexToTrackId[(trackIndex).toInt()], jsNonNull(self._keySignatures.get(masterBarIndex)))
                     }
                     bar.keySignature = keySignature.0
                     bar.keySignatureType = keySignature.1
@@ -2435,7 +2435,7 @@ internal final class GpifParser {
                                     ModelUtils.appendPlaceholderVoice(bar)
                                     pendingPlaceholders -= 1
                                 }
-                                self._attachVoiceToBar(bar, voiceId, staff)
+                                try self._attachVoiceToBar(bar, voiceId, staff)
                             }
                         }
                     }
@@ -2445,7 +2445,7 @@ internal final class GpifParser {
                         trackIndex += 1
                         staffIndex = 0.0
                     }
-                    keySignature = trackIndex < trackIndexToTrackId.length ? self._keyFor(trackIndexToTrackId[(trackIndex).toInt()], (KeySignature.C, KeySignatureType.Major)) : (KeySignature.C, KeySignatureType.Major)
+                    try keySignature = trackIndex < trackIndexToTrackId.length ? self._keyFor(trackIndexToTrackId[(trackIndex).toInt()], (KeySignature.C, KeySignatureType.Major)) : (KeySignature.C, KeySignatureType.Major)
                     barIndex += 1
                 }
             }
@@ -2454,7 +2454,7 @@ internal final class GpifParser {
             if !TypeHelper.isTruthy(trackId) {
                 continue
             }
-            let track: Track = self._tracksById.get(trackId)!
+            let track: Track = try jsNonNull(self._tracksById.get(trackId))
             var hasPercussion: Bool = false
             for staff in track.staves {
                 if staff.isPercussion {
@@ -2466,12 +2466,12 @@ internal final class GpifParser {
                 track.percussionArticulations = List<InstrumentArticulation>()
             }
             if self._automationsPerTrackIdAndBarIndex.has(trackId) {
-                let trackAutomations: Map<Double, List<Automation>> = self._automationsPerTrackIdAndBarIndex.get(trackId)!
+                let trackAutomations: Map<Double, List<Automation>> = try jsNonNull(self._automationsPerTrackIdAndBarIndex.get(trackId))
                 for (barNumber, automations) in trackAutomations {
-                    if track.staves.length > 0 && barNumber < track.staves[0].bars.length {
-                        let bar: Bar = track.staves[0].bars[(barNumber).toInt()]
-                        if bar.voices.length > 0 && bar.voices[0].beats.length > 0 {
-                            let beat: Beat = bar.voices[0].beats[0]
+                    if try track.staves.length > 0 && barNumber < track.staves.jsElement(0).bars.length {
+                        let bar: Bar = try track.staves.jsElement(0).bars[(barNumber).toInt()]
+                        if try bar.voices.length > 0 && bar.voices.jsElement(0).beats.length > 0 {
+                            let beat: Beat = try bar.voices.jsElement(0).beats[0]
                             for a in automations {
                                 let skip: Bool = a.type == AutomationType.Bank && a.value == 0.0 && bar.index == 0.0
                                 if !skip {
@@ -2483,10 +2483,10 @@ internal final class GpifParser {
                 }
             }
             if self._sustainPedalsPerTrackIdAndBarIndex.has(trackId) {
-                let sustainPedals: Map<Double, List<SustainPedalMarker>> = self._sustainPedalsPerTrackIdAndBarIndex.get(trackId)!
+                let sustainPedals: Map<Double, List<SustainPedalMarker>> = try jsNonNull(self._sustainPedalsPerTrackIdAndBarIndex.get(trackId))
                 for (barNumber, markers) in sustainPedals {
-                    if track.staves.length > 0 && barNumber < track.staves[0].bars.length {
-                        let bar: Bar = track.staves[0].bars[(barNumber).toInt()]
+                    if try track.staves.length > 0 && barNumber < track.staves.jsElement(0).bars.length {
+                        let bar: Bar = try track.staves.jsElement(0).bars[(barNumber).toInt()]
                         bar.sustainPedals = markers
                     }
                 }
@@ -2506,7 +2506,7 @@ internal final class GpifParser {
                     case AutomationType.Tempo:
                         masterBar.tempoAutomations.push(automation)
                     case AutomationType.SyncPoint:
-                        automation.syncPointValue!.millisecondOffset -= self._backingTrackPadding
+                        try jsNonNull(automation.syncPointValue).millisecondOffset -= self._backingTrackPadding
                         masterBar.addSyncPoint(automation)
                     default:
                         break

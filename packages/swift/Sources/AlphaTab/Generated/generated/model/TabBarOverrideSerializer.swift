@@ -42,7 +42,7 @@ internal final class TabBarOverrideSerializer {
         if List<String>("clef").indexOf(property) >= 0 {
             if TypeHelper.isTruthy(v) {
                 obj.clef = ElementDisplay()
-                try ElementDisplaySerializer.fromJson(obj.clef!, (v as! Map<String, Any?>))
+                try ElementDisplaySerializer.fromJson(obj.clef!, jsCast(v, Map<String, Any?>.self))
             } else {
                 obj.clef = nil
             }
@@ -51,7 +51,7 @@ internal final class TabBarOverrideSerializer {
         if List<String>("timesignature").indexOf(property) >= 0 {
             if TypeHelper.isTruthy(v) {
                 obj.timeSignature = ElementDisplay()
-                try ElementDisplaySerializer.fromJson(obj.timeSignature!, (v as! Map<String, Any?>))
+                try ElementDisplaySerializer.fromJson(obj.timeSignature!, jsCast(v, Map<String, Any?>.self))
             } else {
                 obj.timeSignature = nil
             }

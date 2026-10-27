@@ -13,43 +13,43 @@ final class ColorTests {
     @Test("fromJson-number")
     func fromJsonNumber() async throws {
         let color: Color? = try Color.fromJson(-635386.0)
-        TestGlobals.expect(color!.rgba).toBe("#F64E06")
+        try TestGlobals.expect(jsNonNull(color).rgba).toBe("#F64E06")
     }
 
     @Test("fromJson-#RGB")
     func fromJsonHashRGB() async throws {
         let color: Color? = try Color.fromJson("#0f0")
-        TestGlobals.expect(color!.rgba).toBe("#00FF00")
+        try TestGlobals.expect(jsNonNull(color).rgba).toBe("#00FF00")
     }
 
     @Test("fromJson-#RGBA")
     func fromJsonHashRGBA() async throws {
         let color: Color? = try Color.fromJson("#0f09")
-        TestGlobals.expect(color!.rgba).toBe("rgba(0,255,0,0.6)")
+        try TestGlobals.expect(jsNonNull(color).rgba).toBe("rgba(0,255,0,0.6)")
     }
 
     @Test("fromJson-#RRGGBB")
     func fromJsonHashRRGGBB() async throws {
         let color: Color? = try Color.fromJson("#f64e06")
-        TestGlobals.expect(color!.rgba).toBe("#F64E06")
+        try TestGlobals.expect(jsNonNull(color).rgba).toBe("#F64E06")
     }
 
     @Test("fromJson-#RRGGBBAA")
     func fromJsonHashRRGGBBAA() async throws {
         let color: Color? = try Color.fromJson("#f64e0600")
-        TestGlobals.expect(color!.rgba).toBe("rgba(246,78,6,0)")
+        try TestGlobals.expect(jsNonNull(color).rgba).toBe("rgba(246,78,6,0)")
     }
 
     @Test("fromJson-rgb")
     func fromJsonRgb() async throws {
         let color: Color? = try Color.fromJson("rgb(246,78,6)")
-        TestGlobals.expect(color!.rgba).toBe("#F64E06")
+        try TestGlobals.expect(jsNonNull(color).rgba).toBe("#F64E06")
     }
 
     @Test("fromJson-rgba")
     func fromJsonRgba() async throws {
         let color: Color? = try Color.fromJson("rgba(246,78,6,0)")
-        TestGlobals.expect(color!.rgba).toBe("rgba(246,78,6,0)")
+        try TestGlobals.expect(jsNonNull(color).rgba).toBe("rgba(246,78,6,0)")
     }
 
     init() {}

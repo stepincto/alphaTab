@@ -75,13 +75,13 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
      */
     public override func readScore() throws -> Score {
         self._state = AlphaTexImportState()
-        self._createDefaultScore()
+        try self._createDefaultScore()
         if self.data.length > 0 {
             self._parser = AlphaTexParser(IOHelper.toString(self.data.readAll(), self.settings.importer.encoding))
         }
         var scoreNode: AlphaTexScoreNode
         do {
-            scoreNode = self._parser!.read()
+            try scoreNode = jsNonNull(self._parser).read()
             self._state.scoreNode = scoreNode
         } catch {
             let e = error
@@ -90,7 +90,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
             }
             throw UnsupportedFormatError("Error parsing alphaTex, check inner error for details", (e as! JsError))
         }
-        if self._parser!.parserDiagnostics.hasErrors || self._parser!.lexer.lexerDiagnostics.hasErrors {
+        if try jsNonNull(self._parser).parserDiagnostics.hasErrors || jsNonNull(self._parser).lexer.lexerDiagnostics.hasErrors {
             let error: AlphaTexErrorWithDiagnostics = AlphaTexErrorWithDiagnostics("There are errors in the parsed alphaTex, check the diagnostics for details", self.lexerDiagnostics, self.parserDiagnostics, self.semanticDiagnostics)
             if self.logErrors {
                 Logger.error("AlphaTex", "Error while parsing alphaTex: \((error.toString()).toTemplate())")
@@ -109,13 +109,13 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                 throw UnsupportedFormatError("No alphaTex data found")
             }
         }
-        ModelUtils.consolidate(self._state.score)
-        self._state.score.finish(self.settings)
-        ModelUtils.trimEmptyBarsAtEnd(self._state.score)
+        try ModelUtils.consolidate(self._state.score)
+        try self._state.score.finish(self.settings)
+        try ModelUtils.trimEmptyBarsAtEnd(self._state.score)
         self._state.score.rebuildRepeatGroups()
-        self._state.score.applyFlatSyncPoints(self._state.syncPoints)
+        try self._state.score.applyFlatSyncPoints(self._state.syncPoints)
         for (track, lyrics) in self._state.lyrics {
-            self._state.score.tracks[(track).toInt()].applyLyrics(lyrics)
+            try self._state.score.tracks.jsElement((track).toInt()).applyLyrics(lyrics)
         }
         for (sustainPedal, beat) in self._state.sustainPedalToBeat {
             if sustainPedal.ratioPosition < 1 {
@@ -125,12 +125,12 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         return self._state.score
     }
 
-    private func _createDefaultScore() {
+    private func _createDefaultScore() throws {
         self._state.score = Score()
-        self._newTrack()
+        try self._newTrack()
     }
 
-    private func _newTrack() {
+    private func _newTrack() throws {
         self._state.currentTrack = Track()
         self._state.currentTrack!.ensureStaveCount(1.0)
         self._state.currentTrack!.playbackInfo.program = 25.0
@@ -138,9 +138,9 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         self._state.currentTrack!.playbackInfo.secondaryChannel = jsPostInc(&self._state.trackChannel)
         let staff: Staff = self._state.currentTrack!.staves[0]
         staff.displayTranspositionPitch = 0.0
-        staff.stringTuning = Tuning.getDefaultTuningFor(6.0)!
+        try staff.stringTuning = jsNonNull(Tuning.getDefaultTuningFor(6.0))
         self._state.articulationUniqueIdToIndex.clear()
-        self._beginStaff(staff)
+        try self._beginStaff(staff)
         self._state.score.addTrack(self._state.currentTrack!)
         self._state.lyrics.set(self._state.currentTrack!.index, List<Lyrics>())
         self._state.currentDynamics = DynamicValue.F
@@ -148,10 +148,10 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         self._state.currentTupletNumerator = -1.0
     }
 
-    private func _beginStaff(_ staff: Staff) {
+    private func _beginStaff(_ staff: Staff) throws {
         if TypeHelper.isTruthy(self._state.currentStaff) {
-            self._detectTuningForStaff(self._state.currentStaff!)
-            self._handleTransposition(self._state.currentStaff!)
+            try self._detectTuningForStaff(self._state.currentStaff!)
+            try self._handleTransposition(self._state.currentStaff!)
         }
         self._state.currentStaff = staff
         self._state.slurs.clear()
@@ -180,22 +180,22 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                 }
             }
         } else {
-            self._getBar(self._state.currentStaff!)
-            self._detectTuningForStaff(self._state.currentStaff!)
-            self._handleTransposition(self._state.currentStaff!)
+            try self._getBar(jsNonNull(self._state.currentStaff))
+            try self._detectTuningForStaff(jsNonNull(self._state.currentStaff))
+            try self._handleTransposition(jsNonNull(self._state.currentStaff))
         }
     }
 
     private func _bar(_ node: AlphaTexBarNode, _ previousBarCompleted: Bool) throws {
         let bar: Bar = try self._barMeta(node, previousBarCompleted)
-        self._detectTuningForStaff(self._state.currentStaff!)
-        self._handleTransposition(self._state.currentStaff!)
-        if bar.index == 0.0 && self._state.staffInitialClef.has(self._state.currentStaff!) {
-            bar.clef = self._state.staffInitialClef.get(self._state.currentStaff!)!
+        try self._detectTuningForStaff(jsNonNull(self._state.currentStaff))
+        try self._handleTransposition(jsNonNull(self._state.currentStaff))
+        if try bar.index == 0.0 && self._state.staffInitialClef.has(jsNonNull(self._state.currentStaff)) {
+            try bar.clef = jsNonNull(self._state.staffInitialClef.get(jsNonNull(self._state.currentStaff)))
         }
         let voice: Voice = bar.voices[(self._state.voiceIndex).toInt()]
         for b in node.beats {
-            self._beat(voice, b)
+            try self._beat(voice, b)
         }
         if voice.beats.length == 0.0 {
             let emptyBeat: Beat = Beat()
@@ -204,9 +204,9 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         }
     }
 
-    private func _beat(_ voice: Voice, _ node: AlphaTexBeatNode) {
+    private func _beat(_ voice: Voice, _ node: AlphaTexBeatNode) throws {
         if TypeHelper.isTruthy(node.durationChange) {
-            self._beatDuration(node.durationChange!)
+            try self._beatDuration(node.durationChange!)
         }
         if !TypeHelper.isTruthy(node.notes) && !TypeHelper.isTruthy(node.rest) {
             return
@@ -215,7 +215,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         voice.addBeat(beat)
         if TypeHelper.isTruthy(node.notes) {
             for n in node.notes!.notes {
-                self._note(beat, n)
+                try self._note(beat, n)
             }
         } else if TypeHelper.isTruthy(node.rest) {
         }
@@ -233,7 +233,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
             beatRepeat = node.beatMultiplierValue!.value
         }
         if TypeHelper.isTruthy(node.beatEffects) {
-            self._beatEffects(beat, node.beatEffects!)
+            try self._beatEffects(beat, node.beatEffects!)
         }
         do {
             var i: Double = 0.0
@@ -244,9 +244,9 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         }
     }
 
-    private func _beatEffects(_ beat: Beat, _ node: AlphaTexPropertiesNode) {
+    private func _beatEffects(_ beat: Beat, _ node: AlphaTexPropertiesNode) throws {
         for p in node.properties {
-            let result: ApplyNodeResult = self._handler.applyBeatProperty(self, beat, p)
+            let result: ApplyNodeResult = try self._handler.applyBeatProperty(self, beat, p)
             switch result {
             case ApplyNodeResult.Applied, ApplyNodeResult.NotAppliedSemanticError:
                 self._state.hasAnyProperData = true
@@ -259,7 +259,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         }
     }
 
-    private func _beatDuration(_ node: AlphaTexBeatDurationChangeNode) {
+    private func _beatDuration(_ node: AlphaTexBeatDurationChangeNode) throws {
         if TypeHelper.isTruthy(node.value) {
             self._state.currentDuration = self._parseDuration(node.value!)
         }
@@ -267,7 +267,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         self._state.currentTupletDenominator = -1.0
         if TypeHelper.isTruthy(node.properties) {
             for p in node.properties!.properties {
-                let result: ApplyNodeResult = self._handler.applyBeatDurationProperty(self, p)
+                let result: ApplyNodeResult = try self._handler.applyBeatDurationProperty(self, p)
                 switch result {
                 case ApplyNodeResult.Applied, ApplyNodeResult.NotAppliedSemanticError:
                     self._state.hasAnyProperData = true
@@ -311,7 +311,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         }
     }
 
-    private func _note(_ beat: Beat, _ node: AlphaTexNoteNode) {
+    private func _note(_ beat: Beat, _ node: AlphaTexNoteNode) throws {
         var isDead: Bool = false
         var isTie: Bool = false
         var numericValue: Double = Number.NaN
@@ -321,17 +321,17 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         var accidentalMode: NoteAccidentalMode = NoteAccidentalMode.Default
         let noteValue: AlphaTexAstNode = (node.noteValue as! AlphaTexAstNode)
         var detectedNoteKind: AlphaTexStaffNoteKind? = nil
-        var staffNoteKind: AlphaTexStaffNoteKind? = self._state.staffNoteKind.has(self._state.currentStaff!) ? self._state.staffNoteKind.get(self._state.currentStaff!)! : nil
+        var staffNoteKind: AlphaTexStaffNoteKind? = try self._state.staffNoteKind.has(jsNonNull(self._state.currentStaff)) ? jsNonNull(self._state.staffNoteKind.get(jsNonNull(self._state.currentStaff))) : nil
         switch noteValue.nodeType {
         case AlphaTexNodeType.Number:
-            numericValue = (noteValue as! AlphaTexNumberLiteral).value
+            try numericValue = (jsCast(noteValue, AlphaTexNumberLiteral.self)).value
             if node.noteString != nil {
                 detectedNoteKind = AlphaTexStaffNoteKind.Fretted
             } else {
                 detectedNoteKind = AlphaTexStaffNoteKind.Articulation
             }
         case AlphaTexNodeType.String, AlphaTexNodeType.Ident:
-            let str: String = (noteValue as! AlphaTexTextNode).text
+            let str: String = try (jsCast(noteValue, AlphaTexTextNode.self)).text
             isDead = str == "x"
             isTie = str == "-"
             if isTie || isDead {
@@ -342,7 +342,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                     detectedNoteKind = nil
                 }
             } else {
-                let tuning: TuningParseResult? = ModelUtils.parseTuning(str)
+                let tuning: TuningParseResult? = try ModelUtils.parseTuning(str)
                 if TypeHelper.isTruthy(tuning) {
                     detectedNoteKind = AlphaTexStaffNoteKind.Pitched
                     octave = tuning!.octave
@@ -356,7 +356,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                     let percussionArticulationNames: Map<String, String> = self._state.percussionArticulationNames
                     if staffNoteKind == nil && percussionArticulationNames.size == 0.0 {
                         for (defaultName, defaultValue) in PercussionMapper.instrumentArticulationNames {
-                            let articulation: InstrumentArticulation? = PercussionMapper.getInstrumentArticulationByUniqueId(defaultValue)
+                            let articulation: InstrumentArticulation? = try PercussionMapper.getInstrumentArticulationByUniqueId(defaultValue)
                             if TypeHelper.isTruthy(articulation) {
                                 percussionArticulationNames.set(defaultName.lowercase(), defaultValue)
                                 percussionArticulationNames.set(ModelUtils.toArticulationId(defaultName), defaultValue)
@@ -364,7 +364,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                         }
                     }
                     if percussionArticulationNames.has(articulationName) {
-                        articulationValue = percussionArticulationNames.get(articulationName)!
+                        try articulationValue = jsNonNull(percussionArticulationNames.get(articulationName))
                     } else {
                         self.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected percussion articulation value '\((articulationName).toTemplate())', expected: oneOf(\((Array.from(self._state.percussionArticulationNames.keys()).join(",")).toTemplate())).", start: noteValue.start, end: noteValue.end))
                         articulationValue = Array.from(PercussionMapper.instrumentArticulationNames.values())[0]
@@ -378,7 +378,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         if detectedNoteKind != nil {
             if staffNoteKind == nil {
                 staffNoteKind = detectedNoteKind!
-                self.applyStaffNoteKind(self._state.currentStaff!, staffNoteKind!)
+                try self.applyStaffNoteKind(jsNonNull(self._state.currentStaff), staffNoteKind!)
             } else if staffNoteKind! != detectedNoteKind! {
                 self.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT218, message: "Wrong note kind '\((String(describing: detectedNoteKind!)).toTemplate())' for staff with note kind ''\((String(describing: staffNoteKind!)).toTemplate())'. Do not mix incompatible staves and notes.", start: noteValue.start, end: noteValue.end))
             }
@@ -403,47 +403,47 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                     return
                 }
                 let frettedNoteString: Double = node.noteString!.value
-                if frettedNoteString < 1 || frettedNoteString > self._state.currentStaff!.tuning.length {
-                    self.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT208, message: "Note string is out of range. Available range: 1-\((self._state.currentStaff!.tuning.length).toTemplate())", start: node.noteString!.start, end: node.noteString!.end))
+                if try frettedNoteString < 1 || frettedNoteString > jsNonNull(self._state.currentStaff).tuning.length {
+                    try self.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT208, message: "Note string is out of range. Available range: 1-\((jsNonNull(self._state.currentStaff).tuning.length).toTemplate())", start: node.noteString!.start, end: node.noteString!.end))
                     return
                 }
-                note.string = self._state.currentStaff!.tuning.length - (frettedNoteString - 1.0)
+                try note.string = jsNonNull(self._state.currentStaff).tuning.length - (frettedNoteString - 1.0)
                 if !isTie {
                     note.fret = numericValue
                 }
             case AlphaTexStaffNoteKind.Articulation:
                 var articulationIndex: Double = 0.0
                 if articulationValue.length == 0.0 && numericValue > 0 {
-                    let byId: InstrumentArticulation? = PercussionMapper.getArticulationById(numericValue)
+                    let byId: InstrumentArticulation? = try PercussionMapper.getArticulationById(numericValue)
                     if TypeHelper.isTruthy(byId) {
                         articulationValue = byId!.uniqueId
                     }
                 }
                 if self._state.articulationUniqueIdToIndex.has(articulationValue) {
-                    articulationIndex = self._state.articulationUniqueIdToIndex.get(articulationValue)!
+                    try articulationIndex = jsNonNull(self._state.articulationUniqueIdToIndex.get(articulationValue))
                 } else {
-                    articulationIndex = self._state.currentTrack!.percussionArticulations.length
-                    let articulation: InstrumentArticulation? = PercussionMapper.getInstrumentArticulationByUniqueId(articulationValue)
+                    try articulationIndex = jsNonNull(self._state.currentTrack).percussionArticulations.length
+                    let articulation: InstrumentArticulation? = try PercussionMapper.getInstrumentArticulationByUniqueId(articulationValue)
                     if articulation == nil {
                         self.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT209, message: "Unexpected articulation value '\((numericValue).toTemplate())', expected: oneOf(\((Array.from(PercussionMapper.instrumentArticulations.keys()).join(",")).toTemplate())).", start: noteValue.end, end: noteValue.end))
                         return
                     }
-                    self._state.currentTrack!.percussionArticulations.push(articulation!)
+                    try jsNonNull(self._state.currentTrack).percussionArticulations.push(jsNonNull(articulation))
                     self._state.articulationUniqueIdToIndex.set(articulationValue, articulationIndex)
                 }
                 note.percussionArticulation = articulationIndex
                 if TypeHelper.isTruthy(node.noteString) {
                     let percussionNoteString: Double = node.noteString!.value
-                    if percussionNoteString < 1 || percussionNoteString > self._state.currentStaff!.tuning.length {
-                        self.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT208, message: "Note string is out of range. Available range: 1-\((self._state.currentStaff!.tuning.length).toTemplate())", start: node.noteString!.start, end: node.noteString!.end))
+                    if try percussionNoteString < 1 || percussionNoteString > jsNonNull(self._state.currentStaff).tuning.length {
+                        try self.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT208, message: "Note string is out of range. Available range: 1-\((jsNonNull(self._state.currentStaff).tuning.length).toTemplate())", start: node.noteString!.start, end: node.noteString!.end))
                         return
                     }
-                    note.string = self._state.currentStaff!.tuning.length - (percussionNoteString - 1.0)
+                    try note.string = jsNonNull(self._state.currentStaff).tuning.length - (percussionNoteString - 1.0)
                 } else {
                     do {
                         var i: Double = 0.0
-                        while i < self._state.currentStaff!.tuning.length {
-                            let s: Double = self._state.currentStaff!.tuning.length - i
+                        while try i < jsNonNull(self._state.currentStaff).tuning.length {
+                            let s: Double = try jsNonNull(self._state.currentStaff).tuning.length - i
                             if !beat.noteStringLookup.has(s) {
                                 note.string = s
                                 break
@@ -452,7 +452,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                         }
                     }
                     if Number.isNaN(note.string) {
-                        note.string = self._state.currentStaff!.tuning.length
+                        try note.string = jsNonNull(self._state.currentStaff).tuning.length
                     }
                 }
             default:
@@ -462,7 +462,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         beat.addNote(note)
         self._state.hasAnyProperData = true
         if TypeHelper.isTruthy(node.noteEffects) {
-            self._noteEffects(note, node.noteEffects!)
+            try self._noteEffects(note, node.noteEffects!)
         }
     }
 
@@ -470,7 +470,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         return self._state.staffNoteKind.has(staff) ? self._state.staffNoteKind.get(staff) : nil
     }
 
-    public func applyStaffNoteKind(_ staff: Staff, _ staffNoteKind: AlphaTexStaffNoteKind) {
+    public func applyStaffNoteKind(_ staff: Staff, _ staffNoteKind: AlphaTexStaffNoteKind) throws {
         self._state.staffNoteKind.set(staff, staffNoteKind)
         switch staffNoteKind {
         case AlphaTexStaffNoteKind.Pitched:
@@ -482,8 +482,8 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
             }
         case AlphaTexStaffNoteKind.Fretted:
             staff.isPercussion = false
-            self._detectTuningForStaff(staff)
-            self._handleTransposition(staff)
+            try self._detectTuningForStaff(staff)
+            try self._handleTransposition(staff)
         case AlphaTexStaffNoteKind.Articulation:
             staff.isPercussion = true
             staff.stringTuning.reset()
@@ -496,11 +496,11 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         }
     }
 
-    private func _noteEffects(_ note: Note, _ node: AlphaTexPropertiesNode) {
+    private func _noteEffects(_ note: Note, _ node: AlphaTexPropertiesNode) throws {
         for p in node.properties {
-            var result: ApplyNodeResult = self._handler.applyNoteProperty(self, note, p)
+            var result: ApplyNodeResult = try self._handler.applyNoteProperty(self, note, p)
             if result == ApplyNodeResult.NotAppliedUnrecognizedMarker {
-                result = self._handler.applyBeatProperty(self, note.beat, p)
+                try result = self._handler.applyBeatProperty(self, note.beat, p)
             }
             switch result {
             case ApplyNodeResult.Applied, ApplyNodeResult.NotAppliedSemanticError:
@@ -514,28 +514,28 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         }
     }
 
-    private func _handleTransposition(_ staff: Staff) {
+    private func _handleTransposition(_ staff: Staff) throws {
         if !self._state.staffDisplayTranspositionApplied.has(staff) && !self._state.staffHasExplicitDisplayTransposition.has(staff) {
             let program: Double = staff.track.playbackInfo.program
             if ModelUtils.displayTranspositionPitches.has(program) {
-                staff.displayTranspositionPitch = ModelUtils.displayTranspositionPitches.get(program)!
+                try staff.displayTranspositionPitch = jsNonNull(ModelUtils.displayTranspositionPitches.get(program))
             } else {
-                self._state.currentStaff!.displayTranspositionPitch = 0.0
+                try jsNonNull(self._state.currentStaff).displayTranspositionPitch = 0.0
             }
             self._state.staffDisplayTranspositionApplied.add(staff)
         }
     }
 
-    private func _detectTuningForStaff(_ staff: Staff) {
+    private func _detectTuningForStaff(_ staff: Staff) throws {
         let program: Double = staff.track.playbackInfo.program
         if !self._state.staffTuningApplied.has(staff) && !self._state.staffHasExplicitTuning.has(staff) {
             staff.stringTuning.reset()
             if staff.isPercussion {
                 staff.stringTuning.tunings = List<Double>(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
             } else if program == 15.0 {
-                staff.stringTuning.tunings = Tuning.getDefaultTuningFor(6.0)!.tunings
+                try staff.stringTuning.tunings = jsNonNull(Tuning.getDefaultTuningFor(6.0)).tunings
             } else if program >= 24 && program <= 31 {
-                staff.stringTuning.tunings = Tuning.getDefaultTuningFor(6.0)!.tunings
+                try staff.stringTuning.tunings = jsNonNull(Tuning.getDefaultTuningFor(6.0)).tunings
             } else if program >= 32 && program <= 39 {
                 staff.stringTuning.tunings = List<Double>(43.0, 38.0, 33.0, 28.0)
                 self._state.staffInitialClef.set(staff, Clef.F4)
@@ -556,8 +556,8 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
             } else if program == 110.0 {
                 staff.stringTuning.tunings = List<Double>(64.0, 57.0, 50.0, 43.0)
             } else {
-                if self._state.staffNoteKind.has(staff) && self._state.staffNoteKind.get(staff)! == AlphaTexStaffNoteKind.Fretted {
-                    staff.stringTuning = Tuning.getDefaultTuningFor(6.0)!
+                if try self._state.staffNoteKind.has(staff) && jsNonNull(self._state.staffNoteKind.get(staff)) == AlphaTexStaffNoteKind.Fretted {
+                    try staff.stringTuning = jsNonNull(Tuning.getDefaultTuningFor(6.0))
                 }
             }
             self._state.staffTuningApplied.add(staff)
@@ -566,32 +566,32 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
 
     private func _barMeta(_ node: AlphaTexBarNode, _ previousBarCompleted: Bool) throws -> Bar {
         var initialBarMeta: List<AlphaTexMetaDataNode>? = self._state.score.masterBars.length > 0 ? nil : List<AlphaTexMetaDataNode>()
-        var previousStaff: Staff = self._state.currentStaff!
+        var previousStaff: Staff = try jsNonNull(self._state.currentStaff)
         var hadNewTrack: Bool = false
         var hadNewStaff: Bool = false
         var hadNewVoice: Bool = false
         var applyInitialBarMetaToPreviousStaff: Bool = false
-        let resetInitialBarMeta: () -> Void = { () in
+        let resetInitialBarMeta: () throws -> Void = { () in
             if !TypeHelper.isTruthy(initialBarMeta) {
                 return
             }
             initialBarMeta = nil
-            previousStaff = self._state.currentStaff!
+            try previousStaff = jsNonNull(self._state.currentStaff)
             hadNewTrack = false
             hadNewStaff = false
             hadNewVoice = false
             applyInitialBarMetaToPreviousStaff = false
         }
-        let bar: Lazy<Bar> = Lazy<Bar>({ () -> Bar in
+        let bar: Lazy<Bar> = try Lazy<Bar>({ () -> Bar in
             if !hadNewVoice && !previousBarCompleted {
                 self._state.barIndex += 1
             }
-            let b: Bar = self._getBar(self._state.currentStaff!)
+            let b: Bar = try self._getBar(jsNonNull(self._state.currentStaff))
             if TypeHelper.isTruthy(initialBarMeta) {
                 for initial in initialBarMeta! {
-                    self._handler.applyBarMetaData(self, b, initial)
+                    try self._handler.applyBarMetaData(self, b, initial)
                 }
-                resetInitialBarMeta()
+                try resetInitialBarMeta()
             }
             return b
         })
@@ -599,7 +599,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
             let tag: String = m.tag.tag.text.lowercase()
             if self._handler.knownStructuralMetaDataTags.has(tag) {
                 self._state.hasAnyProperData = true
-                let result: ApplyStructuralMetaDataResult = self._handler.applyStructuralMetaData(self, m)
+                let result: ApplyStructuralMetaDataResult = try self._handler.applyStructuralMetaData(self, m)
                 switch result {
                 case ApplyStructuralMetaDataResult.AppliedNewTrack:
                     if hadNewStaff {
@@ -608,7 +608,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                         applyInitialBarMetaToPreviousStaff = true
                     } else {
                         hadNewTrack = true
-                        previousStaff = self._state.currentStaff!
+                        try previousStaff = jsNonNull(self._state.currentStaff)
                     }
                     bar.reset()
                 case ApplyStructuralMetaDataResult.AppliedNewStaff:
@@ -616,7 +616,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                         applyInitialBarMetaToPreviousStaff = true
                     } else {
                         hadNewStaff = true
-                        previousStaff = self._state.currentStaff!
+                        try previousStaff = jsNonNull(self._state.currentStaff)
                     }
                     bar.reset()
                 case ApplyStructuralMetaDataResult.AppliedNewVoice:
@@ -636,9 +636,9 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                                 self._state.score.addMasterBar(master)
                             }
                             for initial in initialBarMeta! {
-                                self._handler.applyBarMetaData(self, initialBar, initial)
+                                try self._handler.applyBarMetaData(self, initialBar, initial)
                             }
-                            resetInitialBarMeta()
+                            try resetInitialBarMeta()
                         } else {
                             throw AlphaTabError(AlphaTabErrorType.AlphaTex, "Unexpected internal error, didn't expect a filled staff after multiple \\track and/or \\staff tags. Please report this problem providing the input alphaTex.")
                         }
@@ -646,31 +646,31 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                 }
             } else if self._handler.knownScoreMetaDataTags.has(m.tag.tag.text.lowercase()) {
                 self._state.hasAnyProperData = true
-                self._handler.applyScoreMetaData(self, self._state.score, m)
+                try self._handler.applyScoreMetaData(self, self._state.score, m)
             } else if self._handler.knownStaffMetaDataTags.has(m.tag.tag.text.lowercase()) {
                 self._state.hasAnyProperData = true
-                self._handler.applyStaffMetaData(self, self._state.currentStaff!, m)
+                try self._handler.applyStaffMetaData(self, jsNonNull(self._state.currentStaff), m)
             } else if self._handler.knownBarMetaDataTags.has(m.tag.tag.text.lowercase()) {
                 self._state.hasAnyProperData = true
                 if TypeHelper.isTruthy(initialBarMeta) {
                     initialBarMeta!.push(m)
                 } else {
-                    self._handler.applyBarMetaData(self, bar.value, m)
+                    try self._handler.applyBarMetaData(self, bar.value, m)
                 }
             } else {
                 let knownMeta: String = Array.from(self._handler.allKnownMetaDataTags).join(",")
                 self.addSemanticDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT204, message: "Unrecognized metadata '\((m.tag.tag.text).toTemplate())', expected one of: \((knownMeta).toTemplate())", start: m.tag.start, end: m.tag.end))
             }
         }
-        return bar.value
+        return try bar.value
     }
 
-    private func _getBar(_ staff: Staff) -> Bar {
+    private func _getBar(_ staff: Staff) throws -> Bar {
         if self._state.barIndex < staff.bars.length {
             let bar: Bar = staff.bars[(self._state.barIndex).toInt()]
             return bar
         }
-        let voiceCount: Double = staff.bars.length == 0.0 ? self._state.voiceIndex + 1.0 : staff.bars[0].voices.length
+        let voiceCount: Double = try staff.bars.length == 0.0 ? self._state.voiceIndex + 1.0 : staff.bars.jsElement(0).voices.length
         let newBar: Bar = Bar()
         staff.addBar(newBar)
         if TypeHelper.isTruthy(newBar.previousBar) {
@@ -681,7 +681,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         }
         self._state.barIndex = newBar.index
         if newBar.index > 0 {
-            newBar.clef = newBar.previousBar!.clef
+            try newBar.clef = jsNonNull(newBar.previousBar).clef
         }
         do {
             var i: Double = 0.0
@@ -691,33 +691,33 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
                 i += 1
             }
         }
-        if self._state.currentStaff!.bars.length > self._state.score.masterBars.length {
+        if try jsNonNull(self._state.currentStaff).bars.length > self._state.score.masterBars.length {
             let master: MasterBar = MasterBar()
             self._state.score.addMasterBar(master)
             if master.index > 0 {
-                master.timeSignatureDenominator = master.previousMasterBar!.timeSignatureDenominator
-                master.timeSignatureNumerator = master.previousMasterBar!.timeSignatureNumerator
-                master.tripletFeel = master.previousMasterBar!.tripletFeel
+                try master.timeSignatureDenominator = jsNonNull(master.previousMasterBar).timeSignatureDenominator
+                try master.timeSignatureNumerator = jsNonNull(master.previousMasterBar).timeSignatureNumerator
+                try master.tripletFeel = jsNonNull(master.previousMasterBar).tripletFeel
             }
         }
         return newBar
     }
 
-    public func startNewStaff() -> Staff {
+    public func startNewStaff() throws -> Staff {
         self._state.ignoredInitialVoice = false
-        if self._state.ignoredInitialStaff || self._state.currentTrack!.staves[0].bars.length > 0 {
-            let previousWasPercussion: Bool = self._state.currentStaff!.isPercussion
-            self._state.currentTrack!.ensureStaveCount(self._state.currentTrack!.staves.length + 1.0)
-            let staff: Staff = self._state.currentTrack!.staves[(self._state.currentTrack!.staves.length - 1.0).toInt()]
-            self._beginStaff(staff)
+        if try self._state.ignoredInitialStaff || jsNonNull(self._state.currentTrack).staves.jsElement(0).bars.length > 0 {
+            let previousWasPercussion: Bool = try jsNonNull(self._state.currentStaff).isPercussion
+            try jsNonNull(self._state.currentTrack).ensureStaveCount(jsNonNull(self._state.currentTrack).staves.length + 1.0)
+            let staff: Staff = try jsNonNull(self._state.currentTrack).staves[try (jsNonNull(self._state.currentTrack).staves.length - 1.0).toInt()]
+            try self._beginStaff(staff)
             if previousWasPercussion {
-                self.applyPercussionStaff(self._state.currentStaff!)
+                try self.applyPercussionStaff(jsNonNull(self._state.currentStaff))
             }
             self._state.currentDynamics = DynamicValue.F
         } else {
             self._state.ignoredInitialStaff = true
         }
-        return self._state.currentStaff!
+        return try jsNonNull(self._state.currentStaff)
     }
 
     public func applyPercussionStaff(_ staff: Staff) {
@@ -725,30 +725,30 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         staff.track.playbackInfo.program = 0.0
     }
 
-    public func startNewTrack() -> Track {
+    public func startNewTrack() throws -> Track {
         self._state.ignoredInitialVoice = false
         self._state.ignoredInitialStaff = false
         if self._state.ignoredInitialTrack || self._state.score.masterBars.length > 0 {
-            self._newTrack()
+            try self._newTrack()
         } else {
             self._state.ignoredInitialTrack = true
         }
-        return self._state.currentTrack!
+        return try jsNonNull(self._state.currentTrack)
     }
 
-    public func startNewVoice() {
+    public func startNewVoice() throws {
         var shouldIgnoreInitialVoice: Bool = self._state.voiceIndex == 0.0 && !self._state.ignoredInitialVoice
         if shouldIgnoreInitialVoice {
-            if self._state.currentStaff!.bars.length == 0.0 {
+            if try jsNonNull(self._state.currentStaff).bars.length == 0.0 {
                 shouldIgnoreInitialVoice = true
             } else {
                 switch self._state.voiceMode {
                 case AlphaTexVoiceMode.StaffWise:
-                    shouldIgnoreInitialVoice = self._state.currentStaff!.bars.length == 1.0 && self._state.currentStaff!.bars[0].isEmpty
+                    try shouldIgnoreInitialVoice = jsNonNull(self._state.currentStaff).bars.length == 1.0 && jsNonNull(self._state.currentStaff).bars.jsElement(0).isEmpty
                 case AlphaTexVoiceMode.BarWise:
-                    if self._state.barIndex < self._state.currentStaff!.bars.length {
-                        let bar: Bar = self._state.currentStaff!.bars[(self._state.barIndex).toInt()]
-                        shouldIgnoreInitialVoice = bar.voices[0].isEmpty
+                    if try self._state.barIndex < jsNonNull(self._state.currentStaff).bars.length {
+                        let bar: Bar = try jsNonNull(self._state.currentStaff).bars[(self._state.barIndex).toInt()]
+                        try shouldIgnoreInitialVoice = bar.voices.jsElement(0).isEmpty
                     } else {
                         shouldIgnoreInitialVoice = true
                     }
@@ -774,7 +774,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         default:
             break
         }
-        for b in self._state.currentStaff!.bars {
+        for b in try jsNonNull(self._state.currentStaff).bars {
             while b.voices.length <= self._state.voiceIndex {
                 b.addVoice(Voice())
             }

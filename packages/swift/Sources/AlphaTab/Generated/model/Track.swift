@@ -135,7 +135,7 @@ public final class Track {
         return index
     }
 
-    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) {
+    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) throws {
         if !TypeHelper.isTruthy(self.shortName) {
             self.shortName = self.name
             if self.shortName.length > Track._shortNameMaxLength {
@@ -143,7 +143,7 @@ public final class Track {
             }
         }
         for s in self.staves {
-            s.finish(settings, sharedDataBag)
+            try s.finish(settings, sharedDataBag)
             if s.isPercussion {
                 self.playbackInfo.program = 0.0
             }

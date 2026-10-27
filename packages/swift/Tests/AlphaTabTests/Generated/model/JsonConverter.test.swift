@@ -25,9 +25,9 @@ final class JsonConverterTest {
             if !TypeHelper.isTruthy(expected) {
                 return
             }
-            let expectedJson: Map<String, Any?>? = JsonConverter.scoreToJsObject(expected!)
+            let expectedJson: Map<String, Any?>? = try JsonConverter.scoreToJsObject(expected!)
             let actual: Score = try JsonConverter.jsObjectToScore(expectedJson)
-            let actualJson: Map<String, Any?>? = JsonConverter.scoreToJsObject(actual)
+            let actualJson: Map<String, Any?>? = try JsonConverter.scoreToJsObject(actual)
             try ComparisonHelpers.expectJsonEqual(expectedJson, actualJson, "<\((name.substr(name.lastIndexOfInDouble("/") + 1.0)).toTemplate())>", nil)
         } catch {
             let e = error
@@ -116,9 +116,9 @@ final class JsonConverterTest {
         expected.importer.mergePartGroupsInMusicXml = false
         expected.player.vibrato.noteSlightAmplitude = 10.0
         expected.player.slide.simpleSlideDurationRatio = 8.0
-        let expectedJson: Map<String, Any?>? = JsonConverter.settingsToJsObject(expected)
+        let expectedJson: Map<String, Any?>? = try JsonConverter.settingsToJsObject(expected)
         let actual: Settings = try JsonConverter.jsObjectToSettings(expectedJson)
-        let actualJson: Map<String, Any?>? = JsonConverter.settingsToJsObject(actual)
+        let actualJson: Map<String, Any?>? = try JsonConverter.settingsToJsObject(actual)
         try ComparisonHelpers.expectJsonEqual(expectedJson, actualJson, "", nil)
     }
 

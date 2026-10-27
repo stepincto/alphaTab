@@ -12,7 +12,7 @@ import AlphaTabRuntime
 final class NoteStepsTests {
     @Test("calculates known steps for C4 in G2 and F4 clef")
     func calculatesKnownStepsForC4InG2AndF4Clef() async throws {
-        let spelling: ResolvedSpelling = ModelUtils.resolveSpelling(KeySignature.C, 60.0, NoteAccidentalMode.Default)
+        let spelling: ResolvedSpelling = try ModelUtils.resolveSpelling(KeySignature.C, 60.0, NoteAccidentalMode.Default)
         let stepsG2: Double = AccidentalHelper.calculateNoteSteps(Clef.G2, spelling)
         let stepsF4: Double = AccidentalHelper.calculateNoteSteps(Clef.F4, spelling)
         TestGlobals.expect(stepsG2).toBe(10.0)
@@ -21,8 +21,8 @@ final class NoteStepsTests {
 
     @Test("octave shift changes steps by 7")
     func octaveShiftChangesStepsBy7() async throws {
-        let spellingC4: ResolvedSpelling = ModelUtils.resolveSpelling(KeySignature.C, 60.0, NoteAccidentalMode.Default)
-        let spellingC5: ResolvedSpelling = ModelUtils.resolveSpelling(KeySignature.C, 72.0, NoteAccidentalMode.Default)
+        let spellingC4: ResolvedSpelling = try ModelUtils.resolveSpelling(KeySignature.C, 60.0, NoteAccidentalMode.Default)
+        let spellingC5: ResolvedSpelling = try ModelUtils.resolveSpelling(KeySignature.C, 72.0, NoteAccidentalMode.Default)
         let stepsC4: Double = AccidentalHelper.calculateNoteSteps(Clef.G2, spellingC4)
         let stepsC5: Double = AccidentalHelper.calculateNoteSteps(Clef.G2, spellingC5)
         TestGlobals.expect(stepsC4 - stepsC5).toBe(7.0)
@@ -30,8 +30,8 @@ final class NoteStepsTests {
 
     @Test("adjacent diatonic degrees differ by one step")
     func adjacentDiatonicDegreesDifferByOneStep() async throws {
-        let spellingC4: ResolvedSpelling = ModelUtils.resolveSpelling(KeySignature.C, 60.0, NoteAccidentalMode.Default)
-        let spellingD4: ResolvedSpelling = ModelUtils.resolveSpelling(KeySignature.C, 62.0, NoteAccidentalMode.Default)
+        let spellingC4: ResolvedSpelling = try ModelUtils.resolveSpelling(KeySignature.C, 60.0, NoteAccidentalMode.Default)
+        let spellingD4: ResolvedSpelling = try ModelUtils.resolveSpelling(KeySignature.C, 62.0, NoteAccidentalMode.Default)
         let stepsC4: Double = AccidentalHelper.calculateNoteSteps(Clef.G2, spellingC4)
         let stepsD4: Double = AccidentalHelper.calculateNoteSteps(Clef.G2, spellingD4)
         TestGlobals.expect(stepsC4 - stepsD4).toBe(1.0)
@@ -40,8 +40,8 @@ final class NoteStepsTests {
     @Test("same pitch with different spelling yields different steps")
     func samePitchWithDifferentSpellingYieldsDifferentSteps() async throws {
         let noteValue: Double = 61.0
-        let spellingSharp: ResolvedSpelling = ModelUtils.resolveSpelling(KeySignature.C, (noteValue), NoteAccidentalMode.ForceSharp)
-        let spellingFlat: ResolvedSpelling = ModelUtils.resolveSpelling(KeySignature.C, (noteValue), NoteAccidentalMode.ForceFlat)
+        let spellingSharp: ResolvedSpelling = try ModelUtils.resolveSpelling(KeySignature.C, (noteValue), NoteAccidentalMode.ForceSharp)
+        let spellingFlat: ResolvedSpelling = try ModelUtils.resolveSpelling(KeySignature.C, (noteValue), NoteAccidentalMode.ForceFlat)
         let stepsSharp: Double = AccidentalHelper.calculateNoteSteps(Clef.G2, spellingSharp)
         let stepsFlat: Double = AccidentalHelper.calculateNoteSteps(Clef.G2, spellingFlat)
         TestGlobals.expect(stepsSharp - stepsFlat).toBe(1.0)

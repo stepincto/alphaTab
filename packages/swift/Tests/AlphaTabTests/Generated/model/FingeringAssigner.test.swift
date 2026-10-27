@@ -98,11 +98,11 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.GUITAR_6, midi)
-            TestGlobals.expect(beat.notes[0].fret).toBeGreaterThanOrEqual(0.0)
-            TestGlobals.expect(beat.notes[0].string).toBeGreaterThanOrEqual(1.0)
-            TestGlobals.expect(beat.notes[0].string).toBeLessThanOrEqual(6.0)
+            try TestGlobals.expect(beat.notes.jsElement(0).fret).toBeGreaterThanOrEqual(0.0)
+            try TestGlobals.expect(beat.notes.jsElement(0).string).toBeGreaterThanOrEqual(1.0)
+            try TestGlobals.expect(beat.notes.jsElement(0).string).toBeLessThanOrEqual(6.0)
         }
 
         @Test("A2 chord-3-notes-guitar")
@@ -110,7 +110,7 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(55.0, 62.0, 67.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.GUITAR_6, midi)
             let strings: List<Double> = beat.notes.map({ (n: Note) -> Double in
                 return n.string
@@ -127,7 +127,7 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(40.0, 45.0, 50.0, 55.0, 59.0, 64.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.GUITAR_6, midi)
             for n in beat.notes {
                 TestGlobals.expect(n.fret).toBe(0.0)
@@ -143,7 +143,7 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(63.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6, capo: 3.0) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 3.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.GUITAR_6, midi, 3.0)
         }
 
@@ -152,7 +152,7 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0), (BuildOptions(transposition: -12.0, tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, -12.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.GUITAR_6, midi, 0.0, -12.0)
         }
 
@@ -161,7 +161,7 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0), (BuildOptions(transposition: -12.0, tuning: FingeringAssigner_testGlobals.GUITAR_6, capo: 2.0) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 2.0, -12.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.GUITAR_6, midi, 2.0, -12.0)
         }
 
@@ -170,7 +170,7 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(40.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.BASS_5) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.BASS_5, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.BASS_5, midi)
         }
 
@@ -183,7 +183,7 @@ final class FingeringAssignerTests {
         func B1PowerChordClusters() async throws {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(55.0, 62.0, 67.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             let strings: List<Double> = beat.notes.map({ (n: Note) -> Double in
                 return n.string
             }).sort()
@@ -200,7 +200,7 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(48.0, 52.0, 55.0, 60.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.GUITAR_6, midi)
             let strings: List<Double> = beat.notes.map({ (n: Note) -> Double in
                 return n.string
@@ -221,7 +221,7 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(40.0, 55.0, 64.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.GUITAR_6, midi)
             let byMidi: Map<Double, Note> = Map<Double, Note>()
             do {
@@ -231,8 +231,8 @@ final class FingeringAssignerTests {
                     i += 1
                 }
             }
-            TestGlobals.expect(byMidi.get(40.0)!.fret).toBe(0.0)
-            TestGlobals.expect(byMidi.get(40.0)!.string).toBe(1.0)
+            try TestGlobals.expect(jsNonNull(byMidi.get(40.0)).fret).toBe(0.0)
+            try TestGlobals.expect(jsNonNull(byMidi.get(40.0)).string).toBe(1.0)
         }
 
         init() {}
@@ -245,9 +245,9 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(62.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.GUITAR_6, midi)
-            TestGlobals.expect(Math.abs(beat.notes[0].fret - 5.0)).toBeLessThanOrEqual(2.0)
+            try TestGlobals.expect(Math.abs(beat.notes.jsElement(0).fret - 5.0)).toBeLessThanOrEqual(2.0)
         }
 
         @Test("C2 hysteresis-holds")
@@ -255,10 +255,10 @@ final class FingeringAssignerTests {
             let b1: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(62.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let b2: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(62.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(b1)
-            a.assign(b2)
-            TestGlobals.expect(b1.notes[0].string).toBe(b2.notes[0].string)
-            TestGlobals.expect(b1.notes[0].fret).toBe(b2.notes[0].fret)
+            try a.assign(b1)
+            try a.assign(b2)
+            try TestGlobals.expect(b1.notes.jsElement(0).string).toBe(b2.notes.jsElement(0).string)
+            try TestGlobals.expect(b1.notes.jsElement(0).fret).toBe(b2.notes.jsElement(0).fret)
         }
 
         @Test("C3 same-pitch-across-beats")
@@ -267,11 +267,11 @@ final class FingeringAssignerTests {
             let b2: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let b3: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(b1)
-            a.assign(b2)
-            a.assign(b3)
-            TestGlobals.expect(b1.notes[0].string).toBe(b2.notes[0].string)
-            TestGlobals.expect(b2.notes[0].string).toBe(b3.notes[0].string)
+            try a.assign(b1)
+            try a.assign(b2)
+            try a.assign(b3)
+            try TestGlobals.expect(b1.notes.jsElement(0).string).toBe(b2.notes.jsElement(0).string)
+            try TestGlobals.expect(b2.notes.jsElement(0).string).toBe(b3.notes.jsElement(0).string)
         }
 
         @Test("C4 scale-with-spike")
@@ -282,51 +282,51 @@ final class FingeringAssignerTests {
                 var i: Double = 0.0
                 while i < 4 {
                     let b: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(50.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
-                    a.assign(b)
+                    try a.assign(b)
                     pre.push(b)
                     i += 1
                 }
             }
             let spike: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(84.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
-            a.assign(spike)
+            try a.assign(spike)
             let post: List<Beat> = List<Beat>()
             do {
                 var i: Double = 0.0
                 while i < 4 {
                     let b: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(50.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
-                    a.assign(b)
+                    try a.assign(b)
                     post.push(b)
                     i += 1
                 }
             }
-            let preFret: Double = pre[3].notes[0].fret
-            let spikeFret: Double = spike.notes[0].fret
-            let postFret: Double = post[3].notes[0].fret
+            let preFret: Double = try pre.jsElement(3).notes.jsElement(0).fret
+            let spikeFret: Double = try spike.notes.jsElement(0).fret
+            let postFret: Double = try post.jsElement(3).notes.jsElement(0).fret
             TestGlobals.expect(Math.abs(postFret - preFret)).toBeLessThan(Math.abs(postFret - spikeFret))
         }
 
         @Test("C5 reset-clears-state")
         func C5ResetClearsState() async throws {
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(FingeringAssigner_testGlobals.buildBeat(List<Double>(84.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions)))
+            try a.assign(FingeringAssigner_testGlobals.buildBeat(List<Double>(84.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions)))
             a.reset()
             let fresh: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
-            a.assign(fresh)
+            try a.assign(fresh)
             let control: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
             let controlBeat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
-            control.assign(controlBeat)
-            TestGlobals.expect(fresh.notes[0].string).toBe(controlBeat.notes[0].string)
-            TestGlobals.expect(fresh.notes[0].fret).toBe(controlBeat.notes[0].fret)
+            try control.assign(controlBeat)
+            try TestGlobals.expect(fresh.notes.jsElement(0).string).toBe(controlBeat.notes.jsElement(0).string)
+            try TestGlobals.expect(fresh.notes.jsElement(0).fret).toBe(controlBeat.notes.jsElement(0).fret)
         }
 
         @Test("C6 open-only-chord-preserves-hand")
         func C6OpenOnlyChordPreservesHand() async throws {
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0, 64.0, 67.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions)))
-            a.assign(FingeringAssigner_testGlobals.buildBeat(List<Double>(40.0, 45.0, 50.0, 55.0, 59.0, 64.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions)))
+            try a.assign(FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0, 64.0, 67.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions)))
+            try a.assign(FingeringAssigner_testGlobals.buildBeat(List<Double>(40.0, 45.0, 50.0, 55.0, 59.0, 64.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions)))
             let probe: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(62.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
-            a.assign(probe)
-            TestGlobals.expect(probe.notes[0].fret).toBeGreaterThanOrEqual(3.0)
+            try a.assign(probe)
+            try TestGlobals.expect(probe.notes.jsElement(0).fret).toBeGreaterThanOrEqual(3.0)
         }
 
         init() {}
@@ -338,16 +338,16 @@ final class FingeringAssignerTests {
         func D1TieDestinationInherits() async throws {
             let b1: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(b1)
+            try a.assign(b1)
             let origin: Note = b1.notes[0]
             let originString: Double = origin.string
             let originFret: Double = origin.fret
-            a.assign(FingeringAssigner_testGlobals.buildBeat(List<Double>(84.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions)))
+            try a.assign(FingeringAssigner_testGlobals.buildBeat(List<Double>(84.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions)))
             let b2: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let dest: Note = b2.notes[0]
             dest.tieOrigin = origin
             dest.isTieDestination = true
-            a.assign(b2)
+            try a.assign(b2)
             TestGlobals.expect(dest.string).toBe(originString)
             TestGlobals.expect(dest.fret).toBe(originFret)
         }
@@ -363,7 +363,7 @@ final class FingeringAssignerTests {
             dest.tieOrigin = origin
             dest.isTieDestination = true
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(b2)
+            try a.assign(b2)
             FingeringAssigner_testGlobals.expectPitchIdentity(b2, FingeringAssigner_testGlobals.GUITAR_6, midi)
         }
 
@@ -376,7 +376,7 @@ final class FingeringAssignerTests {
         func E1EmptyBeat() async throws {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             TestGlobals.expect(beat.notes.length).toBe(0.0)
         }
 
@@ -384,11 +384,11 @@ final class FingeringAssignerTests {
         func E2AllPercussionBeat() async throws {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(38.0, 42.0), (BuildOptions(percussionIndices: List<Double>(0.0, 1.0), tuning: List<Double>(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)) as BuildOptions))
             let a: FingeringAssigner = try FingeringAssigner(List<Double>(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0, 0.0)
-            a.assign(beat)
-            TestGlobals.expect(beat.notes[0].string).toBe(4.0)
-            TestGlobals.expect(beat.notes[0].fret).toBe(38.0)
-            TestGlobals.expect(beat.notes[1].string).toBe(6.0)
-            TestGlobals.expect(beat.notes[1].fret).toBe(42.0)
+            try a.assign(beat)
+            try TestGlobals.expect(beat.notes.jsElement(0).string).toBe(4.0)
+            try TestGlobals.expect(beat.notes.jsElement(0).fret).toBe(38.0)
+            try TestGlobals.expect(beat.notes.jsElement(1).string).toBe(6.0)
+            try TestGlobals.expect(beat.notes.jsElement(1).fret).toBe(42.0)
         }
 
         @Test("E3 mixed-percussion-pitched")
@@ -396,21 +396,21 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(38.0, 60.0), (BuildOptions(percussionIndices: List<Double>(0.0), tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
-            TestGlobals.expect(beat.notes[0].string).toBe(4.0)
-            TestGlobals.expect(beat.notes[0].fret).toBe(38.0)
-            TestGlobals.expect(Number.isNaN(beat.notes[1].string)).toBe(false)
-            let stringPitch: Double = FingeringAssigner_testGlobals.GUITAR_6[(FingeringAssigner_testGlobals.GUITAR_6.length - beat.notes[1].string).toInt()]
-            TestGlobals.expect(stringPitch + beat.notes[1].fret).toBe(midi[1])
+            try a.assign(beat)
+            try TestGlobals.expect(beat.notes.jsElement(0).string).toBe(4.0)
+            try TestGlobals.expect(beat.notes.jsElement(0).fret).toBe(38.0)
+            try TestGlobals.expect(Number.isNaN(beat.notes.jsElement(1).string)).toBe(false)
+            let stringPitch: Double = try FingeringAssigner_testGlobals.GUITAR_6[try (FingeringAssigner_testGlobals.GUITAR_6.length - beat.notes.jsElement(1).string).toInt()]
+            try TestGlobals.expect(stringPitch + beat.notes.jsElement(1).fret).toBe(midi[1])
         }
 
         @Test("E3b percussion-kick-lands-on-bottom-string")
         func E3bPercussionKickLandsOnBottomString() async throws {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(36.0), (BuildOptions(percussionIndices: List<Double>(0.0), tuning: List<Double>(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)) as BuildOptions))
             let a: FingeringAssigner = try FingeringAssigner(List<Double>(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0.0, 0.0)
-            a.assign(beat)
-            TestGlobals.expect(beat.notes[0].string).toBe(1.0)
-            TestGlobals.expect(beat.notes[0].fret).toBe(36.0)
+            try a.assign(beat)
+            try TestGlobals.expect(beat.notes.jsElement(0).string).toBe(1.0)
+            try TestGlobals.expect(beat.notes.jsElement(0).fret).toBe(36.0)
         }
 
         @Test("E4 pitch-below-range")
@@ -418,9 +418,9 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(20.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.GUITAR_6, midi)
-            TestGlobals.expect(beat.notes[0].fret).toBeLessThan(0.0)
+            try TestGlobals.expect(beat.notes.jsElement(0).fret).toBeLessThan(0.0)
         }
 
         @Test("E5 pitch-above-range")
@@ -428,16 +428,16 @@ final class FingeringAssignerTests {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(120.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let midi: List<Double> = FingeringAssigner_testGlobals.capturePitches(beat)
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             FingeringAssigner_testGlobals.expectPitchIdentity(beat, FingeringAssigner_testGlobals.GUITAR_6, midi)
-            TestGlobals.expect(beat.notes[0].fret).toBeGreaterThan(24.0)
+            try TestGlobals.expect(beat.notes.jsElement(0).fret).toBeGreaterThan(24.0)
         }
 
         @Test("E6 chord-overflow-collides")
         func E6ChordOverflowCollides() async throws {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(40.0, 45.0, 50.0, 55.0, 59.0, 64.0, 67.0, 72.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             for n in beat.notes {
                 TestGlobals.expect(Number.isNaN(n.string)).toBe(false)
                 TestGlobals.expect(Number.isNaN(n.fret)).toBe(false)
@@ -461,7 +461,7 @@ final class FingeringAssignerTests {
             }
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(pitches, (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0)
-            a.assign(beat)
+            try a.assign(beat)
             for n in beat.notes {
                 TestGlobals.expect(Number.isNaN(n.string)).toBe(false)
                 TestGlobals.expect(Number.isNaN(n.fret)).toBe(false)
@@ -492,9 +492,9 @@ final class FingeringAssignerTests {
         func F3TuningMinBoundary() async throws {
             let a: FingeringAssigner = try FingeringAssigner(List<Double>(40.0), 0.0, 0.0)
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(40.0), (BuildOptions(tuning: List<Double>(40.0)) as BuildOptions))
-            a.assign(beat)
-            TestGlobals.expect(beat.notes[0].string).toBe(1.0)
-            TestGlobals.expect(beat.notes[0].fret).toBe(0.0)
+            try a.assign(beat)
+            try TestGlobals.expect(beat.notes.jsElement(0).string).toBe(1.0)
+            try TestGlobals.expect(beat.notes.jsElement(0).fret).toBe(0.0)
         }
 
         @Test("F4 tuning-max-boundary")
@@ -509,9 +509,9 @@ final class FingeringAssignerTests {
             }
             let a: FingeringAssigner = try FingeringAssigner(wide, 0.0, 0.0)
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(50.0), (BuildOptions(tuning: wide) as BuildOptions))
-            a.assign(beat)
-            TestGlobals.expect(Number.isNaN(beat.notes[0].string)).toBe(false)
-            TestGlobals.expect(Number.isNaN(beat.notes[0].fret)).toBe(false)
+            try a.assign(beat)
+            try TestGlobals.expect(Number.isNaN(beat.notes.jsElement(0).string)).toBe(false)
+            try TestGlobals.expect(Number.isNaN(beat.notes.jsElement(0).fret)).toBe(false)
         }
 
         @Test("F5 options-override-openStringBonus")
@@ -520,9 +520,9 @@ final class FingeringAssignerTests {
             opts.openStringBonus = -20.0
             let a: FingeringAssigner = try FingeringAssigner(FingeringAssigner_testGlobals.GUITAR_6, 0.0, 0.0, opts)
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(64.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
-            a.assign(beat)
-            TestGlobals.expect(beat.notes[0].fret).toBe(0.0)
-            TestGlobals.expect(beat.notes[0].string).toBe(6.0)
+            try a.assign(beat)
+            try TestGlobals.expect(beat.notes.jsElement(0).fret).toBe(0.0)
+            try TestGlobals.expect(beat.notes.jsElement(0).string).toBe(6.0)
         }
 
         init() {}

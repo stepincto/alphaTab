@@ -45,13 +45,13 @@ internal final class ScoreStyleSerializer {
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
                 let i: HeaderFooterStyle = HeaderFooterStyle()
                 try HeaderFooterStyleSerializer.fromJson(i, (v as! Map<String, Any?>))
-                try obj.headerAndFooter.set(JsonHelperPartials.parseEnum(k, ScoreSubElement.self)!, i)
+                try obj.headerAndFooter.set(jsNonNull(JsonHelperPartials.parseEnum(k, ScoreSubElement.self)), i)
             })
             return true
         case "colors":
             obj.colors = Map<ScoreSubElement, Color?>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try (obj.colors as! Map<ScoreSubElement, Color?>).set(JsonHelperPartials.parseEnum(k, ScoreSubElement.self)!, Color.fromJson(v))
+                try (obj.colors as! Map<ScoreSubElement, Color?>).set(jsNonNull(JsonHelperPartials.parseEnum(k, ScoreSubElement.self)), Color.fromJson(v))
             })
             return true
         default:

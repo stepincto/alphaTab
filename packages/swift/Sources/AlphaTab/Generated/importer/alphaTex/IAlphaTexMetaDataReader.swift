@@ -9,13 +9,13 @@ import AlphaTabRuntime
 internal protocol IAlphaTexMetaDataReader: AnyObject {
     func hasMetaDataArguments(_ metaData: AlphaTexMetaDataTagNode) -> Bool
 
-    func readMetaDataArguments(_ parser: AlphaTexParser, _ metaData: AlphaTexMetaDataTagNode) -> AlphaTexArgumentList?
+    func readMetaDataArguments(_ parser: AlphaTexParser, _ metaData: AlphaTexMetaDataTagNode) throws -> AlphaTexArgumentList?
 
-    func readMetaDataPropertyArguments(_ parser: AlphaTexParser, _ metaData: AlphaTexMetaDataTagNode, _ property: AlphaTexPropertyNode) -> AlphaTexArgumentList?
+    func readMetaDataPropertyArguments(_ parser: AlphaTexParser, _ metaData: AlphaTexMetaDataTagNode, _ property: AlphaTexPropertyNode) throws -> AlphaTexArgumentList?
 
-    func readBeatPropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) -> AlphaTexArgumentList?
+    func readBeatPropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) throws -> AlphaTexArgumentList?
 
-    func readDurationChangePropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) -> AlphaTexArgumentList?
+    func readDurationChangePropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) throws -> AlphaTexArgumentList?
 
-    func readNotePropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) -> AlphaTexArgumentList?
+    func readNotePropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) throws -> AlphaTexArgumentList?
 }

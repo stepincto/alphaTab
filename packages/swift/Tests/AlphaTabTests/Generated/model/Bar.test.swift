@@ -13,12 +13,12 @@ final class BarTests {
     @Test("sustain-pedal-retake-after-held-bar")
     func sustainPedalRetakeAfterHeldBar() async throws {
         let score: Score = try ScoreLoader.loadAlphaTex("C4.4 {spd} C4 C4 C4 | C4 C4 {spu} C4 {spd} C4", Settings())
-        let markers: List<SustainPedalMarker> = score.tracks[0].staves[0].bars[1].sustainPedals
+        let markers: List<SustainPedalMarker> = try score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).sustainPedals
         TestGlobals.expect(markers.map({ (m: SustainPedalMarker) -> SustainPedalMarkerType in
             return m.pedalType
         })).toEqual(List<SustainPedalMarkerType>(SustainPedalMarkerType.Up, SustainPedalMarkerType.Down))
-        TestGlobals.expect(markers[0].previousPedalMarker).toBe(score.tracks[0].staves[0].bars[0].sustainPedals[0])
-        TestGlobals.expect(markers[1].previousPedalMarker).toBeNull()
+        try TestGlobals.expect(markers.jsElement(0).previousPedalMarker).toBe(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).sustainPedals[0])
+        try TestGlobals.expect(markers.jsElement(1).previousPedalMarker).toBeNull()
     }
 
     init() {}

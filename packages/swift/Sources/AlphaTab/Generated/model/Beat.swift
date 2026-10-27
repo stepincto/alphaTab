@@ -589,9 +589,9 @@ public final class Beat {
         return nil
     }
 
-    public func getNoteOnString(_ noteString: Double) -> Note? {
+    public func getNoteOnString(_ noteString: Double) throws -> Note? {
         if self.noteStringLookup.has(noteString) {
-            return self.noteStringLookup.get(noteString)!
+            return try jsNonNull(self.noteStringLookup.get(noteString))
         }
         return nil
     }
@@ -664,13 +664,13 @@ public final class Beat {
         self.automations = validBeatAutomations
     }
 
-    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) {
+    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) throws {
         if self.getAutomation(AutomationType.Instrument) == nil && self.index == 0.0 && self.voice.index == 0.0 && self.voice.bar.index == 0.0 && self.voice.bar.staff.index == 0.0 {
             self.automations.push(Automation.buildInstrumentAutomation(false, 0.0, self.voice.bar.staff.track.playbackInfo.program))
         }
         switch self.graceType {
         case GraceType.OnBeat, GraceType.BeforeBeat:
-            let numberOfGraceBeats: Double = self.graceGroup!.beats.length
+            let numberOfGraceBeats: Double = try jsNonNull(self.graceGroup).beats.length
             if numberOfGraceBeats == 1.0 {
                 self.duration = Duration.Eighth
             } else if numberOfGraceBeats == 2.0 {
@@ -708,7 +708,7 @@ public final class Beat {
             while i < j {
                 let note: Note = self.notes[(i).toInt()]
                 note.dynamics = self.dynamics
-                note.finish(settings, sharedDataBag)
+                try note.finish(settings, sharedDataBag)
                 if note.isLetRing {
                     self.isLetRing = true
                 }
@@ -887,18 +887,18 @@ public final class Beat {
                     cloneNote.bendStyle = BendStyle.Default
                     cloneNote.id = jsPostInc(&Note.globalNoteId)
                     if note.isTieOrigin {
-                        cloneNote.tieDestination = note.tieDestination!
-                        note.tieDestination!.tieOrigin = cloneNote
+                        try cloneNote.tieDestination = jsNonNull(note.tieDestination)
+                        try jsNonNull(note.tieDestination).tieOrigin = cloneNote
                     }
                     if note.isTieDestination {
                         cloneNote.tieOrigin = TypeHelper.isTruthy(note.tieOrigin) ? note.tieOrigin! : nil
-                        note.tieOrigin!.tieDestination = cloneNote
+                        try jsNonNull(note.tieOrigin).tieDestination = cloneNote
                     }
                     if note.hasBend && note.isTieOrigin {
-                        let tieDestination: Note? = Note.findTieOrigin(note)
+                        let tieDestination: Note? = try Note.findTieOrigin(note)
                         if TypeHelper.isTruthy(TypeHelper.isTruthy(tieDestination) && tieDestination!.hasBend) {
                             cloneNote.bendType = BendType.Hold
-                            let lastPoint: BendPoint = note.bendPoints![(note.bendPoints!.length - 1.0).toInt()]
+                            let lastPoint: BendPoint = try jsNonNull(note.bendPoints)[try (jsNonNull(note.bendPoints).length - 1.0).toInt()]
                             cloneNote.addBendPoint(BendPoint(0.0, lastPoint.value))
                             cloneNote.addBendPoint(BendPoint(BendPoint.MaxPosition, lastPoint.value))
                         }
@@ -939,17 +939,17 @@ public final class Beat {
         return self.noteStringLookup.has(noteString)
     }
 
-    public func getNoteWithRealValue(_ noteRealValue: Double) -> Note? {
+    public func getNoteWithRealValue(_ noteRealValue: Double) throws -> Note? {
         if self.noteValueLookup.has(noteRealValue) {
-            return self.noteValueLookup.get(noteRealValue)!
+            return try jsNonNull(self.noteValueLookup.get(noteRealValue))
         }
         return nil
     }
 
-    public func chain(_ sharedDataBag: Map<String, Any?>? = nil) {
+    public func chain(_ sharedDataBag: Map<String, Any?>? = nil) throws {
         for n in self.notes {
             self.noteValueLookup.set(n.realValue, n)
-            n.chain(sharedDataBag)
+            try n.chain(sharedDataBag)
         }
     }
 

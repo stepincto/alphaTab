@@ -18,7 +18,7 @@ final class BeatTests {
         beat.addNote(note)
         TestGlobals.expect(beat.notes.length).toBe(1.0)
         TestGlobals.expect(beat.hasNoteOnString(2.0)).toBe(true)
-        TestGlobals.expect(beat.getNoteOnString(2.0)).toBe(note)
+        try TestGlobals.expect(beat.getNoteOnString(2.0)).toBe(note)
     }
 
     @Test("remove-stringed-note")
@@ -30,7 +30,7 @@ final class BeatTests {
         beat.removeNote(note)
         TestGlobals.expect(beat.notes.length).toBe(0.0)
         TestGlobals.expect(beat.hasNoteOnString(2.0)).toBe(false)
-        TestGlobals.expect(beat.getNoteOnString(2.0)).toBe(nil)
+        try TestGlobals.expect(beat.getNoteOnString(2.0)).toBe(nil)
     }
 
     init() {}

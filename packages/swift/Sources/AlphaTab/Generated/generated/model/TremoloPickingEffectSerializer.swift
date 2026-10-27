@@ -32,7 +32,7 @@ internal final class TremoloPickingEffectSerializer {
             obj.marks = TypeHelper.unknownToNumber(v)
             return true
         case "style":
-            try obj.style = JsonHelperPartials.parseEnum(v, TremoloPickingStyle.self)!
+            try obj.style = jsNonNull(JsonHelperPartials.parseEnum(v, TremoloPickingStyle.self))
             return true
         default:
             break

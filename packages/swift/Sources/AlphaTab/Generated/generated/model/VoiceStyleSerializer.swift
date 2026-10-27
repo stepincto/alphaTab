@@ -36,7 +36,7 @@ internal final class VoiceStyleSerializer {
         case "colors":
             obj.colors = Map<VoiceSubElement, Color?>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try (obj.colors as! Map<VoiceSubElement, Color?>).set(JsonHelperPartials.parseEnum(k, VoiceSubElement.self)!, Color.fromJson(v))
+                try (obj.colors as! Map<VoiceSubElement, Color?>).set(jsNonNull(JsonHelperPartials.parseEnum(k, VoiceSubElement.self)), Color.fromJson(v))
             })
             return true
         default:

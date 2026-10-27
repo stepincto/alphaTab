@@ -22,13 +22,13 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
         return true
     }
 
-    public func readMetaDataArguments(_ parser: AlphaTexParser, _ metaData: AlphaTexMetaDataTagNode) -> AlphaTexArgumentList? {
+    public func readMetaDataArguments(_ parser: AlphaTexParser, _ metaData: AlphaTexMetaDataTagNode) throws -> AlphaTexArgumentList? {
         let tag: String = metaData.tag.text.lowercase()
         for lookup in AlphaTex1LanguageDefinitions.metaDataSignatures {
             if lookup.has(tag) {
                 let types: List<AlphaTexSignatureDefinition>? = (lookup.get(tag) ?? nil)
                 if TypeHelper.isTruthy(types) {
-                    return self._readArguments(parser, types!)
+                    return try self._readArguments(parser, types!)
                 } else {
                     return nil
                 }
@@ -39,73 +39,73 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
         return nil
     }
 
-    public func readMetaDataPropertyArguments(_ parser: AlphaTexParser, _ metaData: AlphaTexMetaDataTagNode, _ property: AlphaTexPropertyNode) -> AlphaTexArgumentList? {
+    public func readMetaDataPropertyArguments(_ parser: AlphaTexParser, _ metaData: AlphaTexMetaDataTagNode, _ property: AlphaTexPropertyNode) throws -> AlphaTexArgumentList? {
         let tag: String = metaData.tag.text.lowercase()
         if !AlphaTex1LanguageDefinitions.metaDataProperties.has(tag) {
             return nil
         }
         let props: Map<String, List<AlphaTexSignatureDefinition>?>? = (AlphaTex1LanguageDefinitions.metaDataProperties.get(tag) ?? nil)
         if !TypeHelper.isTruthy(props) {
-            return self._readPropertyArguments(parser, List<Map<String, List<AlphaTexSignatureDefinition>?>>(), property)
+            return try self._readPropertyArguments(parser, List<Map<String, List<AlphaTexSignatureDefinition>?>>(), property)
         }
-        return self._readPropertyArguments(parser, List<Map<String, List<AlphaTexSignatureDefinition>?>>(props!), property)
+        return try self._readPropertyArguments(parser, List<Map<String, List<AlphaTexSignatureDefinition>?>>(props!), property)
     }
 
-    public func readBeatPropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) -> AlphaTexArgumentList? {
-        return self._readPropertyArguments(parser, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.beatProperties), property)
+    public func readBeatPropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) throws -> AlphaTexArgumentList? {
+        return try self._readPropertyArguments(parser, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.beatProperties), property)
     }
 
-    public func readDurationChangePropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) -> AlphaTexArgumentList? {
-        return self._readPropertyArguments(parser, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.durationChangeProperties), property)
+    public func readDurationChangePropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) throws -> AlphaTexArgumentList? {
+        return try self._readPropertyArguments(parser, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.durationChangeProperties), property)
     }
 
-    public func readNotePropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) -> AlphaTexArgumentList? {
-        return self._readPropertyArguments(parser, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.noteProperties, AlphaTex1LanguageDefinitions.beatProperties), property)
+    public func readNotePropertyArguments(_ parser: AlphaTexParser, _ property: AlphaTexPropertyNode) throws -> AlphaTexArgumentList? {
+        return try self._readPropertyArguments(parser, List<Map<String, List<AlphaTexSignatureDefinition>?>>(AlphaTex1LanguageDefinitions.noteProperties, AlphaTex1LanguageDefinitions.beatProperties), property)
     }
 
-    private func _readPropertyArguments(_ parser: AlphaTexParser, _ lookups: List<Map<String, List<AlphaTexSignatureDefinition>?>>, _ property: AlphaTexPropertyNode) -> AlphaTexArgumentList? {
+    private func _readPropertyArguments(_ parser: AlphaTexParser, _ lookups: List<Map<String, List<AlphaTexSignatureDefinition>?>>, _ property: AlphaTexPropertyNode) throws -> AlphaTexArgumentList? {
         let tag: String = property.property.text.lowercase()
         let endOfProperty: Set<AlphaTexNodeType> = Set<AlphaTexNodeType>([AlphaTexNodeType.Ident, AlphaTexNodeType.RBrace])
         for lookup in lookups {
             if lookup.has(tag) {
                 let types: List<AlphaTexSignatureDefinition>? = (lookup.get(tag) ?? nil)
                 if TypeHelper.isTruthy(types) {
-                    return self._readArguments(parser, types!, endOfProperty)
+                    return try self._readArguments(parser, types!, endOfProperty)
                 } else {
-                    self._skipRemainingArguments(parser, List<AlphaTexSignatureDefinition>(), endOfProperty)
+                    try self._skipRemainingArguments(parser, List<AlphaTexSignatureDefinition>(), endOfProperty)
                     return nil
                 }
             }
         }
-        var skip: AlphaTexAstNode? = parser.lexer.peekToken()
+        var skip: AlphaTexAstNode? = try parser.lexer.peekToken()
         while TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(skip) && skip!.nodeType != AlphaTexNodeType.Ident) && skip!.nodeType != AlphaTexNodeType.RBrace) {
             parser.lexer.advance()
-            skip = parser.lexer.peekToken()
+            try skip = parser.lexer.peekToken()
         }
         parser.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT205, message: "Unrecognized property '\((property.property.text).toTemplate())'.", start: property.property.start, end: skip?.start ?? parser.lexer.currentTokenLocation()))
         return nil
     }
 
-    private func _readArguments(_ parser: AlphaTexParser, _ signatures: List<AlphaTexSignatureDefinition>, _ endOfListTypes: Set<AlphaTexNodeType>? = nil) -> AlphaTexArgumentList? {
-        if signatures.length == 1.0 && signatures[0].parameters.length == 0.0 {
+    private func _readArguments(_ parser: AlphaTexParser, _ signatures: List<AlphaTexSignatureDefinition>, _ endOfListTypes: Set<AlphaTexNodeType>? = nil) throws -> AlphaTexArgumentList? {
+        if try signatures.length == 1.0 && signatures.jsElement(0).parameters.length == 0.0 {
             return nil
         }
         let argValues: List<any IAlphaTexArgumentValue> = List<any IAlphaTexArgumentValue>()
-        let valueListStart: AlphaTexAstNodeLocation? = parser.lexer.peekToken()?.start
+        let valueListStart: AlphaTexAstNodeLocation? = try parser.lexer.peekToken()?.start
         let parseRemaining: Bool = endOfListTypes != nil
         let candidates: Map<Double, SignatureResolutionInfo> = Map<Double, SignatureResolutionInfo>(signatures.map({ (v: AlphaTexSignatureDefinition, i: Double) -> (Double, SignatureResolutionInfo) in
             return (i, (SignatureResolutionInfo(signature: v, parameterIndex: 0.0, parameterHasValues: false, parameterValueMatches: 0.0) as SignatureResolutionInfo))
         }))
-        let allCandidates: List<(Double, SignatureResolutionInfo)>? = self._filterCandidates(parser, candidates, argValues, endOfListTypes)
-        let error: Bool = self._validateArguments(parser, candidates, argValues, endOfListTypes, signatures, valueListStart)
+        let allCandidates: List<(Double, SignatureResolutionInfo)>? = try self._filterCandidates(parser, candidates, argValues, endOfListTypes)
+        let error: Bool = try self._validateArguments(parser, candidates, argValues, endOfListTypes, signatures, valueListStart)
         if parseRemaining {
-            self._skipRemainingArguments(parser, signatures, endOfListTypes!)
+            try self._skipRemainingArguments(parser, signatures, endOfListTypes!)
         }
-        return self._createArgumentList(argValues, valueListStart, parser.lexer.previousTokenEndLocation(), error, allCandidates)
+        return try self._createArgumentList(argValues, valueListStart, parser.lexer.previousTokenEndLocation(), error, allCandidates)
     }
 
-    private func _validateArguments(_ parser: AlphaTexParser, _ candidates: Map<Double, SignatureResolutionInfo>, _ argValues: List<any IAlphaTexArgumentValue>, _ endOfListTypes: Set<AlphaTexNodeType>?, _ signatures: List<AlphaTexSignatureDefinition>, _ valueListStart: AlphaTexAstNodeLocation?) -> Bool {
-        let lastToken: AlphaTexAstNode? = parser.lexer.peekToken()
+    private func _validateArguments(_ parser: AlphaTexParser, _ candidates: Map<Double, SignatureResolutionInfo>, _ argValues: List<any IAlphaTexArgumentValue>, _ endOfListTypes: Set<AlphaTexNodeType>?, _ signatures: List<AlphaTexSignatureDefinition>, _ valueListStart: AlphaTexAstNodeLocation?) throws -> Bool {
+        let lastToken: AlphaTexAstNode? = try parser.lexer.peekToken()
         var error: Bool = false
         if candidates.size != 1.0 && lastToken == nil {
             parser.addParserDiagnostic(AlphaTexDiagnostic(severity: AlphaTexDiagnosticsSeverity.Error, code: AlphaTexDiagnosticCode.AT203, message: "Unexpected end of file.", start: parser.lexer.currentTokenLocation(), end: parser.lexer.currentTokenLocation()))
@@ -113,7 +113,7 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
         } else if candidates.size == 0.0 {
             if lastToken != nil && argValues.length == 0.0 {
                 if TypeHelper.isTruthy(TypeHelper.isTruthy(endOfListTypes) && !endOfListTypes!.has(lastToken!.nodeType)) {
-                    argValues.push((parser.lexer.peekToken() as! any IAlphaTexArgumentValue))
+                    try argValues.push(jsCast(parser.lexer.peekToken(), (any IAlphaTexArgumentValue).self))
                     parser.lexer.advance()
                 }
             }
@@ -123,11 +123,11 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
         return error
     }
 
-    private func _createArgumentList(_ argValues: List<any IAlphaTexArgumentValue>, _ start: AlphaTexAstNodeLocation?, _ end: AlphaTexAstNodeLocation?, _ error: Bool, _ allCandidates: List<(Double, SignatureResolutionInfo)>?) -> AlphaTexArgumentList? {
+    private func _createArgumentList(_ argValues: List<any IAlphaTexArgumentValue>, _ start: AlphaTexAstNodeLocation?, _ end: AlphaTexAstNodeLocation?, _ error: Bool, _ allCandidates: List<(Double, SignatureResolutionInfo)>?) throws -> AlphaTexArgumentList? {
         if argValues.length == 0.0 {
             return nil
         }
-        let valueList: AlphaTexArgumentList = Atnf.args((List<(any IAlphaTexArgumentValue)?>(widening: argValues)), false)!
+        let valueList: AlphaTexArgumentList = try jsNonNull(Atnf.args((List<(any IAlphaTexArgumentValue)?>(widening: argValues)), false))
         valueList.start = start
         valueList.end = end
         valueList.validated = !error
@@ -142,12 +142,12 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
         return valueList
     }
 
-    private func _filterCandidates(_ parser: AlphaTexParser, _ candidates: Map<Double, SignatureResolutionInfo>, _ argValues: List<any IAlphaTexArgumentValue>, _ endOfListTypes: Set<AlphaTexNodeType>?) -> List<(Double, SignatureResolutionInfo)>? {
+    private func _filterCandidates(_ parser: AlphaTexParser, _ candidates: Map<Double, SignatureResolutionInfo>, _ argValues: List<any IAlphaTexArgumentValue>, _ endOfListTypes: Set<AlphaTexNodeType>?) throws -> List<(Double, SignatureResolutionInfo)>? {
         let parseFull: Bool = parser.mode == AlphaTexParseMode.Full
-        let trackValue: (any IAlphaTexAstNode, Double) -> Void = { (value: any IAlphaTexAstNode, overloadIndex: Double) in
-            let candidate: SignatureResolutionInfo = candidates.get(overloadIndex)!
+        let trackValue: (any IAlphaTexAstNode, Double) throws -> Void = { (value: any IAlphaTexAstNode, overloadIndex: Double) in
+            let candidate: SignatureResolutionInfo = try jsNonNull(candidates.get(overloadIndex))
             if value.nodeType == AlphaTexNodeType.LParen {
-                let args: AlphaTexArgumentList? = parser.argumentList()
+                let args: AlphaTexArgumentList? = try parser.argumentList()
                 if TypeHelper.isTruthy(args) {
                     for v in args!.arguments {
                         if parseFull {
@@ -173,16 +173,16 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
                 }
             }
         }
-        let extendToFloat: (AlphaTexNumberLiteral) -> Void = { (value: AlphaTexNumberLiteral) in
-            parser.lexer.extendToFloat(value)
+        let extendToFloat: (AlphaTexNumberLiteral) throws -> Void = { (value: AlphaTexNumberLiteral) in
+            try parser.lexer.extendToFloat(value)
         }
         let argTypes: Set<AlphaTexNodeType> = AlphaTex1MetaDataReader._argumentTypes
         while candidates.size > 1 || (candidates.size > 0 && !AlphaTex1MetaDataReader._hasExactMatch(candidates)) {
-            let value: AlphaTexAstNode? = parser.lexer.peekToken()
+            let value: AlphaTexAstNode? = try parser.lexer.peekToken()
             if !TypeHelper.isTruthy(value) || !argTypes.has(value!.nodeType) {
                 break
             }
-            if !AlphaTex1MetaDataReader.filterSignatureCandidates(candidates, value!, endOfListTypes != nil && endOfListTypes!.has(value!.nodeType), trackValue, extendToFloat) {
+            if try !AlphaTex1MetaDataReader.filterSignatureCandidates(candidates, value!, endOfListTypes != nil && endOfListTypes!.has(value!.nodeType), trackValue, extendToFloat) {
                 break
             }
         }
@@ -207,16 +207,16 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
         })
     }
 
-    private func _skipRemainingArguments(_ parser: AlphaTexParser, _ signatures: List<AlphaTexSignatureDefinition>, _ endOfListTypes: Set<AlphaTexNodeType>) {
+    private func _skipRemainingArguments(_ parser: AlphaTexParser, _ signatures: List<AlphaTexSignatureDefinition>, _ endOfListTypes: Set<AlphaTexNodeType>) throws {
         let unexpectedValuesStart: AlphaTexAstNodeLocation = parser.lexer.currentTokenLocation()
-        var remaining: AlphaTexAstNode? = parser.lexer.peekToken()
+        var remaining: AlphaTexAstNode? = try parser.lexer.peekToken()
         var anyUnexpected: Bool = false
         let argTypes: Set<AlphaTexNodeType> = AlphaTex1MetaDataReader._argumentTypes
         while TypeHelper.isTruthy(TypeHelper.isTruthy(remaining) && !endOfListTypes.has(remaining!.nodeType)) {
             if argTypes.has(remaining!.nodeType) {
                 parser.lexer.advance()
                 anyUnexpected = true
-                remaining = parser.lexer.peekToken()
+                try remaining = parser.lexer.peekToken()
             } else {
                 remaining = nil
             }
@@ -315,7 +315,7 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
         return p
     }
 
-    public static func filterSignatureCandidates(_ candidates: Map<Double, SignatureResolutionInfo>, _ value: any IAlphaTexAstNode, _ valueCanBeEndOfList: Bool, _ trackValue: @escaping (any IAlphaTexAstNode, Double) -> Void, _ extendToFloat: ((AlphaTexNumberLiteral) -> Void)? = nil) -> Bool {
+    public static func filterSignatureCandidates(_ candidates: Map<Double, SignatureResolutionInfo>, _ value: any IAlphaTexAstNode, _ valueCanBeEndOfList: Bool, _ trackValue: @escaping (any IAlphaTexAstNode, Double) throws -> Void, _ extendToFloat: ((AlphaTexNumberLiteral) throws -> Void)? = nil) throws -> Bool {
         let toRemove: Set<Double> = Set<Double>()
         var foundMatchingOverload: Bool = false
         for (overloadIndex, overload) in candidates {
@@ -330,10 +330,10 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
                 } else if overload.signature.isStrict && overload.parameterIndex > 0 {
                     toRemove.add(overloadIndex)
                     handled = true
-                } else if (expected!.expectedTypes.has(value.nodeType) || AlphaTex1MetaDataReader._isValueListMatch(value, expected!)) && AlphaTex1MetaDataReader._checkArgumentMatch(value, expected!, extendToFloat) {
+                } else if try (expected!.expectedTypes.has(value.nodeType) || AlphaTex1MetaDataReader._isValueListMatch(value, expected!)) && AlphaTex1MetaDataReader._checkArgumentMatch(value, expected!, extendToFloat) {
                     handled = true
                     foundMatchingOverload = true
-                    trackValue(value, overloadIndex)
+                    try trackValue(value, overloadIndex)
                     if TypeHelper.isTruthy(expected!.allowedValues) {
                         overload.parameterValueMatches += 1
                     }
@@ -375,10 +375,10 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
         return foundMatchingOverload
     }
 
-    private static func _checkArgumentMatch(_ value: any IAlphaTexAstNode, _ expected: AlphaTexParameterDefinition?, _ extendToFloat: ((AlphaTexNumberLiteral) -> Void)? = nil) -> Bool {
+    private static func _checkArgumentMatch(_ value: any IAlphaTexAstNode, _ expected: AlphaTexParameterDefinition?, _ extendToFloat: ((AlphaTexNumberLiteral) throws -> Void)? = nil) throws -> Bool {
         switch value.nodeType {
         case AlphaTexNodeType.Ident:
-            let ident: AlphaTexTextNode = (value as! AlphaTexTextNode)
+            let ident: AlphaTexTextNode = try jsCast(value, AlphaTexTextNode.self)
             if TypeHelper.isTruthy(expected?.allowedValues) {
                 return expected!.allowedValues!.has(ident.text.lowercase())
             } else if TypeHelper.isTruthy(expected?.reservedIdentifiers) {
@@ -386,7 +386,7 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
             }
             return true
         case AlphaTexNodeType.String:
-            let str: AlphaTexTextNode = (value as! AlphaTexTextNode)
+            let str: AlphaTexTextNode = try jsCast(value, AlphaTexTextNode.self)
             if TypeHelper.isTruthy(expected?.allowedValues) {
                 return expected!.allowedValues!.has(str.text.lowercase())
             }
@@ -395,7 +395,7 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
             let parseMode: ArgumentListParseTypesMode = expected?.parseMode ?? ArgumentListParseTypesMode.Optional
             switch parseMode {
             case ArgumentListParseTypesMode.RequiredAsFloat, ArgumentListParseTypesMode.OptionalAsFloat:
-                extendToFloat?((value as! AlphaTexNumberLiteral))
+                try extendToFloat?(jsCast(value, AlphaTexNumberLiteral.self))
                 return true
             default:
                 return true

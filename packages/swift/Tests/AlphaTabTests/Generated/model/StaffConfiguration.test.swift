@@ -9,11 +9,11 @@ import Testing
 import AlphaTabRuntime
 
 internal enum StaffConfiguration_testGlobals {
-    internal static func expectElementDisplay(_ actual: ElementDisplay?, _ isVisible: Bool?, _ staffPlacement: StaffPlacement?, _ systemDisplay: SystemDisplay?) {
+    internal static func expectElementDisplay(_ actual: ElementDisplay?, _ isVisible: Bool?, _ staffPlacement: StaffPlacement?, _ systemDisplay: SystemDisplay?) throws {
         TestGlobals.expect(actual).not().toBeUndefined()
-        TestGlobals.expect(actual!.isVisible).toBe(isVisible)
-        TestGlobals.expect(actual!.staffPlacement).toBe(staffPlacement)
-        TestGlobals.expect(actual!.systemDisplay).toBe(systemDisplay)
+        try TestGlobals.expect(jsNonNull(actual).isVisible).toBe(isVisible)
+        try TestGlobals.expect(jsNonNull(actual).staffPlacement).toBe(staffPlacement)
+        try TestGlobals.expect(jsNonNull(actual).systemDisplay).toBe(systemDisplay)
     }
 }
 
@@ -22,34 +22,34 @@ final class RenderStylesheetL3HistoricalDefaults {
     @Test("scoreConfig defaults")
     func scoreConfigDefaults() async throws {
         let rs: RenderStylesheet = RenderStylesheet()
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.scoreConfig.clef, true, StaffPlacement.AllStaves, SystemDisplay.AllSystems)
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.scoreConfig.keySignature, true, StaffPlacement.AllStaves, SystemDisplay.AllSystems)
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.scoreConfig.timeSignature, true, StaffPlacement.AllStaves, SystemDisplay.AllSystems)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.scoreConfig.clef, true, StaffPlacement.AllStaves, SystemDisplay.AllSystems)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.scoreConfig.keySignature, true, StaffPlacement.AllStaves, SystemDisplay.AllSystems)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.scoreConfig.timeSignature, true, StaffPlacement.AllStaves, SystemDisplay.AllSystems)
         TestGlobals.expect(rs.scoreConfig.barNumber).toBe(BarNumberDisplay.FirstOfSystem)
     }
 
     @Test("tabConfig defaults")
     func tabConfigDefaults() async throws {
         let rs: RenderStylesheet = RenderStylesheet()
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.tabConfig.clef, true, StaffPlacement.AllStaves, SystemDisplay.AllSystems)
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.tabConfig.timeSignature, true, StaffPlacement.Primary, SystemDisplay.AllSystems)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.tabConfig.clef, true, StaffPlacement.AllStaves, SystemDisplay.AllSystems)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.tabConfig.timeSignature, true, StaffPlacement.Primary, SystemDisplay.AllSystems)
         TestGlobals.expect(rs.tabConfig.barNumber).toBe(BarNumberDisplay.FirstOfSystem)
         TestGlobals.expect(rs.tabConfig.rhythm).toBe(TabRhythmMode.Automatic)
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.tabConfig.rests, true, StaffPlacement.Primary, nil)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.tabConfig.rests, true, StaffPlacement.Primary, nil)
     }
 
     @Test("slashConfig defaults")
     func slashConfigDefaults() async throws {
         let rs: RenderStylesheet = RenderStylesheet()
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.slashConfig.keySignature, false, nil, nil)
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.slashConfig.timeSignature, true, StaffPlacement.Primary, SystemDisplay.AllSystems)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.slashConfig.keySignature, false, nil, nil)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.slashConfig.timeSignature, true, StaffPlacement.Primary, SystemDisplay.AllSystems)
         TestGlobals.expect(rs.slashConfig.barNumber).toBe(BarNumberDisplay.FirstOfSystem)
     }
 
     @Test("numberedConfig defaults")
     func numberedConfigDefaults() async throws {
         let rs: RenderStylesheet = RenderStylesheet()
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.numberedConfig.timeSignature, true, StaffPlacement.Primary, SystemDisplay.AllSystems)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.numberedConfig.timeSignature, true, StaffPlacement.Primary, SystemDisplay.AllSystems)
         TestGlobals.expect(rs.numberedConfig.barNumber).toBe(BarNumberDisplay.FirstOfSystem)
     }
 
@@ -127,13 +127,13 @@ final class Bar_barNumberDisplayShim_ADR006_2_ {
         let bar: Bar = Bar()
         bar.barNumberDisplay = BarNumberDisplay.FirstOfSystem
         TestGlobals.expect(bar.scoreDisplay).not().toBeUndefined()
-        TestGlobals.expect(bar.scoreDisplay!.barNumber).toBe(BarNumberDisplay.FirstOfSystem)
+        try TestGlobals.expect(jsNonNull(bar.scoreDisplay).barNumber).toBe(BarNumberDisplay.FirstOfSystem)
         TestGlobals.expect(bar.tabDisplay).not().toBeUndefined()
-        TestGlobals.expect(bar.tabDisplay!.barNumber).toBe(BarNumberDisplay.FirstOfSystem)
+        try TestGlobals.expect(jsNonNull(bar.tabDisplay).barNumber).toBe(BarNumberDisplay.FirstOfSystem)
         TestGlobals.expect(bar.slashDisplay).not().toBeUndefined()
-        TestGlobals.expect(bar.slashDisplay!.barNumber).toBe(BarNumberDisplay.FirstOfSystem)
+        try TestGlobals.expect(jsNonNull(bar.slashDisplay).barNumber).toBe(BarNumberDisplay.FirstOfSystem)
         TestGlobals.expect(bar.numberedDisplay).not().toBeUndefined()
-        TestGlobals.expect(bar.numberedDisplay!.barNumber).toBe(BarNumberDisplay.FirstOfSystem)
+        try TestGlobals.expect(jsNonNull(bar.numberedDisplay).barNumber).toBe(BarNumberDisplay.FirstOfSystem)
     }
 
     @Test("setter with undefined clears barNumber on each existing bag without deleting the bag")
@@ -142,13 +142,13 @@ final class Bar_barNumberDisplayShim_ADR006_2_ {
         bar.barNumberDisplay = BarNumberDisplay.Hide
         bar.barNumberDisplay = nil
         TestGlobals.expect(bar.scoreDisplay).not().toBeUndefined()
-        TestGlobals.expect(bar.scoreDisplay!.barNumber).toBeUndefined()
+        try TestGlobals.expect(jsNonNull(bar.scoreDisplay).barNumber).toBeUndefined()
         TestGlobals.expect(bar.tabDisplay).not().toBeUndefined()
-        TestGlobals.expect(bar.tabDisplay!.barNumber).toBeUndefined()
+        try TestGlobals.expect(jsNonNull(bar.tabDisplay).barNumber).toBeUndefined()
         TestGlobals.expect(bar.slashDisplay).not().toBeUndefined()
-        TestGlobals.expect(bar.slashDisplay!.barNumber).toBeUndefined()
+        try TestGlobals.expect(jsNonNull(bar.slashDisplay).barNumber).toBeUndefined()
         TestGlobals.expect(bar.numberedDisplay).not().toBeUndefined()
-        TestGlobals.expect(bar.numberedDisplay!.barNumber).toBeUndefined()
+        try TestGlobals.expect(jsNonNull(bar.numberedDisplay).barNumber).toBeUndefined()
     }
 
     @Test("setter with undefined preserves other L1 element overrides on the same bag")
@@ -159,7 +159,7 @@ final class Bar_barNumberDisplayShim_ADR006_2_ {
         bar.barNumberDisplay = nil
         TestGlobals.expect(bar.scoreDisplay!).not().toBeUndefined()
         TestGlobals.expect(bar.scoreDisplay!.barNumber).toBeUndefined()
-        StaffConfiguration_testGlobals.expectElementDisplay(bar.scoreDisplay!.timeSignature, false, nil, nil)
+        try StaffConfiguration_testGlobals.expectElementDisplay(bar.scoreDisplay!.timeSignature, false, nil, nil)
     }
 
     init() {}
@@ -168,21 +168,21 @@ final class Bar_barNumberDisplayShim_ADR006_2_ {
 @Suite("JSON round-trip for the new staff-config surface")
 final class JSONRoundTripForTheNewStaffConfigSurface {
     private static func roundtripStylesheet(_ rs: RenderStylesheet) throws -> RenderStylesheet {
-        let out: Map<String, Any?> = RenderStylesheetSerializer.toJson(rs)!
+        let out: Map<String, Any?> = try jsNonNull(RenderStylesheetSerializer.toJson(rs))
         let result: RenderStylesheet = RenderStylesheet()
         try RenderStylesheetSerializer.fromJson(result, out)
         return result
     }
 
     private static func roundtripStaff(_ staff: Staff) throws -> Staff {
-        let out: Map<String, Any?> = StaffSerializer.toJson(staff)!
+        let out: Map<String, Any?> = try jsNonNull(StaffSerializer.toJson(staff))
         let result: Staff = Staff()
         try StaffSerializer.fromJson(result, out)
         return result
     }
 
     private static func roundtripBar(_ bar: Bar) throws -> Bar {
-        let out: Map<String, Any?> = BarSerializer.toJson(bar)!
+        let out: Map<String, Any?> = try jsNonNull(BarSerializer.toJson(bar))
         let result: Bar = Bar()
         try BarSerializer.fromJson(result, out)
         return result
@@ -191,10 +191,10 @@ final class JSONRoundTripForTheNewStaffConfigSurface {
     @Test("preserves RenderStylesheet L3 historical defaults")
     func preservesRenderStylesheetL3HistoricalDefaults() async throws {
         let rs: RenderStylesheet = try JSONRoundTripForTheNewStaffConfigSurface.roundtripStylesheet(RenderStylesheet())
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.scoreConfig.clef, true, StaffPlacement.AllStaves, SystemDisplay.AllSystems)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.scoreConfig.clef, true, StaffPlacement.AllStaves, SystemDisplay.AllSystems)
         TestGlobals.expect(rs.tabConfig.rhythm).toBe(TabRhythmMode.Automatic)
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.tabConfig.rests, true, StaffPlacement.Primary, nil)
-        StaffConfiguration_testGlobals.expectElementDisplay(rs.numberedConfig.timeSignature, true, StaffPlacement.Primary, SystemDisplay.AllSystems)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.tabConfig.rests, true, StaffPlacement.Primary, nil)
+        try StaffConfiguration_testGlobals.expectElementDisplay(rs.numberedConfig.timeSignature, true, StaffPlacement.Primary, SystemDisplay.AllSystems)
         TestGlobals.expect(rs.scoreConfig.barNumber).toBe(BarNumberDisplay.FirstOfSystem)
     }
 
@@ -203,11 +203,11 @@ final class JSONRoundTripForTheNewStaffConfigSurface {
         let rs: RenderStylesheet = RenderStylesheet()
         rs.tabConfig = TabStaffConfig(clef: ElementDisplay(isVisible: false), timeSignature: ElementDisplay(systemDisplay: SystemDisplay.FirstSystemOnly), barNumber: BarNumberDisplay.FirstOfSystem, rhythm: TabRhythmMode.ShowWithBeams, rests: ElementDisplay(isVisible: false))
         let out: RenderStylesheet = try JSONRoundTripForTheNewStaffConfigSurface.roundtripStylesheet(rs)
-        StaffConfiguration_testGlobals.expectElementDisplay(out.tabConfig.clef, false, nil, nil)
-        StaffConfiguration_testGlobals.expectElementDisplay(out.tabConfig.timeSignature, nil, nil, SystemDisplay.FirstSystemOnly)
+        try StaffConfiguration_testGlobals.expectElementDisplay(out.tabConfig.clef, false, nil, nil)
+        try StaffConfiguration_testGlobals.expectElementDisplay(out.tabConfig.timeSignature, nil, nil, SystemDisplay.FirstSystemOnly)
         TestGlobals.expect(out.tabConfig.barNumber).toBe(BarNumberDisplay.FirstOfSystem)
         TestGlobals.expect(out.tabConfig.rhythm).toBe(TabRhythmMode.ShowWithBeams)
-        StaffConfiguration_testGlobals.expectElementDisplay(out.tabConfig.rests, false, nil, nil)
+        try StaffConfiguration_testGlobals.expectElementDisplay(out.tabConfig.rests, false, nil, nil)
     }
 
     @Test("preserves Staff L2 overrides; undefined L2 stays undefined")
@@ -216,7 +216,7 @@ final class JSONRoundTripForTheNewStaffConfigSurface {
         staff.tabConfig = TabStaffConfig(clef: ElementDisplay(isVisible: false))
         let out: Staff = try JSONRoundTripForTheNewStaffConfigSurface.roundtripStaff(staff)
         TestGlobals.expect(out.tabConfig).not().toBeUndefined()
-        StaffConfiguration_testGlobals.expectElementDisplay(out.tabConfig!.clef, false, nil, nil)
+        try StaffConfiguration_testGlobals.expectElementDisplay(jsNonNull(out.tabConfig).clef, false, nil, nil)
         TestGlobals.expect(out.scoreConfig).toBeUndefined()
         TestGlobals.expect(out.slashConfig).toBeUndefined()
         TestGlobals.expect(out.numberedConfig).toBeUndefined()
@@ -228,7 +228,7 @@ final class JSONRoundTripForTheNewStaffConfigSurface {
         bar.scoreDisplay = ScoreBarOverride(timeSignature: ElementDisplay(isVisible: false))
         let out: Bar = try JSONRoundTripForTheNewStaffConfigSurface.roundtripBar(bar)
         TestGlobals.expect(out.scoreDisplay).not().toBeUndefined()
-        StaffConfiguration_testGlobals.expectElementDisplay(out.scoreDisplay!.timeSignature, false, nil, nil)
+        try StaffConfiguration_testGlobals.expectElementDisplay(jsNonNull(out.scoreDisplay).timeSignature, false, nil, nil)
         TestGlobals.expect(out.tabDisplay).toBeUndefined()
         TestGlobals.expect(out.slashDisplay).toBeUndefined()
         TestGlobals.expect(out.numberedDisplay).toBeUndefined()
@@ -239,7 +239,7 @@ final class JSONRoundTripForTheNewStaffConfigSurface {
         let rs: RenderStylesheet = RenderStylesheet()
         rs.scoreConfig.clef = ElementDisplay(isVisible: true)
         let out: RenderStylesheet = try JSONRoundTripForTheNewStaffConfigSurface.roundtripStylesheet(rs)
-        StaffConfiguration_testGlobals.expectElementDisplay(out.scoreConfig.clef, true, nil, nil)
+        try StaffConfiguration_testGlobals.expectElementDisplay(out.scoreConfig.clef, true, nil, nil)
     }
 
     @Test("preserves RenderStylesheet.barNumberDisplay shim through round-trip")
@@ -260,10 +260,10 @@ final class JSONRoundTripForTheNewStaffConfigSurface {
         bar.barNumberDisplay = BarNumberDisplay.Hide
         let out: Bar = try JSONRoundTripForTheNewStaffConfigSurface.roundtripBar(bar)
         TestGlobals.expect(out.barNumberDisplay).toBe(BarNumberDisplay.Hide)
-        TestGlobals.expect(out.scoreDisplay!.barNumber).toBe(BarNumberDisplay.Hide)
-        TestGlobals.expect(out.tabDisplay!.barNumber).toBe(BarNumberDisplay.Hide)
-        TestGlobals.expect(out.slashDisplay!.barNumber).toBe(BarNumberDisplay.Hide)
-        TestGlobals.expect(out.numberedDisplay!.barNumber).toBe(BarNumberDisplay.Hide)
+        try TestGlobals.expect(jsNonNull(out.scoreDisplay).barNumber).toBe(BarNumberDisplay.Hide)
+        try TestGlobals.expect(jsNonNull(out.tabDisplay).barNumber).toBe(BarNumberDisplay.Hide)
+        try TestGlobals.expect(jsNonNull(out.slashDisplay).barNumber).toBe(BarNumberDisplay.Hide)
+        try TestGlobals.expect(jsNonNull(out.numberedDisplay).barNumber).toBe(BarNumberDisplay.Hide)
     }
 
     init() {}

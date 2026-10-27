@@ -45,19 +45,19 @@ internal final class InstrumentArticulationSerializer {
             obj.staffLine = TypeHelper.unknownToNumber(v)
             return true
         case "noteheaddefault":
-            try obj.noteHeadDefault = JsonHelperPartials.parseEnum(v, MusicFontSymbol.self)!
+            try obj.noteHeadDefault = jsNonNull(JsonHelperPartials.parseEnum(v, MusicFontSymbol.self))
             return true
         case "noteheadhalf":
-            try obj.noteHeadHalf = JsonHelperPartials.parseEnum(v, MusicFontSymbol.self)!
+            try obj.noteHeadHalf = jsNonNull(JsonHelperPartials.parseEnum(v, MusicFontSymbol.self))
             return true
         case "noteheadwhole":
-            try obj.noteHeadWhole = JsonHelperPartials.parseEnum(v, MusicFontSymbol.self)!
+            try obj.noteHeadWhole = jsNonNull(JsonHelperPartials.parseEnum(v, MusicFontSymbol.self))
             return true
         case "techniquesymbol":
-            try obj.techniqueSymbol = JsonHelperPartials.parseEnum(v, MusicFontSymbol.self)!
+            try obj.techniqueSymbol = jsNonNull(JsonHelperPartials.parseEnum(v, MusicFontSymbol.self))
             return true
         case "techniquesymbolplacement":
-            try obj.techniqueSymbolPlacement = JsonHelperPartials.parseEnum(v, TechniqueSymbolPlacement.self)!
+            try obj.techniqueSymbolPlacement = jsNonNull(JsonHelperPartials.parseEnum(v, TechniqueSymbolPlacement.self))
             return true
         case "outputmidinumber":
             obj.outputMidiNumber = TypeHelper.unknownToNumber(v)

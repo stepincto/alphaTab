@@ -10,10 +10,10 @@ import AlphaTabRuntime
 
 @Suite("AlphaTexParserTest")
 final class AlphaTexParserTest {
-    private static func parserTest(_ source: String) {
+    private static func parserTest(_ source: String) throws {
         let parser: AlphaTexParser = AlphaTexParser(source)
         parser.mode = AlphaTexParseMode.Full
-        let node: AlphaTexScoreNode = parser.read()
+        let node: AlphaTexScoreNode = try parser.read()
         TestGlobals.expect(node).toBeTruthy()
         TestGlobals.expect(node).toMatchSnapshot()
         TestGlobals.expect(parser.lexerDiagnostics.errors).toMatchSnapshot("lexer-diagnostics")
@@ -24,7 +24,7 @@ final class AlphaTexParserTest {
     final class ValidEmptySuite {
         @Test("empty")
         func empty() async throws {
-            AlphaTexParserTest.parserTest("")
+            try AlphaTexParserTest.parserTest("")
         }
 
         init() {}
@@ -34,57 +34,57 @@ final class AlphaTexParserTest {
     final class ValidScoreMetadataSuite {
         @Test("empty")
         func empty() async throws {
-            AlphaTexParserTest.parserTest(" . ")
+            try AlphaTexParserTest.parserTest(" . ")
         }
 
         @Test("known valuelist")
         func knownValuelist() async throws {
-            AlphaTexParserTest.parserTest("\\title (\"Title\") . ")
+            try AlphaTexParserTest.parserTest("\\title (\"Title\") . ")
         }
 
         @Test("known semantic")
         func knownSemantic() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" \"Template\" left . ")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" \"Template\" left . ")
         }
 
         @Test("known multiple")
         func knownMultiple() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" \\subtitle \"Sub\" . ")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" \\subtitle \"Sub\" . ")
         }
 
         @Test("known property")
         func knownProperty() async throws {
-            AlphaTexParserTest.parserTest("\\track \"Name\" {color \"red\"} . ")
+            try AlphaTexParserTest.parserTest("\\track \"Name\" {color \"red\"} . ")
         }
 
         @Test("known property before value")
         func knownPropertyBeforeValue() async throws {
-            AlphaTexParserTest.parserTest("\\chord {showFingering} \"Name\" . ")
+            try AlphaTexParserTest.parserTest("\\chord {showFingering} \"Name\" . ")
         }
 
         @Test("notelist after props")
         func notelistAfterProps() async throws {
-            AlphaTexParserTest.parserTest("\\staff { tabs } (3.3 3.3).2")
+            try AlphaTexParserTest.parserTest("\\staff { tabs } (3.3 3.3).2")
         }
 
         @Test("unknown valuelist")
         func unknownValuelist() async throws {
-            AlphaTexParserTest.parserTest("\\notExisting (\"Value\") . ")
+            try AlphaTexParserTest.parserTest("\\notExisting (\"Value\") . ")
         }
 
         @Test("unknown multiple")
         func unknownMultiple() async throws {
-            AlphaTexParserTest.parserTest("\\notExisting (\"Value\") \\notExisting (\"\") . ")
+            try AlphaTexParserTest.parserTest("\\notExisting (\"Value\") \\notExisting (\"\") . ")
         }
 
         @Test("valuelist propertylist empty")
         func valuelistPropertylistEmpty() async throws {
-            AlphaTexParserTest.parserTest("\\notExisting (\"Value\") {} . ")
+            try AlphaTexParserTest.parserTest("\\notExisting (\"Value\") {} . ")
         }
 
         @Test("valuelist propertylist unknown prop")
         func valuelistPropertylistUnknownProp() async throws {
-            AlphaTexParserTest.parserTest("\\notExisting (\"Value\") {unknown (1 2 3)} . ")
+            try AlphaTexParserTest.parserTest("\\notExisting (\"Value\") {unknown (1 2 3)} . ")
         }
 
         init() {}
@@ -94,27 +94,27 @@ final class AlphaTexParserTest {
     final class ValidBarsSuite {
         @Test("no score meta")
         func noScoreMeta() async throws {
-            AlphaTexParserTest.parserTest(" C4 | C4 ")
+            try AlphaTexParserTest.parserTest(" C4 | C4 ")
         }
 
         @Test("with score meta")
         func withScoreMeta() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Test\" . C4 | C4 ")
+            try AlphaTexParserTest.parserTest("\\title \"Test\" . C4 | C4 ")
         }
 
         @Test("empty at end")
         func emptyAtEnd() async throws {
-            AlphaTexParserTest.parserTest("C4 | C4 |  ")
+            try AlphaTexParserTest.parserTest("C4 | C4 |  ")
         }
 
         @Test("multiple empty")
         func multipleEmpty() async throws {
-            AlphaTexParserTest.parserTest("C4 | C4 | | | | ")
+            try AlphaTexParserTest.parserTest("C4 | C4 | | | | ")
         }
 
         @Test("multiple empty then filled")
         func multipleEmptyThenFilled() async throws {
-            AlphaTexParserTest.parserTest("C4 | C4 | | | | C4 ")
+            try AlphaTexParserTest.parserTest("C4 | C4 | | | | C4 ")
         }
 
         init() {}
@@ -124,22 +124,22 @@ final class AlphaTexParserTest {
     final class ValidBarMetaSuite {
         @Test("unknown no score meta")
         func unknownNoScoreMeta() async throws {
-            AlphaTexParserTest.parserTest("\\notExisting (\"Value\") C4 | C4 ")
+            try AlphaTexParserTest.parserTest("\\notExisting (\"Value\") C4 | C4 ")
         }
 
         @Test("unkonwn score meta")
         func unkonwnScoreMeta() async throws {
-            AlphaTexParserTest.parserTest(". \\notExisting (\"Value\") C4 | C4 ")
+            try AlphaTexParserTest.parserTest(". \\notExisting (\"Value\") C4 | C4 ")
         }
 
         @Test("known no score meta")
         func knownNoScoreMeta() async throws {
-            AlphaTexParserTest.parserTest("\\ts 3 4 C4 | C4 ")
+            try AlphaTexParserTest.parserTest("\\ts 3 4 C4 | C4 ")
         }
 
         @Test("known score meta")
         func knownScoreMeta() async throws {
-            AlphaTexParserTest.parserTest(". \\ts 3 4  (\"Value\") C4 | C4 ")
+            try AlphaTexParserTest.parserTest(". \\ts 3 4  (\"Value\") C4 | C4 ")
         }
 
         init() {}
@@ -149,37 +149,37 @@ final class AlphaTexParserTest {
     final class ValidBeatsBasicPitchedSuite {
         @Test("basic")
         func basic() async throws {
-            AlphaTexParserTest.parserTest("C4 C5")
+            try AlphaTexParserTest.parserTest("C4 C5")
         }
 
         @Test("duration change")
         func durationChange() async throws {
-            AlphaTexParserTest.parserTest(":2 C4 :4 C5")
+            try AlphaTexParserTest.parserTest(":2 C4 :4 C5")
         }
 
         @Test("duration")
         func duration() async throws {
-            AlphaTexParserTest.parserTest("C4.4 C5.8")
+            try AlphaTexParserTest.parserTest("C4.4 C5.8")
         }
 
         @Test("multiplier")
         func multiplier() async throws {
-            AlphaTexParserTest.parserTest("C4*4 C5*2")
+            try AlphaTexParserTest.parserTest("C4*4 C5*2")
         }
 
         @Test("effects empty")
         func effectsEmpty() async throws {
-            AlphaTexParserTest.parserTest("C4.4 {} C5.4 {}")
+            try AlphaTexParserTest.parserTest("C4.4 {} C5.4 {}")
         }
 
         @Test("effects known")
         func effectsKnown() async throws {
-            AlphaTexParserTest.parserTest("C4.4 {v f} C5.4 {cre tu 3 2}")
+            try AlphaTexParserTest.parserTest("C4.4 {v f} C5.4 {cre tu 3 2}")
         }
 
         @Test("complex")
         func complex() async throws {
-            AlphaTexParserTest.parserTest(":2 C4.8 * 2 {cre tu 3 2}")
+            try AlphaTexParserTest.parserTest(":2 C4.8 * 2 {cre tu 3 2}")
         }
 
         init() {}
@@ -189,37 +189,37 @@ final class AlphaTexParserTest {
     final class ValidBeatsChordPitchedSuite {
         @Test("chord")
         func chord() async throws {
-            AlphaTexParserTest.parserTest("(C4 C5) (D4 D5)")
+            try AlphaTexParserTest.parserTest("(C4 C5) (D4 D5)")
         }
 
         @Test("duration change")
         func durationChange() async throws {
-            AlphaTexParserTest.parserTest(":2 (C4 C5) :4 (D4 D5)")
+            try AlphaTexParserTest.parserTest(":2 (C4 C5) :4 (D4 D5)")
         }
 
         @Test("duration")
         func duration() async throws {
-            AlphaTexParserTest.parserTest("(C4 C5).4 (D4 D5).8")
+            try AlphaTexParserTest.parserTest("(C4 C5).4 (D4 D5).8")
         }
 
         @Test("multiplier")
         func multiplier() async throws {
-            AlphaTexParserTest.parserTest("(C4 C5)*4 (D4 D5)*2")
+            try AlphaTexParserTest.parserTest("(C4 C5)*4 (D4 D5)*2")
         }
 
         @Test("effects empty")
         func effectsEmpty() async throws {
-            AlphaTexParserTest.parserTest("(C4 C5) {} (D4 D5) {}")
+            try AlphaTexParserTest.parserTest("(C4 C5) {} (D4 D5) {}")
         }
 
         @Test("effects known")
         func effectsKnown() async throws {
-            AlphaTexParserTest.parserTest("(C4 C5) {v f} (D4 D5) {cre tu 3 2}")
+            try AlphaTexParserTest.parserTest("(C4 C5) {v f} (D4 D5) {cre tu 3 2}")
         }
 
         @Test("complex")
         func complex() async throws {
-            AlphaTexParserTest.parserTest(":2 (C4 C5).8 * 2 {cre tu 3 2}")
+            try AlphaTexParserTest.parserTest(":2 (C4 C5).8 * 2 {cre tu 3 2}")
         }
 
         init() {}
@@ -229,42 +229,42 @@ final class AlphaTexParserTest {
     final class ValidBeatsBasicFrettedSuite {
         @Test("basic")
         func basic() async throws {
-            AlphaTexParserTest.parserTest("3.3 4.2")
+            try AlphaTexParserTest.parserTest("3.3 4.2")
         }
 
         @Test("duration change")
         func durationChange() async throws {
-            AlphaTexParserTest.parserTest(":2 3.3 :4 4.2")
+            try AlphaTexParserTest.parserTest(":2 3.3 :4 4.2")
         }
 
         @Test("duration")
         func duration() async throws {
-            AlphaTexParserTest.parserTest("3.3.4 4.2.8")
+            try AlphaTexParserTest.parserTest("3.3.4 4.2.8")
         }
 
         @Test("multiplier")
         func multiplier() async throws {
-            AlphaTexParserTest.parserTest("3.3*4 4.2*2")
+            try AlphaTexParserTest.parserTest("3.3*4 4.2*2")
         }
 
         @Test("effects empty")
         func effectsEmpty() async throws {
-            AlphaTexParserTest.parserTest("3.3.4 {} 4.2.4 {}")
+            try AlphaTexParserTest.parserTest("3.3.4 {} 4.2.4 {}")
         }
 
         @Test("effects known")
         func effectsKnown() async throws {
-            AlphaTexParserTest.parserTest("3.3.4 {v f} 4.2.4 {cre tu 3 2}")
+            try AlphaTexParserTest.parserTest("3.3.4 {v f} 4.2.4 {cre tu 3 2}")
         }
 
         @Test("complex")
         func complex() async throws {
-            AlphaTexParserTest.parserTest(":2 3.3.8 * 2 {cre tu 3 2}")
+            try AlphaTexParserTest.parserTest(":2 3.3.8 * 2 {cre tu 3 2}")
         }
 
         @Test("spacing")
         func spacing() async throws {
-            AlphaTexParserTest.parserTest("3.3.8 | 3 . 3 . 8 | 3.3 .8 | 3 . 3.8")
+            try AlphaTexParserTest.parserTest("3.3.8 | 3 . 3 . 8 | 3.3 .8 | 3 . 3.8")
         }
 
         init() {}
@@ -274,42 +274,42 @@ final class AlphaTexParserTest {
     final class ValidBeatsChordFrettedSuite {
         @Test("chord")
         func chord() async throws {
-            AlphaTexParserTest.parserTest("(3.3 4.2) (1.2 6.1)")
+            try AlphaTexParserTest.parserTest("(3.3 4.2) (1.2 6.1)")
         }
 
         @Test("duration change")
         func durationChange() async throws {
-            AlphaTexParserTest.parserTest(":2 (3.3 4.2) :4 (1.2 6.1)")
+            try AlphaTexParserTest.parserTest(":2 (3.3 4.2) :4 (1.2 6.1)")
         }
 
         @Test("duration")
         func duration() async throws {
-            AlphaTexParserTest.parserTest("(3.3 4.2).4 (1.2 6.1).8")
+            try AlphaTexParserTest.parserTest("(3.3 4.2).4 (1.2 6.1).8")
         }
 
         @Test("multiplier")
         func multiplier() async throws {
-            AlphaTexParserTest.parserTest("(3.3 4.2)*4 (1.2 6.1)*2")
+            try AlphaTexParserTest.parserTest("(3.3 4.2)*4 (1.2 6.1)*2")
         }
 
         @Test("effects empty")
         func effectsEmpty() async throws {
-            AlphaTexParserTest.parserTest("(3.3 4.2).4 {} (1.2 6.1).4 {}")
+            try AlphaTexParserTest.parserTest("(3.3 4.2).4 {} (1.2 6.1).4 {}")
         }
 
         @Test("effects known")
         func effectsKnown() async throws {
-            AlphaTexParserTest.parserTest("(3.3 4.2).4 {v f} (1.2 6.1).4 {cre tu 3 2}")
+            try AlphaTexParserTest.parserTest("(3.3 4.2).4 {v f} (1.2 6.1).4 {cre tu 3 2}")
         }
 
         @Test("complex")
         func complex() async throws {
-            AlphaTexParserTest.parserTest(":2 (3.3 4.2).8 * 2 {cre tu 3 2}")
+            try AlphaTexParserTest.parserTest(":2 (3.3 4.2).8 * 2 {cre tu 3 2}")
         }
 
         @Test("spacing")
         func spacing() async throws {
-            AlphaTexParserTest.parserTest("\n            (\n                3.3 \n                3 . 3\n            ) . 8")
+            try AlphaTexParserTest.parserTest("\n            (\n                3.3 \n                3 . 3\n            ) . 8")
         }
 
         init() {}
@@ -319,37 +319,37 @@ final class AlphaTexParserTest {
     final class ValidBeatsRestSuite {
         @Test("rest")
         func rest() async throws {
-            AlphaTexParserTest.parserTest("r")
+            try AlphaTexParserTest.parserTest("r")
         }
 
         @Test("duration change")
         func durationChange() async throws {
-            AlphaTexParserTest.parserTest(":2 r :4 r")
+            try AlphaTexParserTest.parserTest(":2 r :4 r")
         }
 
         @Test("duration")
         func duration() async throws {
-            AlphaTexParserTest.parserTest("r.4 r.8")
+            try AlphaTexParserTest.parserTest("r.4 r.8")
         }
 
         @Test("multiplier")
         func multiplier() async throws {
-            AlphaTexParserTest.parserTest("r*4 r*2")
+            try AlphaTexParserTest.parserTest("r*4 r*2")
         }
 
         @Test("effects empty")
         func effectsEmpty() async throws {
-            AlphaTexParserTest.parserTest("r.4 {} r.4 {}")
+            try AlphaTexParserTest.parserTest("r.4 {} r.4 {}")
         }
 
         @Test("effects known")
         func effectsKnown() async throws {
-            AlphaTexParserTest.parserTest("r.4 {v f} r.4 {cre tu 3 2}")
+            try AlphaTexParserTest.parserTest("r.4 {v f} r.4 {cre tu 3 2}")
         }
 
         @Test("complex")
         func complex() async throws {
-            AlphaTexParserTest.parserTest(":2 r.8 * 2 {cre tu 3 2}")
+            try AlphaTexParserTest.parserTest(":2 r.8 * 2 {cre tu 3 2}")
         }
 
         init() {}
@@ -359,27 +359,27 @@ final class AlphaTexParserTest {
     final class ValidBeatEffectsSuite {
         @Test("empty")
         func empty() async throws {
-            AlphaTexParserTest.parserTest("C4.8 {}")
+            try AlphaTexParserTest.parserTest("C4.8 {}")
         }
 
         @Test("unknown")
         func unknown() async throws {
-            AlphaTexParserTest.parserTest("C4.8 {unknown (1 2 3)}")
+            try AlphaTexParserTest.parserTest("C4.8 {unknown (1 2 3)}")
         }
 
         @Test("known")
         func known() async throws {
-            AlphaTexParserTest.parserTest("C4.8 {tu 2 3}")
+            try AlphaTexParserTest.parserTest("C4.8 {tu 2 3}")
         }
 
         @Test("known with list")
         func knownWithList() async throws {
-            AlphaTexParserTest.parserTest("C4.8 {tb (0 -2 0)}")
+            try AlphaTexParserTest.parserTest("C4.8 {tb (0 -2 0)}")
         }
 
         @Test("multiple")
         func multiple() async throws {
-            AlphaTexParserTest.parserTest("C4.8 {cre tb (0 -2 0) tu 3 2}")
+            try AlphaTexParserTest.parserTest("C4.8 {cre tb (0 -2 0) tu 3 2}")
         }
 
         init() {}
@@ -389,47 +389,47 @@ final class AlphaTexParserTest {
     final class ValidNoteEffectsSuite {
         @Test("empty")
         func empty() async throws {
-            AlphaTexParserTest.parserTest("C4 {}")
+            try AlphaTexParserTest.parserTest("C4 {}")
         }
 
         @Test("unknown")
         func unknown() async throws {
-            AlphaTexParserTest.parserTest("C4 {unknown (1 2 3)}")
+            try AlphaTexParserTest.parserTest("C4 {unknown (1 2 3)}")
         }
 
         @Test("known")
         func known() async throws {
-            AlphaTexParserTest.parserTest("C4 {tr 4 4}")
+            try AlphaTexParserTest.parserTest("C4 {tr 4 4}")
         }
 
         @Test("known with list")
         func knownWithList() async throws {
-            AlphaTexParserTest.parserTest("C4 {b (0 4 0)}")
+            try AlphaTexParserTest.parserTest("C4 {b (0 4 0)}")
         }
 
         @Test("multiple")
         func multiple() async throws {
-            AlphaTexParserTest.parserTest("C4 {nh b (0 4 0) v}")
+            try AlphaTexParserTest.parserTest("C4 {nh b (0 4 0) v}")
         }
 
         @Test("multiple chord")
         func multipleChord() async throws {
-            AlphaTexParserTest.parserTest("(C4 {nh b (0 4 0) v} C5 { v h unknown (1 2 3)})")
+            try AlphaTexParserTest.parserTest("(C4 {nh b (0 4 0) v} C5 { v h unknown (1 2 3)})")
         }
 
         @Test("with beat effects")
         func withBeatEffects() async throws {
-            AlphaTexParserTest.parserTest("C4 {nh b (0 4 0) v} { tu 3 2 }")
+            try AlphaTexParserTest.parserTest("C4 {nh b (0 4 0) v} { tu 3 2 }")
         }
 
         @Test("beat effects in note effect")
         func beatEffectsInNoteEffect() async throws {
-            AlphaTexParserTest.parserTest("C4 { tu 3 2 }")
+            try AlphaTexParserTest.parserTest("C4 { tu 3 2 }")
         }
 
         @Test("multiple chord beat effects")
         func multipleChordBeatEffects() async throws {
-            AlphaTexParserTest.parserTest("(C4 {nh b (0 4 0) v} C5 { v h unknown (1 2 3)}) { tu 3 2 }")
+            try AlphaTexParserTest.parserTest("(C4 {nh b (0 4 0) v} C5 { v h unknown (1 2 3)}) { tu 3 2 }")
         }
 
         init() {}
@@ -439,52 +439,52 @@ final class AlphaTexParserTest {
     final class ValidSyncPointsSuite {
         @Test("empty")
         func empty() async throws {
-            AlphaTexParserTest.parserTest(" . . ")
+            try AlphaTexParserTest.parserTest(" . . ")
         }
 
         @Test("empty with bars")
         func emptyWithBars() async throws {
-            AlphaTexParserTest.parserTest(" . C4 | C5 . ")
+            try AlphaTexParserTest.parserTest(" . C4 | C5 . ")
         }
 
         @Test("empty with bars empty at end")
         func emptyWithBarsEmptyAtEnd() async throws {
-            AlphaTexParserTest.parserTest(" . C4 | C5 | . ")
+            try AlphaTexParserTest.parserTest(" . C4 | C5 | . ")
         }
 
         @Test("basic simple pitched")
         func basicSimplePitched() async throws {
-            AlphaTexParserTest.parserTest(" . C4 . \\sync 1 1 1")
+            try AlphaTexParserTest.parserTest(" . C4 . \\sync 1 1 1")
         }
 
         @Test("basic simple numbered")
         func basicSimpleNumbered() async throws {
-            AlphaTexParserTest.parserTest(" . 32 . \\sync 1 1 1")
+            try AlphaTexParserTest.parserTest(" . 32 . \\sync 1 1 1")
         }
 
         @Test("basic fretted")
         func basicFretted() async throws {
-            AlphaTexParserTest.parserTest(" . 3.3 . \\sync 1 1 1")
+            try AlphaTexParserTest.parserTest(" . 3.3 . \\sync 1 1 1")
         }
 
         @Test("full")
         func full() async throws {
-            AlphaTexParserTest.parserTest(" \\title \"Test\" . C4.4 . \\sync 1 1 1")
+            try AlphaTexParserTest.parserTest(" \\title \"Test\" . C4.4 . \\sync 1 1 1")
         }
 
         @Test("valuelist")
         func valuelist() async throws {
-            AlphaTexParserTest.parserTest(" . C4 . \\sync (1 1 1)")
+            try AlphaTexParserTest.parserTest(" . C4 . \\sync (1 1 1)")
         }
 
         @Test("properties empty")
         func propertiesEmpty() async throws {
-            AlphaTexParserTest.parserTest(" . C4 . \\sync (1 1 1) {} ")
+            try AlphaTexParserTest.parserTest(" . C4 . \\sync (1 1 1) {} ")
         }
 
         @Test("properties unknown")
         func propertiesUnknown() async throws {
-            AlphaTexParserTest.parserTest(" . C4 . \\sync (1 1 1) { unknown (1 2 3) } ")
+            try AlphaTexParserTest.parserTest(" . C4 . \\sync (1 1 1) { unknown (1 2 3) } ")
         }
 
         init() {}
@@ -494,17 +494,17 @@ final class AlphaTexParserTest {
     final class FloatsSuite {
         @Test("tempo parenthesis")
         func tempoParenthesis() async throws {
-            AlphaTexParserTest.parserTest(". \\tempo (120 \"Moderate\" 0.5)")
+            try AlphaTexParserTest.parserTest(". \\tempo (120 \"Moderate\" 0.5)")
         }
 
         @Test("valuelist parenthesis")
         func valuelistParenthesis() async throws {
-            AlphaTexParserTest.parserTest("\\unknown (1.2 2.3)")
+            try AlphaTexParserTest.parserTest("\\unknown (1.2 2.3)")
         }
 
         @Test("valuelist")
         func valuelist() async throws {
-            AlphaTexParserTest.parserTest(". \\scale 0.5")
+            try AlphaTexParserTest.parserTest(". \\scale 0.5")
         }
 
         init() {}
@@ -514,72 +514,72 @@ final class AlphaTexParserTest {
     final class CommentsSuite {
         @Test("score meta singleline")
         func scoreMetaSingleline() async throws {
-            AlphaTexParserTest.parserTest("// Single \n \\title \"Test\"")
+            try AlphaTexParserTest.parserTest("// Single \n \\title \"Test\"")
         }
 
         @Test("score meta multiline")
         func scoreMetaMultiline() async throws {
-            AlphaTexParserTest.parserTest("/* multi\nline*/ \\title \"Test\"")
+            try AlphaTexParserTest.parserTest("/* multi\nline*/ \\title \"Test\"")
         }
 
         @Test("score meta multiline middle")
         func scoreMetaMultilineMiddle() async throws {
-            AlphaTexParserTest.parserTest("\\title /* multi\nline*/ \"Test\"")
+            try AlphaTexParserTest.parserTest("\\title /* multi\nline*/ \"Test\"")
         }
 
         @Test("bar meta singleline")
         func barMetaSingleline() async throws {
-            AlphaTexParserTest.parserTest(". \n// Single \n \\ts 3 4")
+            try AlphaTexParserTest.parserTest(". \n// Single \n \\ts 3 4")
         }
 
         @Test("bar multiline")
         func barMultiline() async throws {
-            AlphaTexParserTest.parserTest(".\n/* multi\nline*/ \\ts 3 4")
+            try AlphaTexParserTest.parserTest(".\n/* multi\nline*/ \\ts 3 4")
         }
 
         @Test("bar multiline middle")
         func barMultilineMiddle() async throws {
-            AlphaTexParserTest.parserTest(".\n\\ts 3 /* multi\nline*/ 4")
+            try AlphaTexParserTest.parserTest(".\n\\ts 3 /* multi\nline*/ 4")
         }
 
         @Test("beat singleline")
         func beatSingleline() async throws {
-            AlphaTexParserTest.parserTest(". C4\n // Single \n C5")
+            try AlphaTexParserTest.parserTest(". C4\n // Single \n C5")
         }
 
         @Test("beat multiline")
         func beatMultiline() async throws {
-            AlphaTexParserTest.parserTest(". C4\n /* multi\nline*/ C5")
+            try AlphaTexParserTest.parserTest(". C4\n /* multi\nline*/ C5")
         }
 
         @Test("beat chord singleline")
         func beatChordSingleline() async throws {
-            AlphaTexParserTest.parserTest(". (C4\n // Single \n C5)")
+            try AlphaTexParserTest.parserTest(". (C4\n // Single \n C5)")
         }
 
         @Test("beat chord multiline")
         func beatChordMultiline() async throws {
-            AlphaTexParserTest.parserTest(". (C4\n /* multi\nline*/ C5)")
+            try AlphaTexParserTest.parserTest(". (C4\n /* multi\nline*/ C5)")
         }
 
         @Test("beateffects singleline")
         func beateffectsSingleline() async throws {
-            AlphaTexParserTest.parserTest(". (C4 C5) {\n // Single \n } ")
+            try AlphaTexParserTest.parserTest(". (C4 C5) {\n // Single \n } ")
         }
 
         @Test("beateffects multiline")
         func beateffectsMultiline() async throws {
-            AlphaTexParserTest.parserTest(". (C4 C5) {\n /* multi\nline*/ }")
+            try AlphaTexParserTest.parserTest(". (C4 C5) {\n /* multi\nline*/ }")
         }
 
         @Test("noteeffects singleline")
         func noteeffectsSingleline() async throws {
-            AlphaTexParserTest.parserTest(". (C4 {\n // Single \n } C5)")
+            try AlphaTexParserTest.parserTest(". (C4 {\n // Single \n } C5)")
         }
 
         @Test("noteeffects multiline")
         func noteeffectsMultiline() async throws {
-            AlphaTexParserTest.parserTest(". (C4   {\n /* multi\nline*/ } C5)")
+            try AlphaTexParserTest.parserTest(". (C4   {\n /* multi\nline*/ } C5)")
         }
 
         init() {}
@@ -589,12 +589,12 @@ final class AlphaTexParserTest {
     final class AmbiguousSuite {
         @Test("tempo and stringed note")
         func tempoAndStringedNote() async throws {
-            AlphaTexParserTest.parserTest("\\tempo 120 3.3 3.4")
+            try AlphaTexParserTest.parserTest("\\tempo 120 3.3 3.4")
         }
 
         @Test("voice followed by note list")
         func voiceFollowedByNoteList() async throws {
-            AlphaTexParserTest.parserTest("\\voice (C4 C5)")
+            try AlphaTexParserTest.parserTest("\\voice (C4 C5)")
         }
 
         init() {}
@@ -604,87 +604,87 @@ final class AlphaTexParserTest {
     final class IntermediateSuite {
         @Test("started initial meta")
         func startedInitialMeta() async throws {
-            AlphaTexParserTest.parserTest("\\")
+            try AlphaTexParserTest.parserTest("\\")
         }
 
         @Test("started meta")
         func startedMeta() async throws {
-            AlphaTexParserTest.parserTest("\\tr")
+            try AlphaTexParserTest.parserTest("\\tr")
         }
 
         @Test("started meta properties")
         func startedMetaProperties() async throws {
-            AlphaTexParserTest.parserTest("\\track \"X\" {")
+            try AlphaTexParserTest.parserTest("\\track \"X\" {")
         }
 
         @Test("started meta property name")
         func startedMetaPropertyName() async throws {
-            AlphaTexParserTest.parserTest("\\track \"X\" { co")
+            try AlphaTexParserTest.parserTest("\\track \"X\" { co")
         }
 
         @Test("started meta property value")
         func startedMetaPropertyValue() async throws {
-            AlphaTexParserTest.parserTest("\\track \"X\" { color \"")
+            try AlphaTexParserTest.parserTest("\\track \"X\" { color \"")
         }
 
         @Test("finished meta property value, not closed ")
         func finishedMetaPropertyValue_NotClosed() async throws {
-            AlphaTexParserTest.parserTest("\\track \"X\" { color \"red\"")
+            try AlphaTexParserTest.parserTest("\\track \"X\" { color \"red\"")
         }
 
         @Test("started meta string")
         func startedMetaString() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Ti")
+            try AlphaTexParserTest.parserTest("\\title \"Ti")
         }
 
         @Test("started pitched note")
         func startedPitchedNote() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" . C")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" . C")
         }
 
         @Test("started note effects")
         func startedNoteEffects() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { ")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { ")
         }
 
         @Test("started note effect name")
         func startedNoteEffectName() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slu")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slu")
         }
 
         @Test("started note effect value")
         func startedNoteEffectValue() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1")
         }
 
         @Test("finished note effect value, not closed")
         func finishedNoteEffectValue_NotClosed() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\"")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\"")
         }
 
         @Test("started beat duration")
         func startedBeatDuration() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\" } .")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\" } .")
         }
 
         @Test("started beat effects")
         func startedBeatEffects() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\" } . 4 { ")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\" } . 4 { ")
         }
 
         @Test("started beat effect name")
         func startedBeatEffectName() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\" } . 4 { ras")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\" } . 4 { ras")
         }
 
         @Test("started beat effect value")
         func startedBeatEffectValue() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\" } . 4 { rasg \"i")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\" } . 4 { rasg \"i")
         }
 
         @Test("finished beat effect value, not closed")
         func finishedBeatEffectValue_NotClosed() async throws {
-            AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\" } . 4 { rasg \"ii\" ")
+            try AlphaTexParserTest.parserTest("\\title \"Title\" . C4 { slur \"S1\" } . 4 { rasg \"ii\" ")
         }
 
         init() {}
@@ -696,17 +696,17 @@ final class AlphaTexParserTest {
         final class PropsSuite {
             @Test("additional values")
             func additionalValues() async throws {
-                AlphaTexParserTest.parserTest("C4 { slur \"S1\" \"S2\" 3 v 3 vw} ")
+                try AlphaTexParserTest.parserTest("C4 { slur \"S1\" \"S2\" 3 v 3 vw} ")
             }
 
             @Test("unknown property")
             func unknownProperty() async throws {
-                AlphaTexParserTest.parserTest("C4 { slur \"s1\" invalid \"invalid value\" 3 v }")
+                try AlphaTexParserTest.parserTest("C4 { slur \"s1\" invalid \"invalid value\" 3 v }")
             }
 
             @Test("unknown value")
             func unknownValue() async throws {
-                AlphaTexParserTest.parserTest("C4 { rasg \"invalid\" v }")
+                try AlphaTexParserTest.parserTest("C4 { rasg \"invalid\" v }")
             }
 
             init() {}
@@ -721,12 +721,12 @@ final class AlphaTexParserTest {
         final class At200Suite {
             @Test("missing")
             func missing() async throws {
-                AlphaTexParserTest.parserTest("(3.3) * ")
+                try AlphaTexParserTest.parserTest("(3.3) * ")
             }
 
             @Test("type")
             func type() async throws {
-                AlphaTexParserTest.parserTest("(3.3) * A")
+                try AlphaTexParserTest.parserTest("(3.3) * A")
             }
 
             init() {}
@@ -736,12 +736,12 @@ final class AlphaTexParserTest {
         final class At201Suite {
             @Test("missing")
             func missing() async throws {
-                AlphaTexParserTest.parserTest(":")
+                try AlphaTexParserTest.parserTest(":")
             }
 
             @Test("type")
             func type() async throws {
-                AlphaTexParserTest.parserTest(":A")
+                try AlphaTexParserTest.parserTest(":A")
             }
 
             init() {}
@@ -751,17 +751,17 @@ final class AlphaTexParserTest {
         final class At202Suite {
             @Test("beat duration")
             func beatDuration() async throws {
-                AlphaTexParserTest.parserTest("(C4).A")
+                try AlphaTexParserTest.parserTest("(C4).A")
             }
 
             @Test("note string")
             func noteString() async throws {
-                AlphaTexParserTest.parserTest("3.A")
+                try AlphaTexParserTest.parserTest("3.A")
             }
 
             @Test("note value")
             func noteValue() async throws {
-                AlphaTexParserTest.parserTest(" . ( \\notevalue )")
+                try AlphaTexParserTest.parserTest(" . ( \\notevalue )")
             }
 
             init() {}
@@ -771,12 +771,12 @@ final class AlphaTexParserTest {
         final class At203Suite {
             @Test("note string")
             func noteString() async throws {
-                AlphaTexParserTest.parserTest(". (3.")
+                try AlphaTexParserTest.parserTest(". (3.")
             }
 
             @Test("meta value")
             func metaValue() async throws {
-                AlphaTexParserTest.parserTest("\\title")
+                try AlphaTexParserTest.parserTest("\\title")
             }
 
             init() {}
@@ -786,12 +786,12 @@ final class AlphaTexParserTest {
         final class At204Suite {
             @Test("score")
             func score() async throws {
-                AlphaTexParserTest.parserTest("\\unknown")
+                try AlphaTexParserTest.parserTest("\\unknown")
             }
 
             @Test("bar")
             func bar() async throws {
-                AlphaTexParserTest.parserTest(". \\unknown")
+                try AlphaTexParserTest.parserTest(". \\unknown")
             }
 
             init() {}
@@ -801,27 +801,27 @@ final class AlphaTexParserTest {
         final class At205Suite {
             @Test("bar")
             func bar() async throws {
-                AlphaTexParserTest.parserTest(". \\track \"Test\" {unknown}")
+                try AlphaTexParserTest.parserTest(". \\track \"Test\" {unknown}")
             }
 
             @Test("beat")
             func beat() async throws {
-                AlphaTexParserTest.parserTest(". (C4) {unknown}")
+                try AlphaTexParserTest.parserTest(". (C4) {unknown}")
             }
 
             @Test("note")
             func note() async throws {
-                AlphaTexParserTest.parserTest(". (C4{unknown})")
+                try AlphaTexParserTest.parserTest(". (C4{unknown})")
             }
 
             @Test("gracetype")
             func gracetype() async throws {
-                AlphaTexParserTest.parserTest("C4 {gr invalid}")
+                try AlphaTexParserTest.parserTest("C4 {gr invalid}")
             }
 
             @Test("barre")
             func barre() async throws {
-                AlphaTexParserTest.parserTest("C4 {barre 1 invalid}")
+                try AlphaTexParserTest.parserTest("C4 {barre 1 invalid}")
             }
 
             init() {}
@@ -831,12 +831,12 @@ final class AlphaTexParserTest {
         final class At206Suite {
             @Test("note list")
             func noteList() async throws {
-                AlphaTexParserTest.parserTest("(C4")
+                try AlphaTexParserTest.parserTest("(C4")
             }
 
             @Test("values")
             func values() async throws {
-                AlphaTexParserTest.parserTest("\\title (\"Test\"")
+                try AlphaTexParserTest.parserTest("\\title (\"Test\"")
             }
 
             init() {}

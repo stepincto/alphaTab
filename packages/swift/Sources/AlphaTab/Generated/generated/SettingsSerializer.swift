@@ -16,13 +16,13 @@ internal final class SettingsSerializer {
         })
     }
 
-    public static func toJson(_ obj: Settings?) -> Map<String, Any?>? {
+    public static func toJson(_ obj: Settings?) throws -> Map<String, Any?>? {
         if !TypeHelper.isTruthy(obj) {
             return nil
         }
         let o: Map<String, Any?> = Map<String, Any?>()
         o.set("core", CoreSettingsSerializer.toJson(obj!.core))
-        o.set("display", DisplaySettingsSerializer.toJson(obj!.display))
+        try o.set("display", DisplaySettingsSerializer.toJson(obj!.display))
         o.set("notation", NotationSettingsSerializer.toJson(obj!.notation))
         o.set("importer", ImporterSettingsSerializer.toJson(obj!.importer))
         o.set("player", PlayerSettingsSerializer.toJson(obj!.player))

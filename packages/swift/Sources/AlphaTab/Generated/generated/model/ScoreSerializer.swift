@@ -16,7 +16,7 @@ internal final class ScoreSerializer {
         })
     }
 
-    public static func toJson(_ obj: Score?) -> Map<String, Any?>? {
+    public static func toJson(_ obj: Score?) throws -> Map<String, Any?>? {
         if !TypeHelper.isTruthy(obj) {
             return nil
         }
@@ -34,8 +34,8 @@ internal final class ScoreSerializer {
         o.set("masterbars", obj!.masterBars.map({ (i: MasterBar) -> Map<String, Any?>? in
             return MasterBarSerializer.toJson(i)
         }))
-        o.set("tracks", obj!.tracks.map({ (i: Track) -> Map<String, Any?>? in
-            return TrackSerializer.toJson(i)
+        try o.set("tracks", obj!.tracks.map({ (i: Track) -> Map<String, Any?>? in
+            return try TrackSerializer.toJson(i)
         }))
         o.set("defaultsystemslayout", obj!.defaultSystemsLayout)
         o.set("systemslayout", obj!.systemsLayout)

@@ -105,7 +105,7 @@ internal final class BinaryStylesheet {
         }
     }
 
-    public func apply(_ score: Score) {
+    public func apply(_ score: Score) throws {
         for (key, value) in self.raw {
             switch key {
             case "StandardNotation/hideDynamics":
@@ -181,65 +181,65 @@ internal final class BinaryStylesheet {
             case "System/ExtendedBarLines":
                 score.stylesheet.extendBarLines = (value as! Bool)
             case "Header/Title":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Title).template = (value as! String)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Title).template = (value as! String)
             case "Header/TitleAlignment":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Title).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Title).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
             case "Header/drawTitle":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Title).isVisible = (value as! Bool)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Title).isVisible = (value as! Bool)
             case "Header/Subtitle":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.SubTitle).template = (value as! String)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.SubTitle).template = (value as! String)
             case "Header/SubtitleAlignment":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.SubTitle).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.SubTitle).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
             case "Header/drawSubtitle":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.SubTitle).isVisible = (value as! Bool)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.SubTitle).isVisible = (value as! Bool)
             case "Header/Artist":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Artist).template = (value as! String)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Artist).template = (value as! String)
             case "Header/ArtistAlignment":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Artist).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Artist).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
             case "Header/drawArtist":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Artist).isVisible = (value as! Bool)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Artist).isVisible = (value as! Bool)
             case "Header/Album":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Album).template = (value as! String)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Album).template = (value as! String)
             case "Header/AlbumAlignment":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Album).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Album).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
             case "Header/drawAlbum":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Album).isVisible = (value as! Bool)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Album).isVisible = (value as! Bool)
             case "Header/Words":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Words).template = (value as! String)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Words).template = (value as! String)
             case "Header/WordsAlignment":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Words).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Words).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
             case "Header/drawWords":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Words).isVisible = (value as! Bool)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Words).isVisible = (value as! Bool)
             case "Header/Music":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Music).template = (value as! String)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Music).template = (value as! String)
             case "Header/MusicAlignment":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Music).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Music).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
             case "Header/drawMusic":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Music).isVisible = (value as! Bool)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Music).isVisible = (value as! Bool)
             case "Header/WordsAndMusic":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.WordsAndMusic).template = (value as! String)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.WordsAndMusic).template = (value as! String)
             case "Header/WordsAndMusicAlignment":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.WordsAndMusic).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.WordsAndMusic).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
             case "Header/drawWordsAndMusic":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.WordsAndMusic).isVisible = (value as! Bool)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.WordsAndMusic).isVisible = (value as! Bool)
             case "Header/Tabber":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Transcriber).template = (value as! String)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Transcriber).template = (value as! String)
             case "Header/TabberAlignment":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Transcriber).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Transcriber).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
             case "Header/drawTabber":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Transcriber).isVisible = (value as! Bool)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Transcriber).isVisible = (value as! Bool)
             case "Footer/Copyright":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Copyright).template = (value as! String)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Copyright).template = (value as! String)
             case "Footer/CopyrightAlignment":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Copyright).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Copyright).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
             case "Footer/drawCopyright":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Copyright).isVisible = (value as! Bool)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.Copyright).isVisible = (value as! Bool)
             case "Footer/Copyright2":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.CopyrightSecondLine).template = (value as! String)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.CopyrightSecondLine).template = (value as! String)
             case "Footer/Copyright2Alignment":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.CopyrightSecondLine).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.CopyrightSecondLine).textAlign = self._toTextAlign(TypeHelper.unknownToNumber(value))
             case "Footer/drawCopyright2":
-                ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.CopyrightSecondLine).isVisible = (value as! Bool)
+                try ModelUtils.getOrCreateHeaderFooterStyle(score, ScoreSubElement.CopyrightSecondLine).isVisible = (value as! Bool)
             case "System/barIndexDrawType":
                 switch TypeHelper.unknownToNumber(value) {
                 case 0.0:
@@ -328,7 +328,7 @@ internal final class BinaryStylesheet {
 
     private func _getDataType(_ key: String, _ value: Any?) throws -> DataType {
         if self._types.has(key) {
-            return self._types.get(key)!
+            return try jsNonNull(self._types.get(key))
         }
         let type: String = TypeHelper.typeOf(value)
         switch TypeHelper.typeOf(value) {

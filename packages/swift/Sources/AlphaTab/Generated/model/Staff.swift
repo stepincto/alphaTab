@@ -134,7 +134,7 @@ public final class Staff {
         }
     }
 
-    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) {
+    public func finish(_ settings: Settings, _ sharedDataBag: Map<String, Any?>? = nil) throws {
         self.stringTuning.finish()
         if self.isPercussion {
             self.displayTranspositionPitch = 0.0
@@ -147,8 +147,8 @@ public final class Staff {
             var i: Double = 0.0
             var j: Double = self.bars.length
             while i < j {
-                self.bars[(i).toInt()].finish(settings, sharedDataBag)
-                for v in self.bars[(i).toInt()].filledVoices {
+                try self.bars.jsElement((i).toInt()).finish(settings, sharedDataBag)
+                for v in try self.bars.jsElement((i).toInt()).filledVoices {
                     self._filledVoices.add(v)
                 }
                 i += 1

@@ -74,7 +74,7 @@ internal final class RenderStylesheetSerializer {
             obj.hideDynamics = (v! as! Bool)
             return true
         case "bracketextendmode":
-            try obj.bracketExtendMode = JsonHelperPartials.parseEnum(v, BracketExtendMode.self)!
+            try obj.bracketExtendMode = jsNonNull(JsonHelperPartials.parseEnum(v, BracketExtendMode.self))
             return true
         case "usesystemsignseparator":
             obj.useSystemSignSeparator = (v! as! Bool)
@@ -83,12 +83,12 @@ internal final class RenderStylesheetSerializer {
             obj.globalDisplayTuning = (v! as! Bool)
             return true
         case "tuningdisplaymode":
-            try obj.tuningDisplayMode = JsonHelperPartials.parseEnum(v, TuningDisplayMode.self)!
+            try obj.tuningDisplayMode = jsNonNull(JsonHelperPartials.parseEnum(v, TuningDisplayMode.self))
             return true
         case "pertrackdisplaytuning":
             obj.perTrackDisplayTuning = Map<Double, Bool>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                obj.perTrackDisplayTuning!.set(Number.parseInt(k), (v as! Bool))
+                try jsNonNull(obj.perTrackDisplayTuning).set(Number.parseInt(k), (v as! Bool))
             })
             return true
         case "globaldisplaychorddiagramsontop":
@@ -97,29 +97,29 @@ internal final class RenderStylesheetSerializer {
         case "pertrackchorddiagramsontop":
             obj.perTrackChordDiagramsOnTop = Map<Double, Bool>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                obj.perTrackChordDiagramsOnTop!.set(Number.parseInt(k), (v as! Bool))
+                try jsNonNull(obj.perTrackChordDiagramsOnTop).set(Number.parseInt(k), (v as! Bool))
             })
             return true
         case "globaldisplaychorddiagramsinscore":
             obj.globalDisplayChordDiagramsInScore = (v! as! Bool)
             return true
         case "singletracktracknamepolicy":
-            try obj.singleTrackTrackNamePolicy = JsonHelperPartials.parseEnum(v, TrackNamePolicy.self)!
+            try obj.singleTrackTrackNamePolicy = jsNonNull(JsonHelperPartials.parseEnum(v, TrackNamePolicy.self))
             return true
         case "multitracktracknamepolicy":
-            try obj.multiTrackTrackNamePolicy = JsonHelperPartials.parseEnum(v, TrackNamePolicy.self)!
+            try obj.multiTrackTrackNamePolicy = jsNonNull(JsonHelperPartials.parseEnum(v, TrackNamePolicy.self))
             return true
         case "firstsystemtracknamemode":
-            try obj.firstSystemTrackNameMode = JsonHelperPartials.parseEnum(v, TrackNameMode.self)!
+            try obj.firstSystemTrackNameMode = jsNonNull(JsonHelperPartials.parseEnum(v, TrackNameMode.self))
             return true
         case "othersystemstracknamemode":
-            try obj.otherSystemsTrackNameMode = JsonHelperPartials.parseEnum(v, TrackNameMode.self)!
+            try obj.otherSystemsTrackNameMode = jsNonNull(JsonHelperPartials.parseEnum(v, TrackNameMode.self))
             return true
         case "firstsystemtracknameorientation":
-            try obj.firstSystemTrackNameOrientation = JsonHelperPartials.parseEnum(v, TrackNameOrientation.self)!
+            try obj.firstSystemTrackNameOrientation = jsNonNull(JsonHelperPartials.parseEnum(v, TrackNameOrientation.self))
             return true
         case "othersystemstracknameorientation":
-            try obj.otherSystemsTrackNameOrientation = JsonHelperPartials.parseEnum(v, TrackNameOrientation.self)!
+            try obj.otherSystemsTrackNameOrientation = jsNonNull(JsonHelperPartials.parseEnum(v, TrackNameOrientation.self))
             return true
         case "multitrackmultibarrest":
             obj.multiTrackMultiBarRest = (v! as! Bool)
@@ -140,7 +140,7 @@ internal final class RenderStylesheetSerializer {
             obj.showSingleStaffBrackets = (v! as! Bool)
             return true
         case "barnumberdisplay":
-            try obj.barNumberDisplay = JsonHelperPartials.parseEnum(v, BarNumberDisplay.self)!
+            try obj.barNumberDisplay = jsNonNull(JsonHelperPartials.parseEnum(v, BarNumberDisplay.self))
             return true
         case "scoreconfig":
             try ScoreStaffConfigSerializer.fromJson(obj.scoreConfig, v)

@@ -20,7 +20,7 @@ public final class EngravingSettings {
             var bravuraDefaults: EngravingSettings? = EngravingSettings._bravuraDefaults
             if !TypeHelper.isTruthy(bravuraDefaults) {
                 bravuraDefaults = EngravingSettings()
-                bravuraDefaults!.fillFromSmufl(EngravingSettings.bravuraMetadata)
+                try! bravuraDefaults!.fillFromSmufl(EngravingSettings.bravuraMetadata)
                 EngravingSettings._bravuraDefaults = bravuraDefaults!
             }
             return EngravingSettingsCloner.clone(bravuraDefaults!)
@@ -207,14 +207,14 @@ public final class EngravingSettings {
     /**
      * Checks whether a certain glyph is registered in the currently loaded engraving settings.
      */
-    internal func hasSymbol(_ symbol: MusicFontSymbol) -> Bool {
-        return self.glyphWidths.get(symbol)! > 0 && self.glyphHeights.get(symbol)! > 0
+    internal func hasSymbol(_ symbol: MusicFontSymbol) throws -> Bool {
+        return try jsNonNull(self.glyphWidths.get(symbol)) > 0 && jsNonNull(self.glyphHeights.get(symbol)) > 0
     }
 
     /**
      * Fills the engraving settings from the provided smufl metdata.
      */
-    public func fillFromSmufl(_ smufl: SmuflMetadata, _ musicFontSize: Double = 36.0) {
+    public func fillFromSmufl(_ smufl: SmuflMetadata, _ musicFontSize: Double = 36.0) throws {
         self.musicFontSize = musicFontSize
         self.oneStaffSpace = musicFontSize / 4.0
         self.tabLineSpacing = Math.floor(self.oneStaffSpace * 1.5)
@@ -270,7 +270,7 @@ public final class EngravingSettings {
         self.stemFlagHeight.set(Duration.OneHundredTwentyEighth, 3.5 * self.oneStaffSpace)
         self.stemFlagHeight.set(Duration.TwoHundredFiftySixth, 4.2 * self.oneStaffSpace)
         for (g, v) in Object.entries(smufl.glyphsWithAnchors) {
-            let symbol: MusicFontSymbol? = EngravingSettings._smuflNameToMusicFontSymbol(g)
+            let symbol: MusicFontSymbol? = try EngravingSettings._smuflNameToMusicFontSymbol(g)
             if TypeHelper.isTruthy(symbol) {
                 if TypeHelper.isTruthy(v.stemDownNW) {
                     let b: EngravingStemInfo = EngravingStemInfo()
@@ -324,7 +324,7 @@ public final class EngravingSettings {
         let bBoxes: Record<String, SmuflGlyphBoundingBox>? = smufl.glyphBBoxes
         if TypeHelper.isTruthy(bBoxes) {
             for (g, v) in Object.entries(bBoxes!) {
-                let symbol: MusicFontSymbol? = EngravingSettings._smuflNameToMusicFontSymbol(g)
+                let symbol: MusicFontSymbol? = try EngravingSettings._smuflNameToMusicFontSymbol(g)
                 if TypeHelper.isTruthy(symbol) {
                     handledSymbols.add(symbol!)
                     self.glyphTop.set(symbol!, v.bBoxNE.1 * self.oneStaffSpace)
@@ -398,8 +398,8 @@ public final class EngravingSettings {
 
     nonisolated(unsafe) internal static var smuflNameToGlyphNameMapping: Map<String, String> = Map<String, String>([("4stringTabClef", "FourStringTabClef"), ("6stringTabClef", "SixStringTabClef")])
 
-    private static func _smuflNameToMusicFontSymbol(_ g: String) -> MusicFontSymbol? {
-        let name: String = EngravingSettings.smuflNameToGlyphNameMapping.has(g) ? EngravingSettings.smuflNameToGlyphNameMapping.get(g)! : g.substring(0.0, 1.0).uppercase() + g.substring(1.0)
+    private static func _smuflNameToMusicFontSymbol(_ g: String) throws -> MusicFontSymbol? {
+        let name: String = try EngravingSettings.smuflNameToGlyphNameMapping.has(g) ? jsNonNull(EngravingSettings.smuflNameToGlyphNameMapping.get(g)) : g.substring(0.0, 1.0).uppercase() + g.substring(1.0)
         return JsonHelperPartials.parseEnumExact(name, MusicFontSymbol.self)
     }
 
@@ -668,8 +668,8 @@ public final class EngravingSettings {
     /**
      * Calculates the stem height for a note of the given duration.
      */
-    public func getStemLength(_ duration: Duration, _ hasFlag: Bool) -> Double {
-        return self.standardStemLength + (hasFlag ? self.stemFlagOffsets.get(duration)! : 0.0)
+    public func getStemLength(_ duration: Duration, _ hasFlag: Bool) throws -> Double {
+        return try self.standardStemLength + (hasFlag ? jsNonNull(self.stemFlagOffsets.get(duration)) : 0.0)
     }
 
     /**

@@ -29,7 +29,7 @@ internal final class FermataSerializer {
     public static func setProperty(_ obj: Fermata, _ property: String, _ v: Any?) throws -> Bool {
         switch property {
         case "type":
-            try obj.type = JsonHelperPartials.parseEnum(v, FermataType.self)!
+            try obj.type = jsNonNull(JsonHelperPartials.parseEnum(v, FermataType.self))
             return true
         case "length":
             obj.length = TypeHelper.unknownToNumber(v)

@@ -58,9 +58,9 @@ internal final class MusicXmlImporter: ScoreImporter {
         self._nextBarNumber = 1.0
         self._score.stylesheet.hideDynamics = true
         try self._parseDom(dom)
-        self._applySpans()
-        ModelUtils.consolidate(self._score)
-        self._score.finish(self.settings)
+        try self._applySpans()
+        try ModelUtils.consolidate(self._score)
+        try self._score.finish(self.settings)
         self._score.rebuildRepeatGroups()
         return self._score
     }
@@ -70,19 +70,19 @@ internal final class MusicXmlImporter: ScoreImporter {
      * its start or after its stop in the document (other voices or staves). Must run before the model is finished
      * as the note effects are linked there.
      */
-    private func _applySpans() {
-        let voiceIndexOf: (Staff, String) -> Double = { (staff: Staff, voice: String) -> Double in
+    private func _applySpans() throws {
+        let voiceIndexOf: (Staff, String) throws -> Double = { (staff: Staff, voice: String) -> Double in
             if self._staffVoicePacking.has(staff) {
-                let mapping: Map<String, Double> = self._staffVoicePacking.get(staff)!.mapping
+                let mapping: Map<String, Double> = try jsNonNull(self._staffVoicePacking.get(staff)).mapping
                 if mapping.has(voice) {
-                    return mapping.get(voice)!
+                    return try jsNonNull(mapping.get(voice))
                 }
             }
             return -1.0
         }
         for info in self._indexToTrackInfo.values() {
-            MusicXmlSpanApplier(info.track, self._score.masterBars, self._beats, voiceIndexOf, self._octaveShiftEndsBeforeLastNote).apply(info.spans.finish())
-            info.noteLinks.apply()
+            try MusicXmlSpanApplier(info.track, self._score.masterBars, self._beats, voiceIndexOf, self._octaveShiftEndsBeforeLastNote).apply(info.spans.finish())
+            try info.noteLinks.apply()
         }
     }
 
@@ -122,7 +122,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         var uncompressedFileFullPath: String = ""
         for c in rootFiles!.childElements() {
             if c.localName == "rootfile" {
-                uncompressedFileFullPath = c.getAttribute("full-path")
+                try uncompressedFileFullPath = c.getAttribute("full-path")
                 break
             }
         }
@@ -145,27 +145,27 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
         switch root!.localName! {
         case "score-partwise":
-            self._parsePartwise(root!)
+            try self._parsePartwise(root!)
         case "score-timewise":
-            self._parseTimewise(root!)
+            try self._parseTimewise(root!)
         default:
             throw UnsupportedFormatError("Unsupported format")
         }
     }
 
-    private func _parsePartwise(_ element: XmlNode) {
+    private func _parsePartwise(_ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "credit":
-                self._parseCredit(c)
+                try self._parseCredit(c)
             case "identification":
-                self._parseIdentification(c)
+                try self._parseIdentification(c)
             case "movement-title":
                 self._parseMovementTitle(c)
             case "part":
-                self._parsePartwisePart(c)
+                try self._parsePartwisePart(c)
             case "part-list":
-                self._parsePartList(c)
+                try self._parsePartList(c)
             case "work":
                 self._parseWork(c)
             default:
@@ -174,22 +174,22 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseTimewise(_ element: XmlNode) {
+    private func _parseTimewise(_ element: XmlNode) throws {
         var index: Double = 0.0
         for c in element.childElements() {
             switch c.localName! {
             case "credit":
-                self._parseCredit(c)
+                try self._parseCredit(c)
             case "identification":
-                self._parseIdentification(c)
+                try self._parseIdentification(c)
             case "movement-title":
                 self._parseMovementTitle(c)
             case "part-list":
-                self._parsePartList(c)
+                try self._parsePartList(c)
             case "work":
                 self._parseWork(c)
             case "measure":
-                self._parseTimewiseMeasure(c, index)
+                try self._parseTimewiseMeasure(c, index)
                 index += 1
             default:
                 break
@@ -197,8 +197,8 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseCredit(_ element: XmlNode) {
-        if element.getAttribute("page", "1") != "1" {
+    private func _parseCredit(_ element: XmlNode) throws {
+        if try element.getAttribute("page", "1") != "1" {
             return
         }
         let creditTypes: List<String> = List<String>()
@@ -239,9 +239,9 @@ internal final class MusicXmlImporter: ScoreImporter {
                 }
             }
         } else if TypeHelper.isTruthy(firstWords) {
-            let justify: String = firstWords!.getAttribute("font-size", "0")
-            let valign: String = firstWords!.getAttribute("font-size", "top")
-            let halign: String = firstWords!.getAttribute("halign", "left")
+            let justify: String = try firstWords!.getAttribute("font-size", "0")
+            let valign: String = try firstWords!.getAttribute("font-size", "top")
+            let halign: String = try firstWords!.getAttribute("halign", "left")
             if valign == "top" {
                 if fullText.contains("copyright") || fullText.contains("Copyright") || fullText.contains("©") || fullText.contains("(c)") || fullText.contains("(C)") {
                     self._score.copyright = MusicXmlImporter._sanitizeDisplay(fullText)
@@ -282,12 +282,12 @@ internal final class MusicXmlImporter: ScoreImporter {
         return text.replaceAll("\r", "").replaceAll("\n", " ").replaceAll("\t", "  ").replaceAll(" ", " ")
     }
 
-    private func _parseIdentification(_ element: XmlNode) {
+    private func _parseIdentification(_ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "creator":
                 if c.attributes.has("type") {
-                    switch c.attributes.get("type")! {
+                    switch try jsNonNull(c.attributes.get("type")) {
                     case "composer":
                         self._score.artist = MusicXmlImporter._sanitizeDisplay(c.innerText)
                     case "lyricist":
@@ -348,22 +348,22 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parsePartList(_ element: XmlNode) {
+    private func _parsePartList(_ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "score-part":
-                self._parseScorePart(c)
+                try self._parseScorePart(c)
             default:
                 break
             }
         }
     }
 
-    private func _parseScorePart(_ element: XmlNode) {
+    private func _parseScorePart(_ element: XmlNode) throws {
         let track: Track = Track()
         track.ensureStaveCount(1.0)
         self._score.addTrack(track)
-        let id: String = element.attributes.get("id")!
+        let id: String = try jsNonNull(element.attributes.get("id"))
         let trackInfo: TrackInfo = TrackInfo(track)
         self._idToTrackInfo.set(id, trackInfo)
         self._indexToTrackInfo.set(track.index, trackInfo)
@@ -378,13 +378,13 @@ internal final class MusicXmlImporter: ScoreImporter {
             case "part-abbreviation-display":
                 track.shortName = self._parsePartDisplayAsText(c)
             case "score-instrument":
-                self._parseScoreInstrument(c, trackInfo)
+                try self._parseScoreInstrument(c, trackInfo)
             case "midi-device":
                 if c.attributes.has("port") {
-                    track.playbackInfo.port = Number.parseInt(c.attributes.get("port")!, 10.0)
+                    try track.playbackInfo.port = Number.parseInt(jsNonNull(c.attributes.get("port")), 10.0)
                 }
             case "midi-instrument":
-                self._parseScorePartMidiInstrument(c, trackInfo)
+                try self._parseScorePartMidiInstrument(c, trackInfo)
             default:
                 break
             }
@@ -409,20 +409,20 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseScoreInstrument(_ element: XmlNode, _ trackInfo: TrackInfo) {
+    private func _parseScoreInstrument(_ element: XmlNode, _ trackInfo: TrackInfo) throws {
         let articulation: InstrumentArticulationWithPlaybackInfo = InstrumentArticulationWithPlaybackInfo()
         if !TypeHelper.isTruthy(trackInfo.firstArticulation) {
             trackInfo.firstArticulation = articulation
         }
-        trackInfo.instruments.set(element.getAttribute("id", ""), articulation)
+        try trackInfo.instruments.set(element.getAttribute("id", ""), articulation)
     }
 
-    private func _parseScorePartMidiInstrument(_ element: XmlNode, _ trackInfo: TrackInfo) {
-        let id: String = element.getAttribute("id", "")
+    private func _parseScorePartMidiInstrument(_ element: XmlNode, _ trackInfo: TrackInfo) throws {
+        let id: String = try element.getAttribute("id", "")
         if !trackInfo.instruments.has(id) {
             return
         }
-        let articulation: InstrumentArticulationWithPlaybackInfo = trackInfo.instruments.get(id)!
+        let articulation: InstrumentArticulationWithPlaybackInfo = try jsNonNull(trackInfo.instruments.get(id))
         for c in element.childElements() {
             switch c.localName! {
             case "midi-channel":
@@ -442,7 +442,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                 break
             }
         }
-        articulation.id = PercussionMapper.tryMatchKnownArticulation(articulation)
+        try articulation.id = PercussionMapper.tryMatchKnownArticulation(articulation)
         if articulation.id < 0 {
             articulation.id = 0.0
         }
@@ -546,17 +546,17 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parsePartwisePart(_ element: XmlNode) {
+    private func _parsePartwisePart(_ element: XmlNode) throws {
         let id: String? = element.attributes.get("id")
         if !TypeHelper.isTruthy(id) || !self._idToTrackInfo.has(id!) {
             return
         }
-        let track: Track = self._idToTrackInfo.get(id!)!.track
+        let track: Track = try jsNonNull(self._idToTrackInfo.get(id!)).track
         var index: Double = 0.0
         for c in element.childElements() {
             switch c.localName! {
             case "measure":
-                self._parsePartwiseMeasure(c, track, index)
+                try self._parsePartwiseMeasure(c, track, index)
                 index += 1
             default:
                 break
@@ -565,23 +565,23 @@ internal final class MusicXmlImporter: ScoreImporter {
         self._currentBarNumberDisplayPart = nil
     }
 
-    private func _parsePartwiseMeasure(_ element: XmlNode, _ track: Track, _ index: Double) {
-        let masterBar: MasterBar = self._getOrCreateMasterBar(element, index, element.getAttribute("number"))
+    private func _parsePartwiseMeasure(_ element: XmlNode, _ track: Track, _ index: Double) throws {
+        let masterBar: MasterBar = try self._getOrCreateMasterBar(element, index, element.getAttribute("number"))
         let implicit: Bool = element.attributes.get("implicit") == "yes"
-        self._parsePartMeasure(element, masterBar, track, implicit, true)
+        try self._parsePartMeasure(element, masterBar, track, implicit, true)
         self._currentBarNumberDisplayBar = nil
     }
 
-    private func _parseTimewiseMeasure(_ element: XmlNode, _ index: Double) {
-        let masterBar: MasterBar = self._getOrCreateMasterBar(element, index, element.getAttribute("number"))
+    private func _parseTimewiseMeasure(_ element: XmlNode, _ index: Double) throws {
+        let masterBar: MasterBar = try self._getOrCreateMasterBar(element, index, element.getAttribute("number"))
         let implicit: Bool = element.attributes.get("implicit") == "yes"
         for c in element.childElements() {
             switch c.localName! {
             case "part":
-                self._parseTimewisePart(c, masterBar, implicit)
+                try self._parseTimewisePart(c, masterBar, implicit)
                 self._currentBarNumberDisplayPart = nil
             case "print":
-                self._parsePrint(c, masterBar, nil, true)
+                try self._parsePrint(c, masterBar, nil, true)
             default:
                 break
             }
@@ -589,7 +589,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         self._currentBarNumberDisplayBar = nil
     }
 
-    private func _getOrCreateMasterBar(_ element: XmlNode, _ index: Double, _ measureNumber: String) -> MasterBar {
+    private func _getOrCreateMasterBar(_ element: XmlNode, _ index: Double, _ measureNumber: String) throws -> MasterBar {
         let implicit: Bool = element.attributes.get("implicit") == "yes"
         while self._score.masterBars.length <= index {
             let newMasterBar: MasterBar = MasterBar()
@@ -609,22 +609,22 @@ internal final class MusicXmlImporter: ScoreImporter {
             }
             self._score.addMasterBar(newMasterBar)
             if newMasterBar.index > 0 {
-                newMasterBar.timeSignatureDenominator = newMasterBar.previousMasterBar!.timeSignatureDenominator
-                newMasterBar.timeSignatureNumerator = newMasterBar.previousMasterBar!.timeSignatureNumerator
-                newMasterBar.tripletFeel = newMasterBar.previousMasterBar!.tripletFeel
+                try newMasterBar.timeSignatureDenominator = jsNonNull(newMasterBar.previousMasterBar).timeSignatureDenominator
+                try newMasterBar.timeSignatureNumerator = jsNonNull(newMasterBar.previousMasterBar).timeSignatureNumerator
+                try newMasterBar.tripletFeel = jsNonNull(newMasterBar.previousMasterBar).tripletFeel
             }
         }
         let masterBar: MasterBar = self._score.masterBars[(index).toInt()]
         return masterBar
     }
 
-    private func _parseTimewisePart(_ element: XmlNode, _ masterBar: MasterBar, _ implicit: Bool) {
+    private func _parseTimewisePart(_ element: XmlNode, _ masterBar: MasterBar, _ implicit: Bool) throws {
         let id: String? = element.attributes.get("id")
         if !TypeHelper.isTruthy(id) || !self._idToTrackInfo.has(id!) {
             return
         }
-        let track: Track = self._idToTrackInfo.get(id!)!.track
-        self._parsePartMeasure(element, masterBar, track, implicit, false)
+        let track: Track = try jsNonNull(self._idToTrackInfo.get(id!)).track
+        try self._parsePartMeasure(element, masterBar, track, implicit, false)
     }
 
     /**
@@ -643,30 +643,30 @@ internal final class MusicXmlImporter: ScoreImporter {
      */
     private var _harmonicGroups: Map<String, MusicXmlHarmonicGroup> = Map<String, MusicXmlHarmonicGroup>()
 
-    private func _parsePartMeasure(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track, _ implicit: Bool, _ isPartwise: Bool) {
+    private func _parsePartMeasure(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track, _ implicit: Bool, _ isPartwise: Bool) throws {
         self._musicalPosition = 0.0
         self._lastBeat = nil
-        let info: TrackInfo = self._indexToTrackInfo.get(track.index)!
+        let info: TrackInfo = try jsNonNull(self._indexToTrackInfo.get(track.index))
         masterBar.alternateEndings = jsOr(masterBar.alternateEndings, info.openEndings)
         let barLines: List<XmlNode> = List<XmlNode>()
         for c in element.childElements() {
             switch c.localName! {
             case "note":
-                self._parseNote(c, masterBar, track)
+                try self._parseNote(c, masterBar, track)
             case "backup":
                 self._parseBackup(c)
             case "forward":
                 self._parseForward(c)
             case "direction":
-                self._parseDirection(c, masterBar, track)
+                try self._parseDirection(c, masterBar, track)
             case "attributes":
-                self._parseAttributes(c, masterBar, track)
+                try self._parseAttributes(c, masterBar, track)
             case "harmony":
-                self._parseHarmony(c, track)
+                try self._parseHarmony(c, track)
             case "print":
-                self._parsePrint(c, masterBar, track, true)
+                try self._parsePrint(c, masterBar, track, true)
             case "sound":
-                self._parseSound(c, masterBar, track)
+                try self._parseSound(c, masterBar, track)
             case "barline":
                 barLines.push(c)
             default:
@@ -674,7 +674,7 @@ internal final class MusicXmlImporter: ScoreImporter {
             }
         }
         for barLine in barLines {
-            self._parseBarLine(barLine, masterBar, track)
+            try self._parseBarLine(barLine, masterBar, track)
         }
         let staff: Staff = self._getOrCreateStaff(track, 0.0)
         let bar: Bar = self._getOrCreateBar(staff, masterBar)
@@ -688,11 +688,11 @@ internal final class MusicXmlImporter: ScoreImporter {
         self._keyAllStaves = nil
     }
 
-    private func _parsePrint(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track?, _ isMeasurePrint: Bool) {
+    private func _parsePrint(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track?, _ isMeasurePrint: Bool) throws {
         if track != nil {
-            if element.getAttribute("new-system", "no") == "yes" {
+            if try element.getAttribute("new-system", "no") == "yes" {
                 track!.addLineBreaks(masterBar.index)
-            } else if element.getAttribute("new-page", "no") == "yes" {
+            } else if try element.getAttribute("new-page", "no") == "yes" {
                 track!.addLineBreaks(masterBar.index)
             }
         }
@@ -721,24 +721,24 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseBarLine(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) {
+    private func _parseBarLine(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "bar-style":
-                self._parseBarStyle(c, masterBar, track, element.getAttribute("location", "right"))
+                try self._parseBarStyle(c, masterBar, track, element.getAttribute("location", "right"))
             case "ending":
-                self._parseEnding(c, masterBar, track)
+                try self._parseEnding(c, masterBar, track)
             case "repeat":
-                self._parseRepeat(c, masterBar)
+                try self._parseRepeat(c, masterBar)
             default:
                 break
             }
         }
     }
 
-    private func _parseRepeat(_ element: XmlNode, _ masterBar: MasterBar) {
-        let direction: String = element.getAttribute("direction")
-        var times: Double = Number.parseInt(element.getAttribute("times"), 10.0)
+    private func _parseRepeat(_ element: XmlNode, _ masterBar: MasterBar) throws {
+        let direction: String = try element.getAttribute("direction")
+        var times: Double = try Number.parseInt(element.getAttribute("times"), 10.0)
         if times < 0 || Number.isNaN(times) {
             times = 2.0
         }
@@ -749,8 +749,8 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseEnding(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) {
-        let numbers: List<Double> = element.getAttribute("number").splitBy(",").map({ (v: String) -> Double in
+    private func _parseEnding(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) throws {
+        let numbers: List<Double> = try element.getAttribute("number").splitBy(",").map({ (v: String) -> Double in
             return Number.parseInt(v, 10.0)
         })
         var flags: Double = 0.0
@@ -758,8 +758,8 @@ internal final class MusicXmlImporter: ScoreImporter {
             flags = jsOr(flags, jsAnd(jsShl(1, num - 1.0), 255))
         }
         masterBar.alternateEndings = jsOr(masterBar.alternateEndings, flags)
-        let info: TrackInfo = self._indexToTrackInfo.get(track.index)!
-        switch element.getAttribute("type", "") {
+        let info: TrackInfo = try jsNonNull(self._indexToTrackInfo.get(track.index))
+        switch try element.getAttribute("type", "") {
         case "start":
             info.openEndings = jsOr(info.openEndings, flags)
         case "stop", "discontinue":
@@ -810,7 +810,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseSound(_ element: XmlNode, _ masterBar: MasterBar, _ _track: Track) {
+    private func _parseSound(_ element: XmlNode, _ masterBar: MasterBar, _ _track: Track) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "midi-instrument":
@@ -823,14 +823,14 @@ internal final class MusicXmlImporter: ScoreImporter {
                 break
             }
         }
-        self._parseSoundDirections(element, masterBar)
+        try self._parseSoundDirections(element, masterBar)
         if element.attributes.has("pan") {
             if !TypeHelper.isTruthy(self._nextBeatAutomations) {
                 self._nextBeatAutomations = List<Automation>()
             }
             let automation: Automation = Automation()
             automation.type = AutomationType.Balance
-            automation.value = MusicXmlImporter._interpolatePan(Number.parseFloat(element.attributes.get("pan")!))
+            try automation.value = MusicXmlImporter._interpolatePan(Number.parseFloat(jsNonNull(element.attributes.get("pan"))))
             self._nextBeatAutomations!.push(automation)
         }
         if element.attributes.has("tempo") {
@@ -839,7 +839,7 @@ internal final class MusicXmlImporter: ScoreImporter {
             }
             let automation: Automation = Automation()
             automation.type = AutomationType.Tempo
-            automation.value = MusicXmlImporter._interpolatePercent(Number.parseFloat(element.attributes.get("tempo")!))
+            try automation.value = MusicXmlImporter._interpolatePercent(Number.parseFloat(jsNonNull(element.attributes.get("tempo"))))
             self._nextBeatAutomations!.push(automation)
         }
     }
@@ -847,7 +847,7 @@ internal final class MusicXmlImporter: ScoreImporter {
     /**
      * Applies the jump and marker attributes of a `<sound>` (measure or direction level) as directions.
      */
-    private func _parseSoundDirections(_ element: XmlNode, _ masterBar: MasterBar) -> Bool {
+    private func _parseSoundDirections(_ element: XmlNode, _ masterBar: MasterBar) throws -> Bool {
         var hasDirections: Bool = false
         if element.attributes.has("coda") {
             masterBar.addDirection(Direction.TargetCoda)
@@ -857,7 +857,7 @@ internal final class MusicXmlImporter: ScoreImporter {
             masterBar.addDirection(Direction.JumpDaCoda)
             hasDirections = true
         }
-        if element.getAttribute("dacapo", "no") != "no" {
+        if try element.getAttribute("dacapo", "no") != "no" {
             masterBar.addDirection(Direction.JumpDaCapo)
             hasDirections = true
         }
@@ -1024,7 +1024,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseHarmony(_ element: XmlNode, _ _track: Track) {
+    private func _parseHarmony(_ element: XmlNode, _ _track: Track) throws {
         let chord: Chord = Chord()
         var degreeParenthesis: Bool = false
         var degree: String = ""
@@ -1033,14 +1033,14 @@ internal final class MusicXmlImporter: ScoreImporter {
             case "root":
                 chord.name = self._parseHarmonyRoot(childNode)
             case "kind":
-                chord.name = chord.name + self._parseHarmonyKind(childNode)
-                if childNode.getAttribute("parentheses-degrees", "no") == "yes" {
+                try chord.name = chord.name + self._parseHarmonyKind(childNode)
+                if try childNode.getAttribute("parentheses-degrees", "no") == "yes" {
                     degreeParenthesis = true
                 }
             case "frame":
-                self._parseHarmonyFrame(childNode, chord)
+                try self._parseHarmonyFrame(childNode, chord)
             case "degree":
-                degree += self._parseDegree(childNode)
+                try degree += self._parseDegree(childNode)
             default:
                 break
             }
@@ -1048,11 +1048,11 @@ internal final class MusicXmlImporter: ScoreImporter {
         if TypeHelper.isTruthy(degree) {
             chord.name += degreeParenthesis ? "(\((degree).toTemplate()))" : degree
         }
-        if element.getAttribute("print-frame", "no") == "yes" {
+        if try element.getAttribute("print-frame", "no") == "yes" {
             chord.showDiagram = true
             self._score.stylesheet.globalDisplayChordDiagramsInScore = true
         }
-        if element.getAttribute("print-object", "yes") == "yes" {
+        if try element.getAttribute("print-object", "yes") == "yes" {
             chord.showDiagram = true
         }
         if self._nextBeatChord == nil {
@@ -1060,7 +1060,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseDegree(_ element: XmlNode) -> String {
+    private func _parseDegree(_ element: XmlNode) throws -> String {
         var value: String = ""
         var alter: String = ""
         var type: String = ""
@@ -1078,7 +1078,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                     break
                 }
             case "degree-type":
-                type += c.getAttribute("text", "")
+                try type += c.getAttribute("text", "")
             default:
                 break
             }
@@ -1115,8 +1115,8 @@ internal final class MusicXmlImporter: ScoreImporter {
         return rootStep + rootAlter
     }
 
-    private func _parseHarmonyKind(_ xmlNode: XmlNode) -> String {
-        let kindText: String = xmlNode.getAttribute("text")
+    private func _parseHarmonyKind(_ xmlNode: XmlNode) throws -> String {
+        let kindText: String = try xmlNode.getAttribute("text")
         var resultKind: String = ""
         if TypeHelper.isTruthy(kindText) {
             resultKind = kindText
@@ -1186,7 +1186,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         return resultKind
     }
 
-    private func _parseHarmonyFrame(_ xmlNode: XmlNode, _ chord: Chord) {
+    private func _parseHarmonyFrame(_ xmlNode: XmlNode, _ chord: Chord) throws {
         for frameChild in xmlNode.childElements() {
             switch frameChild.localName! {
             case "frame-strings":
@@ -1214,7 +1214,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                             chord.strings[(stringNo! - 1.0).toInt()] = fretNo!
                         }
                     case "barre":
-                        if TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(stringNo) && TypeHelper.isTruthy(fretNo)) && noteChild.getAttribute("type") == "start") {
+                        if try TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(stringNo) && TypeHelper.isTruthy(fretNo)) && noteChild.getAttribute("type") == "start") {
                             chord.barreFrets.push(fretNo!)
                         }
                     default:
@@ -1227,7 +1227,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseAttributes(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) {
+    private func _parseAttributes(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) throws {
         var staffIndex: Double
         var staff: Staff
         var bar: Bar
@@ -1237,24 +1237,24 @@ internal final class MusicXmlImporter: ScoreImporter {
                 case "divisions":
                     self._divisionsPerQuarterNote = Number.parseFloat(c.innerText)
                 case "key":
-                    self._parseKey(c, masterBar, track)
+                    try self._parseKey(c, masterBar, track)
                 case "time":
-                    self._parseTime(c, masterBar)
+                    try self._parseTime(c, masterBar)
                 case "staves":
                     track.ensureStaveCount(Number.parseInt(c.innerText, 10.0))
                 case "clef":
-                    staffIndex = Number.parseInt(c.getAttribute("number", "1"), 10.0) - 1.0
+                    try staffIndex = Number.parseInt(c.getAttribute("number", "1"), 10.0) - 1.0
                     staff = self._getOrCreateStaff(track, staffIndex)
                     bar = self._getOrCreateBar(staff, masterBar)
                     self._parseClef(c, bar)
                 case "staff-details":
-                    staffIndex = Number.parseInt(c.getAttribute("number", "1"), 10.0) - 1.0
+                    try staffIndex = Number.parseInt(c.getAttribute("number", "1"), 10.0) - 1.0
                     staff = self._getOrCreateStaff(track, staffIndex)
-                    self._parseStaffDetails(c, staff)
+                    try self._parseStaffDetails(c, staff)
                 case "transpose":
-                    self._parseTranspose(c, track)
+                    try self._parseTranspose(c, track)
                 case "measure-style":
-                    self._parseMeasureStyle(c, masterBar, track, false)
+                    try self._parseMeasureStyle(c, masterBar, track, false)
                 default:
                     break
                 }
@@ -1265,7 +1265,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                 case "divisions":
                     self._divisionsPerQuarterNote = Number.parseFloat(c.innerText)
                 case "measure-style":
-                    self._parseMeasureStyle(c, masterBar, track, true)
+                    try self._parseMeasureStyle(c, masterBar, track, true)
                 default:
                     break
                 }
@@ -1273,16 +1273,16 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseMeasureStyle(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track, _ midBar: Bool) {
+    private func _parseMeasureStyle(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track, _ midBar: Bool) throws {
         let events: List<MusicXmlSpanEvent> = List<MusicXmlSpanEvent>()
-        MusicXmlSpanReader.readMeasureStyle(element, midBar, events)
+        try MusicXmlSpanReader.readMeasureStyle(element, midBar, events)
         if events.length > 0 {
-            let staffIndex: Double = element.attributes.has("number") ? Number.parseInt(element.attributes.get("number")!, 10.0) - 1.0 : -1.0
-            self._indexToTrackInfo.get(track.index)!.spans.process(events, self._placement(masterBar, staffIndex, "", 0.0))
+            let staffIndex: Double = try element.attributes.has("number") ? Number.parseInt(jsNonNull(element.attributes.get("number")), 10.0) - 1.0 : -1.0
+            try jsNonNull(self._indexToTrackInfo.get(track.index)).spans.process(events, self._placement(masterBar, staffIndex, "", 0.0))
         }
     }
 
-    private func _parseTranspose(_ element: XmlNode, _ track: Track) {
+    private func _parseTranspose(_ element: XmlNode, _ track: Track) throws {
         var semitones: Double = 0.0
         for c in element.childElements() {
             switch c.localName! {
@@ -1295,24 +1295,24 @@ internal final class MusicXmlImporter: ScoreImporter {
             }
         }
         if element.attributes.has("number") {
-            let staff: Staff = self._getOrCreateStaff(track, Number.parseInt(element.attributes.get("number")!, 10.0) - 1.0)
-            self._getStaffContext(staff).transpose = semitones
+            let staff: Staff = try self._getOrCreateStaff(track, Number.parseInt(jsNonNull(element.attributes.get("number")), 10.0) - 1.0)
+            try self._getStaffContext(staff).transpose = semitones
             staff.displayTranspositionPitch = semitones
         } else {
             for staff in track.staves {
-                self._getStaffContext(staff).transpose = semitones
+                try self._getStaffContext(staff).transpose = semitones
                 staff.displayTranspositionPitch = semitones
             }
         }
     }
 
-    private func _parseStaffDetails(_ element: XmlNode, _ staff: Staff) {
+    private func _parseStaffDetails(_ element: XmlNode, _ staff: Staff) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "staff-lines":
                 staff.standardNotationLineCount = Number.parseInt(c.innerText, 10.0)
             case "staff-tuning":
-                self._parseStaffTuning(c, staff)
+                try self._parseStaffTuning(c, staff)
             case "capo":
                 staff.capo = Number.parseInt(c.innerText, 10.0)
             default:
@@ -1321,13 +1321,13 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseStaffTuning(_ element: XmlNode, _ staff: Staff) {
+    private func _parseStaffTuning(_ element: XmlNode, _ staff: Staff) throws {
         if staff.stringTuning.tunings.length == 0.0 {
             staff.showTablature = true
             staff.showStandardNotation = false
             staff.stringTuning.tunings = List<Double>((staff.standardNotationLineCount).toInt()).fill(0.0)
         }
-        let line: Double = Number.parseInt(element.getAttribute("line"), 10.0)
+        let line: Double = try Number.parseInt(element.getAttribute("line"), 10.0)
         var tuningStep: String = "C"
         var tuningOctave: String = ""
         var tuningAlter: Double = 0.0
@@ -1343,7 +1343,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                 break
             }
         }
-        let tuning: Double = ModelUtils.getTuningForText(tuningStep + tuningOctave) + tuningAlter
+        let tuning: Double = try ModelUtils.getTuningForText(tuningStep + tuningOctave) + tuningAlter
         staff.tuning[(staff.tuning.length - line).toInt()] = tuning
     }
 
@@ -1398,7 +1398,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseTime(_ element: XmlNode, _ masterBar: MasterBar) {
+    private func _parseTime(_ element: XmlNode, _ masterBar: MasterBar) throws {
         var beatsParsed: Bool = false
         var beatTypeParsed: Bool = false
         for c in element.childElements() {
@@ -1434,7 +1434,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                 break
             }
         }
-        switch element.getAttribute("symbol", "") {
+        switch try element.getAttribute("symbol", "") {
         case "common", "cut":
             masterBar.timeSignatureCommon = true
         default:
@@ -1444,7 +1444,7 @@ internal final class MusicXmlImporter: ScoreImporter {
 
     private var _keyAllStaves: (KeySignature, KeySignatureType)? = nil
 
-    private func _parseKey(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) {
+    private func _parseKey(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) throws {
         var fifths: Double = -(Double(KeySignature.C.rawValue))
         var mode: String = ""
         for c in element.childElements() {
@@ -1470,7 +1470,7 @@ internal final class MusicXmlImporter: ScoreImporter {
             keySignatureType = KeySignatureType.Major
         }
         if element.attributes.has("number") {
-            let staff: Staff = self._getOrCreateStaff(track, Number.parseInt(element.attributes.get("number")!, 10.0) - 1.0)
+            let staff: Staff = try self._getOrCreateStaff(track, Number.parseInt(jsNonNull(element.attributes.get("number")), 10.0) - 1.0)
             let bar: Bar = self._getOrCreateBar(staff, masterBar)
             bar.keySignature = keySignature
             bar.keySignatureType = keySignatureType
@@ -1485,7 +1485,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseDirection(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) {
+    private func _parseDirection(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) throws {
         let directionTypes: List<XmlNode> = List<XmlNode>()
         var offset: Double? = nil
         var offsetAffectsSound: Bool = false
@@ -1509,17 +1509,17 @@ internal final class MusicXmlImporter: ScoreImporter {
                 }
             case "offset":
                 offset = Number.parseFloat(c.innerText)
-                offsetAffectsSound = c.getAttribute("sound", "no") == "yes"
+                try offsetAffectsSound = c.getAttribute("sound", "no") == "yes"
             case "voice":
                 voice = c.innerText.trim()
             case "staff":
                 staffIndex = Number.parseInt(c.innerText, 10.0) - 1.0
             case "sound":
                 if c.attributes.has("tempo") {
-                    tempo = Number.parseFloat(c.attributes.get("tempo")!)
+                    try tempo = Number.parseFloat(jsNonNull(c.attributes.get("tempo")))
                 }
                 sound = c
-                hasSoundDirections = self._parseSoundDirections(c, masterBar)
+                try hasSoundDirections = self._parseSoundDirections(c, masterBar)
             default:
                 break
             }
@@ -1565,7 +1565,7 @@ internal final class MusicXmlImporter: ScoreImporter {
             case "words":
                 previousWords = direction.innerText
             case "wedge":
-                MusicXmlSpanReader.readWedge(direction, spanEvents)
+                try MusicXmlSpanReader.readWedge(direction, spanEvents)
             case "dynamics":
                 let newDynamics: DynamicValue? = self._parseDynamics(direction)
                 if newDynamics != nil {
@@ -1573,29 +1573,29 @@ internal final class MusicXmlImporter: ScoreImporter {
                     self._score.stylesheet.hideDynamics = false
                 }
             case "dashes", "bracket":
-                if self._parseLine(direction, previousWords, track, masterBar.index, spanEvents) {
+                if try self._parseLine(direction, previousWords, track, masterBar.index, spanEvents) {
                     previousWords = ""
                 }
             case "pedal":
-                MusicXmlSpanReader.readPedal(direction, pedalEvents)
+                try MusicXmlSpanReader.readPedal(direction, pedalEvents)
             case "metronome":
                 if tempo <= 0 {
                     self._parseMetronome(direction, masterBar, displayRatioPosition)
                 }
             case "octave-shift":
-                MusicXmlSpanReader.readOctaveShift(direction, spanEvents)
+                try MusicXmlSpanReader.readOctaveShift(direction, spanEvents)
             default:
                 break
             }
         }
-        let spans: MusicXmlSpanTracker = self._indexToTrackInfo.get(track.index)!.spans
+        let spans: MusicXmlSpanTracker = try jsNonNull(self._indexToTrackInfo.get(track.index)).spans
         if spanEvents.length > 0 {
-            spans.process(spanEvents, self._placement(masterBar, staffIndex, voice, offsetTicks))
+            try spans.process(spanEvents, self._placement(masterBar, staffIndex, voice, offsetTicks))
         }
         if pedalEvents.length > 0 {
-            spans.process(pedalEvents, self._placement(masterBar, staff.index, voice, offsetTicks))
+            try spans.process(pedalEvents, self._placement(masterBar, staff.index, voice, offsetTicks))
         }
-        if TypeHelper.isTruthy(TypeHelper.isTruthy(previousWords) && !(hasSoundDirections && MusicXmlImporter._isSoundDirectionLabel(allWords, sound!))) {
+        if try TypeHelper.isTruthy(TypeHelper.isTruthy(previousWords) && !(hasSoundDirections && MusicXmlImporter._isSoundDirectionLabel(allWords, jsNonNull(sound)))) {
             self._nextBeatText = previousWords
             self._nextBeatTextTrackIndex = track.index
             self._nextBeatTextBarIndex = masterBar.index
@@ -1606,14 +1606,14 @@ internal final class MusicXmlImporter: ScoreImporter {
     /**
      * Reads a `<dashes>` or `<bracket>` line.
      */
-    private func _parseLine(_ element: XmlNode, _ words: String, _ track: Track, _ barIndex: Double, _ spanEvents: List<MusicXmlSpanEvent>) -> Bool {
-        let usesPendingText: Bool = words.length == 0.0 && self._nextBeatText != nil && self._nextBeatTextTrackIndex == track.index && self._nextBeatTextBarIndex == barIndex && self._nextBeatTextTicks == self._musicalPosition && element.getAttribute("type", "start") == "start"
-        let label: String = usesPendingText ? self._nextBeatText! : words
+    private func _parseLine(_ element: XmlNode, _ words: String, _ track: Track, _ barIndex: Double, _ spanEvents: List<MusicXmlSpanEvent>) throws -> Bool {
+        let usesPendingText: Bool = try words.length == 0.0 && self._nextBeatText != nil && self._nextBeatTextTrackIndex == track.index && self._nextBeatTextBarIndex == barIndex && self._nextBeatTextTicks == self._musicalPosition && element.getAttribute("type", "start") == "start"
+        let label: String = try usesPendingText ? jsNonNull(self._nextBeatText) : words
         if MusicXmlSpanReader.lineKind(label) == MusicXmlSpanKind.None {
-            MusicXmlSpanReader.readLine(element, "", spanEvents)
+            try MusicXmlSpanReader.readLine(element, "", spanEvents)
             return false
         }
-        MusicXmlSpanReader.readLine(element, label, spanEvents)
+        try MusicXmlSpanReader.readLine(element, label, spanEvents)
         if usesPendingText {
             self._nextBeatText = nil
         }
@@ -1738,16 +1738,16 @@ internal final class MusicXmlImporter: ScoreImporter {
         return staff.bars[(masterBar.index).toInt()]
     }
 
-    private func _resolveAndPlaceVoice(_ staff: Staff, _ rawVoice: String, _ bar: Bar) -> Voice {
+    private func _resolveAndPlaceVoice(_ staff: Staff, _ rawVoice: String, _ bar: Bar) throws -> Voice {
         var packing: StaffVoicePacking
         if self._staffVoicePacking.has(staff) {
-            packing = self._staffVoicePacking.get(staff)!
+            try packing = jsNonNull(self._staffVoicePacking.get(staff))
         } else {
             packing = StaffVoicePacking()
             self._staffVoicePacking.set(staff, packing)
         }
         if packing.mapping.has(rawVoice) {
-            return bar.voices[(packing.mapping.get(rawVoice)!).toInt()]
+            return try bar.voices[try (jsNonNull(packing.mapping.get(rawVoice))).toInt()]
         }
         var newVoiceNumber: Double = Number.parseInt(rawVoice, 10.0)
         if Number.isNaN(newVoiceNumber) {
@@ -1795,7 +1795,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         return bar.voices[(insertPos).toInt()]
     }
 
-    private func _parseNote(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) {
+    private func _parseNote(_ element: XmlNode, _ masterBar: MasterBar, _ track: Track) throws {
         var isChord: Bool = false
         var note: Note? = nil
         var isPitched: Bool = false
@@ -1810,12 +1810,12 @@ internal final class MusicXmlImporter: ScoreImporter {
             case "chord":
                 isChord = true
             case "pitch":
-                note = self._parsePitch(c)
+                try note = self._parsePitch(c)
                 isPitched = true
             case "unpitched":
-                note = self._parseUnpitched(c, track)
+                try note = self._parseUnpitched(c, track)
             case "instrument":
-                instrumentId = c.getAttribute("id", "")
+                try instrumentId = c.getAttribute("id", "")
             case "voice":
                 let trimmed: String = c.innerText.trim()
                 voiceRaw = trimmed.length > 0 ? trimmed : "1"
@@ -1839,22 +1839,22 @@ internal final class MusicXmlImporter: ScoreImporter {
             Logger.warning("MusicXML", "Cannot mix <chord /> and <rest />")
             isChord = false
         }
-        let harmonic: MusicXmlHarmonic? = note != nil ? MusicXmlImporter._readHarmonic(element) : nil
-        if isChord && harmonic != nil && self._foldHarmonicNote(note!, harmonic!, track, staffIndex) {
+        let harmonic: MusicXmlHarmonic? = try note != nil ? MusicXmlImporter._readHarmonic(element) : nil
+        if try isChord && harmonic != nil && self._foldHarmonicNote(jsNonNull(note), harmonic!, track, staffIndex) {
             return
         }
         let writtenNoteValue: Double = note != nil ? self._calculatePitchedNoteValue(note!) : 0.0
         let staff: Staff = self._getOrCreateStaff(track, staffIndex)
         var beat: Beat
         if isChord {
-            beat = self._lastBeat!
-            beat.addNote(note!)
+            try beat = jsNonNull(self._lastBeat)
+            try beat.addNote(jsNonNull(note))
         } else {
-            beat = self._createBeat(staff, masterBar, voiceRaw, note)
+            try beat = self._createBeat(staff, masterBar, voiceRaw, note)
         }
         if note != nil {
-            note!.isVisible = element.getAttribute("print-object", "yes") != "no"
-            self._resolveAttachedNote(note!, instrumentId, isPitched)
+            try note!.isVisible = element.getAttribute("print-object", "yes") != "no"
+            try self._resolveAttachedNote(note!, instrumentId, isPitched)
             if harmonic != nil && harmonic!.pitch != MusicXmlHarmonicPitch.None {
                 self._harmonicGroups.set(harmonic!.group, MusicXmlHarmonicGroup(note: note!, type: harmonic!.type, isBasePitch: harmonic!.pitch == MusicXmlHarmonicPitch.Base, hasTouchingPitch: false))
             }
@@ -1871,14 +1871,14 @@ internal final class MusicXmlImporter: ScoreImporter {
         for c in element.childElements() {
             switch c.localName! {
             case "grace":
-                let makeTime: Double = Number.parseFloat(c.getAttribute("make-time", "-1"))
+                let makeTime: Double = try Number.parseFloat(c.getAttribute("make-time", "-1"))
                 if makeTime >= 0 {
                     graceDurationInDivisions = self._musicXmlDivisionsToAlphaTabTicks(makeTime)
                     graceType = GraceType.BeforeBeat
                 } else {
                     graceType = GraceType.OnBeat
                 }
-                if c.getAttribute("slash") == "yes" {
+                if try c.getAttribute("slash") == "yes" {
                     graceType = GraceType.BeforeBeat
                 }
             case "rest":
@@ -1889,7 +1889,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                 durationInTicks = self._parseDuration(c)
             case "tied":
                 if TypeHelper.isTruthy(note) {
-                    self._parseTied(c, note!, voiceRaw)
+                    try self._parseTied(c, note!, voiceRaw)
                 }
             case "type":
                 beatDuration = self._parseBeatDuration(c)
@@ -1918,10 +1918,10 @@ internal final class MusicXmlImporter: ScoreImporter {
                 if note == nil {
                     Logger.warning("MusicXML", "Malformed MusicXML, missing pitch or unpitched for note")
                 } else {
-                    self._parseNoteHead(c, note!, beatDuration ?? Duration.Quarter, preferredBeamDirection ?? self._estimateBeamDirection(writtenNoteValue))
+                    try self._parseNoteHead(c, note!, beatDuration ?? Duration.Quarter, preferredBeamDirection ?? self._estimateBeamDirection(writtenNoteValue))
                 }
             case "beam":
-                if c.getAttribute("number", "1") == "1" {
+                if try c.getAttribute("number", "1") == "1" {
                     switch c.innerText {
                     case "begin":
                         beamMode = BeatBeamingMode.ForceMergeWithNext
@@ -1934,9 +1934,9 @@ internal final class MusicXmlImporter: ScoreImporter {
                     }
                 }
             case "notations":
-                self._parseNotations(c, note, beat, voiceRaw)
+                try self._parseNotations(c, note, beat, voiceRaw)
             case "lyric":
-                self._parseLyric(c, beat, track)
+                try self._parseLyric(c, beat, track)
             case "play":
                 self._parsePlay(c, note)
             default:
@@ -1945,10 +1945,10 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
         if !isChord {
             if beamMode == nil {
-                beat.beamingMode = self._getStaffContext(staff).isExplicitlyBeamed ? BeatBeamingMode.ForceSplitToNext : BeatBeamingMode.Auto
+                try beat.beamingMode = self._getStaffContext(staff).isExplicitlyBeamed ? BeatBeamingMode.ForceSplitToNext : BeatBeamingMode.Auto
             } else {
                 beat.beamingMode = beamMode!
-                self._getStaffContext(staff).isExplicitlyBeamed = true
+                try self._getStaffContext(staff).isExplicitlyBeamed = true
             }
             if durationInTicks < 0 && beatDuration != nil {
                 durationInTicks = MidiUtils.toTicks(beatDuration!)
@@ -1983,7 +1983,7 @@ internal final class MusicXmlImporter: ScoreImporter {
      * A harmonic without `<natural/>` or `<artificial/>` only shows the harmonic circle, like Guitar Pro 8 we ignore it
      * (it exports pinch, tap and semi harmonics like this).
      */
-    private static func _readHarmonic(_ element: XmlNode) -> MusicXmlHarmonic? {
+    private static func _readHarmonic(_ element: XmlNode) throws -> MusicXmlHarmonic? {
         for notations in element.childElements() {
             if notations.localName != "notations" {
                 continue
@@ -1996,7 +1996,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                     if c.localName != "harmonic" {
                         continue
                     }
-                    let harmonic: MusicXmlHarmonic = MusicXmlHarmonic(type: HarmonicType.None, pitch: MusicXmlHarmonicPitch.None, group: c.getAttribute("number", "1"))
+                    let harmonic: MusicXmlHarmonic = try MusicXmlHarmonic(type: HarmonicType.None, pitch: MusicXmlHarmonicPitch.None, group: c.getAttribute("number", "1"))
                     for h in c.childElements() {
                         switch h.localName! {
                         case "natural":
@@ -2031,14 +2031,14 @@ internal final class MusicXmlImporter: ScoreImporter {
      * The pitch is relative to the staff the note specifies, Guitar Pro 8 omits the `<staff>` on these chord notes
      * of a tablature staff and writes them in the pitch of the first staff.
      */
-    private func _foldHarmonicNote(_ note: Note, _ harmonic: MusicXmlHarmonic, _ track: Track, _ staffIndex: Double) -> Bool {
+    private func _foldHarmonicNote(_ note: Note, _ harmonic: MusicXmlHarmonic, _ track: Track, _ staffIndex: Double) throws -> Bool {
         let group: MusicXmlHarmonicGroup? = self._harmonicGroups.get(harmonic.group)
         if group == nil || harmonic.pitch == MusicXmlHarmonicPitch.Base || harmonic.pitch == MusicXmlHarmonicPitch.None {
             return false
         }
         let played: Note = group!.note
         if group!.isBasePitch && !group!.hasTouchingPitch {
-            let transpose: Double = self._getStaffContext(self._getOrCreateStaff(track, staffIndex)).transpose
+            let transpose: Double = try self._getStaffContext(self._getOrCreateStaff(track, staffIndex)).transpose
             var interval: Double = self._calculatePitchedNoteValue(note) + transpose - self._calculatePitchedNoteValue(played)
             if played.isStringed && group!.type == HarmonicType.Natural {
                 interval += played.fret
@@ -2069,14 +2069,14 @@ internal final class MusicXmlImporter: ScoreImporter {
      * Creates a new beat for the note on the given staff and inserts it into the voice at the current musical position.
      * The beat level information of the note (beaming, duration, tuplets etc.) is applied after the note was fully parsed.
      */
-    private func _createBeat(_ staff: Staff, _ masterBar: MasterBar, _ voiceRaw: String, _ note: Note?) -> Beat {
+    private func _createBeat(_ staff: Staff, _ masterBar: MasterBar, _ voiceRaw: String, _ note: Note?) throws -> Beat {
         let bar: Bar = self._getOrCreateBar(staff, masterBar)
-        let voice: Voice = self._resolveAndPlaceVoice(staff, voiceRaw, bar)
-        let actualMusicalPosition: Double = voice.beats.length == 0.0 ? 0.0 : voice.beats[(voice.beats.length - 1.0).toInt()].displayEnd
+        let voice: Voice = try self._resolveAndPlaceVoice(staff, voiceRaw, bar)
+        let actualMusicalPosition: Double = try voice.beats.length == 0.0 ? 0.0 : voice.beats.jsElement((voice.beats.length - 1.0).toInt()).displayEnd
         var gap: Double = self._musicalPosition - actualMusicalPosition
         if gap > 0 {
-            if TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(self._lastBeat) && self._lastBeat!.beamingMode == BeatBeamingMode.ForceMergeWithNext) && self._lastBeat!.voice.bar.staff.index != staff.index) && voice.beats.length > 0) && voice.beats[(voice.beats.length - 1.0).toInt()].beamingMode == BeatBeamingMode.ForceMergeWithNext) {
-                let preferredDuration: Duration = voice.beats[(voice.beats.length - 1.0).toInt()].duration
+            if try TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(self._lastBeat) && self._lastBeat!.beamingMode == BeatBeamingMode.ForceMergeWithNext) && self._lastBeat!.voice.bar.staff.index != staff.index) && voice.beats.length > 0) && voice.beats.jsElement((voice.beats.length - 1.0).toInt()).beamingMode == BeatBeamingMode.ForceMergeWithNext) {
+                let preferredDuration: Duration = try voice.beats.jsElement((voice.beats.length - 1.0).toInt()).duration
                 while gap > 0 {
                     let restGap: Beat? = self._createRestForGap(gap, preferredDuration)
                     if restGap != nil {
@@ -2186,10 +2186,10 @@ internal final class MusicXmlImporter: ScoreImporter {
      * - The remaining children of the note are interpreted afterwards and rely on the resolved
      *   note (e.g. ties are matched on the transposed pitch).
      */
-    private func _resolveAttachedNote(_ note: Note, _ instrumentId: String?, _ isPitched: Bool) {
+    private func _resolveAttachedNote(_ note: Note, _ instrumentId: String?, _ isPitched: Bool) throws {
         let staff: Staff = note.beat.voice.bar.staff
         if isPitched {
-            let transpose: Double = self._getStaffContext(staff).transpose
+            let transpose: Double = try self._getStaffContext(staff).transpose
             if transpose != 0.0 {
                 let value: Double = note.octave * 12.0 + note.tone + transpose
                 note.octave = jsOr(value / 12.0, 0)
@@ -2197,15 +2197,15 @@ internal final class MusicXmlImporter: ScoreImporter {
             }
         }
         let track: Track = staff.track
-        let trackInfo: TrackInfo = self._indexToTrackInfo.get(track.index)!
+        let trackInfo: TrackInfo = try jsNonNull(self._indexToTrackInfo.get(track.index))
         if !isPitched {
-            note.percussionArticulation = trackInfo.getOrCreateArticulation(instrumentId ?? "", note)
+            try note.percussionArticulation = trackInfo.getOrCreateArticulation(instrumentId ?? "", note)
             return
         }
-        if instrumentId != nil && trackInfo.isUnpitchedInstrument(instrumentId!) {
-            note.percussionArticulation = trackInfo.getOrCreateArticulation(instrumentId!, note)
+        if try instrumentId != nil && trackInfo.isUnpitchedInstrument(instrumentId!) {
+            try note.percussionArticulation = trackInfo.getOrCreateArticulation(instrumentId!, note)
         } else if staff.isPercussion {
-            let knownArticulation: InstrumentArticulation? = PercussionMapper.getArticulationById(note.displayValue)
+            let knownArticulation: InstrumentArticulation? = try PercussionMapper.getArticulationById(note.displayValue)
             if TypeHelper.isTruthy(knownArticulation) {
                 note.percussionArticulation = track.getOrRegisterPercussionArticulation(knownArticulation!)
             }
@@ -2242,11 +2242,11 @@ internal final class MusicXmlImporter: ScoreImporter {
         return writtenNoteValue < MusicXmlImporter._b4Value ? BeamDirection.Down : BeamDirection.Up
     }
 
-    private func _parseNoteHead(_ element: XmlNode, _ note: Note, _ beatDuration: Duration, _ beamDirection: BeamDirection) {
-        if element.getAttribute("parentheses", "no") == "yes" {
+    private func _parseNoteHead(_ element: XmlNode, _ note: Note, _ beatDuration: Duration, _ beamDirection: BeamDirection) throws {
+        if try element.getAttribute("parentheses", "no") == "yes" {
             note.isGhost = true
         }
-        let filled: String = element.getAttribute("filled", "")
+        let filled: String = try element.getAttribute("filled", "")
         var forceFill: Bool? = nil
         if filled == "yes" {
             forceFill = true
@@ -2257,64 +2257,64 @@ internal final class MusicXmlImporter: ScoreImporter {
         switch element.innerText {
         case "arrow down":
             note.style!.noteHeadCenterOnStem = true
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadTriangleDownDoubleWhole, MusicFontSymbol.NoteheadTriangleDownWhole, MusicFontSymbol.NoteheadTriangleDownHalf, MusicFontSymbol.NoteheadTriangleDownBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadTriangleDownDoubleWhole, MusicFontSymbol.NoteheadTriangleDownWhole, MusicFontSymbol.NoteheadTriangleDownHalf, MusicFontSymbol.NoteheadTriangleDownBlack)
         case "arrow up":
             note.style!.noteHeadCenterOnStem = true
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadTriangleUpDoubleWhole, MusicFontSymbol.NoteheadTriangleUpWhole, MusicFontSymbol.NoteheadTriangleUpHalf, MusicFontSymbol.NoteheadTriangleUpBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadTriangleUpDoubleWhole, MusicFontSymbol.NoteheadTriangleUpWhole, MusicFontSymbol.NoteheadTriangleUpHalf, MusicFontSymbol.NoteheadTriangleUpBlack)
         case "back slashed":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadSlashedDoubleWhole2, MusicFontSymbol.NoteheadSlashedWhole2, MusicFontSymbol.NoteheadSlashedHalf2, MusicFontSymbol.NoteheadSlashedBlack2)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadSlashedDoubleWhole2, MusicFontSymbol.NoteheadSlashedWhole2, MusicFontSymbol.NoteheadSlashedHalf2, MusicFontSymbol.NoteheadSlashedBlack2)
         case "circle dot":
             note.style!.noteHead = MusicFontSymbol.NoteheadRoundWhiteWithDot
         case "circle-x":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadCircleXDoubleWhole, MusicFontSymbol.NoteheadCircleXWhole, MusicFontSymbol.NoteheadCircleXHalf, MusicFontSymbol.NoteheadCircleX)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadCircleXDoubleWhole, MusicFontSymbol.NoteheadCircleXWhole, MusicFontSymbol.NoteheadCircleXHalf, MusicFontSymbol.NoteheadCircleX)
         case "circled":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadCircledDoubleWhole, MusicFontSymbol.NoteheadCircledWhole, MusicFontSymbol.NoteheadCircledHalf, MusicFontSymbol.NoteheadCircledBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadCircledDoubleWhole, MusicFontSymbol.NoteheadCircledWhole, MusicFontSymbol.NoteheadCircledHalf, MusicFontSymbol.NoteheadCircledBlack)
         case "cluster":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadClusterDoubleWhole3rd, MusicFontSymbol.NoteheadClusterWhole3rd, MusicFontSymbol.NoteheadClusterHalf3rd, MusicFontSymbol.NoteheadClusterQuarter3rd)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadClusterDoubleWhole3rd, MusicFontSymbol.NoteheadClusterWhole3rd, MusicFontSymbol.NoteheadClusterHalf3rd, MusicFontSymbol.NoteheadClusterQuarter3rd)
         case "cross":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadPlusDoubleWhole, MusicFontSymbol.NoteheadPlusWhole, MusicFontSymbol.NoteheadPlusHalf, MusicFontSymbol.NoteheadPlusBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadPlusDoubleWhole, MusicFontSymbol.NoteheadPlusWhole, MusicFontSymbol.NoteheadPlusHalf, MusicFontSymbol.NoteheadPlusBlack)
         case "diamond":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadDiamondDoubleWhole, MusicFontSymbol.NoteheadDiamondWhole, MusicFontSymbol.NoteheadDiamondHalf, MusicFontSymbol.NoteheadDiamondBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadDiamondDoubleWhole, MusicFontSymbol.NoteheadDiamondWhole, MusicFontSymbol.NoteheadDiamondHalf, MusicFontSymbol.NoteheadDiamondBlack)
         case "do":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeTriangleUpWhite, MusicFontSymbol.NoteShapeTriangleUpWhite, MusicFontSymbol.NoteShapeTriangleUpWhite, MusicFontSymbol.NoteShapeTriangleUpBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeTriangleUpWhite, MusicFontSymbol.NoteShapeTriangleUpWhite, MusicFontSymbol.NoteShapeTriangleUpWhite, MusicFontSymbol.NoteShapeTriangleUpBlack)
         case "fa":
             if beamDirection == BeamDirection.Up {
-                self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeTriangleRightWhite, MusicFontSymbol.NoteShapeTriangleRightWhite, MusicFontSymbol.NoteShapeTriangleRightWhite, MusicFontSymbol.NoteShapeTriangleRightBlack)
+                try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeTriangleRightWhite, MusicFontSymbol.NoteShapeTriangleRightWhite, MusicFontSymbol.NoteShapeTriangleRightWhite, MusicFontSymbol.NoteShapeTriangleRightBlack)
             } else {
-                self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftBlack)
+                try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftBlack)
             }
         case "fa up":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftWhite, MusicFontSymbol.NoteShapeTriangleLeftBlack)
         case "inverted triangle":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadTriangleDownDoubleWhole, MusicFontSymbol.NoteheadTriangleDownWhole, MusicFontSymbol.NoteheadTriangleDownHalf, MusicFontSymbol.NoteheadTriangleDownBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadTriangleDownDoubleWhole, MusicFontSymbol.NoteheadTriangleDownWhole, MusicFontSymbol.NoteheadTriangleDownHalf, MusicFontSymbol.NoteheadTriangleDownBlack)
         case "la":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareBlack)
         case "left triangle":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadTriangleRightWhite, MusicFontSymbol.NoteheadTriangleRightWhite, MusicFontSymbol.NoteheadTriangleRightWhite, MusicFontSymbol.NoteheadTriangleRightBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadTriangleRightWhite, MusicFontSymbol.NoteheadTriangleRightWhite, MusicFontSymbol.NoteheadTriangleRightWhite, MusicFontSymbol.NoteheadTriangleRightBlack)
         case "mi":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeDiamondWhite, MusicFontSymbol.NoteShapeDiamondWhite, MusicFontSymbol.NoteShapeDiamondWhite, MusicFontSymbol.NoteShapeDiamondBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeDiamondWhite, MusicFontSymbol.NoteShapeDiamondWhite, MusicFontSymbol.NoteShapeDiamondWhite, MusicFontSymbol.NoteShapeDiamondBlack)
         case "none":
             note.style!.noteHead = MusicFontSymbol.NoteheadNull
         case "normal":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadDoubleWhole, MusicFontSymbol.NoteheadWhole, MusicFontSymbol.NoteheadHalf, MusicFontSymbol.NoteheadBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadDoubleWhole, MusicFontSymbol.NoteheadWhole, MusicFontSymbol.NoteheadHalf, MusicFontSymbol.NoteheadBlack)
         case "re":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeMoonWhite, MusicFontSymbol.NoteShapeMoonWhite, MusicFontSymbol.NoteShapeMoonWhite, MusicFontSymbol.NoteShapeMoonBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeMoonWhite, MusicFontSymbol.NoteShapeMoonWhite, MusicFontSymbol.NoteShapeMoonWhite, MusicFontSymbol.NoteShapeMoonBlack)
         case "rectangle":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadSquareWhite, MusicFontSymbol.NoteheadSquareWhite, MusicFontSymbol.NoteheadSquareWhite, MusicFontSymbol.NoteheadSquareBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadSquareWhite, MusicFontSymbol.NoteheadSquareWhite, MusicFontSymbol.NoteheadSquareWhite, MusicFontSymbol.NoteheadSquareBlack)
         case "slash":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadSlashWhiteWhole, MusicFontSymbol.NoteheadSlashWhiteWhole, MusicFontSymbol.NoteheadSlashWhiteHalf, MusicFontSymbol.NoteheadSlashHorizontalEnds)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadSlashWhiteWhole, MusicFontSymbol.NoteheadSlashWhiteWhole, MusicFontSymbol.NoteheadSlashWhiteHalf, MusicFontSymbol.NoteheadSlashHorizontalEnds)
         case "slashed":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadSlashedDoubleWhole1, MusicFontSymbol.NoteheadSlashedWhole1, MusicFontSymbol.NoteheadSlashedHalf1, MusicFontSymbol.NoteheadSlashedBlack1)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadSlashedDoubleWhole1, MusicFontSymbol.NoteheadSlashedWhole1, MusicFontSymbol.NoteheadSlashedHalf1, MusicFontSymbol.NoteheadSlashedBlack1)
         case "so":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeRoundWhite, MusicFontSymbol.NoteShapeRoundWhite, MusicFontSymbol.NoteShapeRoundWhite, MusicFontSymbol.NoteShapeRoundBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeRoundWhite, MusicFontSymbol.NoteShapeRoundWhite, MusicFontSymbol.NoteShapeRoundWhite, MusicFontSymbol.NoteShapeRoundBlack)
         case "square":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareWhite, MusicFontSymbol.NoteShapeSquareBlack)
         case "ti":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeTriangleRoundWhite, MusicFontSymbol.NoteShapeTriangleRoundWhite, MusicFontSymbol.NoteShapeTriangleRoundWhite, MusicFontSymbol.NoteShapeTriangleRoundBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteShapeTriangleRoundWhite, MusicFontSymbol.NoteShapeTriangleRoundWhite, MusicFontSymbol.NoteShapeTriangleRoundWhite, MusicFontSymbol.NoteShapeTriangleRoundBlack)
         case "triangle":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadTriangleUpDoubleWhole, MusicFontSymbol.NoteheadTriangleUpWhole, MusicFontSymbol.NoteheadTriangleUpHalf, MusicFontSymbol.NoteheadTriangleUpBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadTriangleUpDoubleWhole, MusicFontSymbol.NoteheadTriangleUpWhole, MusicFontSymbol.NoteheadTriangleUpHalf, MusicFontSymbol.NoteheadTriangleUpBlack)
         case "x":
-            self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadXDoubleWhole, MusicFontSymbol.NoteheadXWhole, MusicFontSymbol.NoteheadXHalf, MusicFontSymbol.NoteheadXBlack)
+            try self._applyNoteHead(note, beatDuration, forceFill, MusicFontSymbol.NoteheadXDoubleWhole, MusicFontSymbol.NoteheadXWhole, MusicFontSymbol.NoteheadXHalf, MusicFontSymbol.NoteheadXBlack)
             if self._isFrettedInstrumentNote(note) {
                 note.isDead = true
             }
@@ -2432,9 +2432,9 @@ internal final class MusicXmlImporter: ScoreImporter {
         newBeat.updateDurations()
     }
 
-    private func _parseLyric(_ element: XmlNode, _ beat: Beat, _ track: Track) {
-        let info: TrackInfo = self._indexToTrackInfo.get(track.index)!
-        let index: Double = info.getLyricLine(element.getAttribute("number", ""))
+    private func _parseLyric(_ element: XmlNode, _ beat: Beat, _ track: Track) throws {
+        let info: TrackInfo = try jsNonNull(self._indexToTrackInfo.get(track.index))
+        let index: Double = try info.getLyricLine(element.getAttribute("number", ""))
         if beat.lyrics == nil {
             beat.lyrics = List<String>()
         }
@@ -2457,31 +2457,31 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseNotations(_ element: XmlNode, _ note: Note?, _ beat: Beat, _ voice: String) {
+    private func _parseNotations(_ element: XmlNode, _ note: Note?, _ beat: Beat, _ voice: String) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "tied":
                 if TypeHelper.isTruthy(note) {
-                    self._parseTied(c, note!, voice)
+                    try self._parseTied(c, note!, voice)
                 }
             case "slur":
                 if TypeHelper.isTruthy(note) {
-                    self._parseNoteLink(c, MusicXmlNoteLinkType.Slur, note!, voice)
+                    try self._parseNoteLink(c, MusicXmlNoteLinkType.Slur, note!, voice)
                 }
             case "glissando":
                 if TypeHelper.isTruthy(note) {
-                    self._parseNoteLink(c, MusicXmlNoteLinkType.Glissando, note!, voice)
+                    try self._parseNoteLink(c, MusicXmlNoteLinkType.Glissando, note!, voice)
                 }
             case "slide":
                 if TypeHelper.isTruthy(note) {
-                    self._parseNoteLink(c, MusicXmlNoteLinkType.Slide, note!, voice)
+                    try self._parseNoteLink(c, MusicXmlNoteLinkType.Slide, note!, voice)
                 }
             case "ornaments":
                 if TypeHelper.isTruthy(note) {
-                    self._parseOrnaments(c, note!, voice)
+                    try self._parseOrnaments(c, note!, voice)
                 }
             case "technical":
-                self._parseTechnical(c, note, beat)
+                try self._parseTechnical(c, note, beat)
             case "articulations":
                 if TypeHelper.isTruthy(note) {
                     self._parseArticulations(c, note!)
@@ -2495,43 +2495,43 @@ internal final class MusicXmlImporter: ScoreImporter {
             case "fermata":
                 self._parseFermata(c, beat)
             case "arpeggiate":
-                self._parseArpeggiate(c, beat)
+                try self._parseArpeggiate(c, beat)
             default:
                 break
             }
         }
     }
 
-    private func _noteLinks(_ note: Note) -> MusicXmlNoteLinks {
-        return self._indexToTrackInfo.get(note.beat.voice.bar.staff.track.index)!.noteLinks
+    private func _noteLinks(_ note: Note) throws -> MusicXmlNoteLinks {
+        return try jsNonNull(self._indexToTrackInfo.get(note.beat.voice.bar.staff.track.index)).noteLinks
     }
 
     /**
      * Reads an element linking notes (e.g. `<slur>`, `<slide>`) identified by its number.
      */
-    private func _parseNoteLink(_ element: XmlNode, _ type: MusicXmlNoteLinkType, _ note: Note, _ voice: String) {
-        let number: String = element.getAttribute("number", "1")
-        switch element.getAttribute("type") {
+    private func _parseNoteLink(_ element: XmlNode, _ type: MusicXmlNoteLinkType, _ note: Note, _ voice: String) throws {
+        let number: String = try element.getAttribute("number", "1")
+        switch try element.getAttribute("type") {
         case "start":
-            self._noteLinks(note).start(type, number, note, voice, 0.0)
+            try self._noteLinks(note).start(type, number, note, voice, 0.0)
         case "stop":
-            self._noteLinks(note).stop(type, number, note, voice)
+            try self._noteLinks(note).stop(type, number, note, voice)
         default:
             break
         }
     }
 
-    private func _getStaffContext(_ staff: Staff) -> StaffContext {
+    private func _getStaffContext(_ staff: Staff) throws -> StaffContext {
         if !self._staffToContext.has(staff) {
             let context: StaffContext = StaffContext()
             self._staffToContext.set(staff, context)
             return context
         }
-        return self._staffToContext.get(staff)!
+        return try jsNonNull(self._staffToContext.get(staff))
     }
 
-    private func _parseArpeggiate(_ element: XmlNode, _ beat: Beat) {
-        let direction: String = element.getAttribute("direction", "down")
+    private func _parseArpeggiate(_ element: XmlNode, _ beat: Beat) throws {
+        let direction: String = try element.getAttribute("direction", "down")
         switch direction {
         case "down":
             beat.brushType = BrushType.ArpeggioDown
@@ -2575,7 +2575,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseTechnical(_ element: XmlNode, _ note: Note?, _ beat: Beat) {
+    private func _parseTechnical(_ element: XmlNode, _ note: Note?, _ beat: Beat) throws {
         let bends: List<XmlNode> = List<XmlNode>()
         for c in element.childElements() {
             switch c.localName! {
@@ -2604,7 +2604,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                     note!.string = Note.getStringCount(beat.voice.bar.staff) - Number.parseInt(c.innerText, 10.0) + 1.0
                 }
             case "hammer-on", "pull-off":
-                if TypeHelper.isTruthy(TypeHelper.isTruthy(note) && c.getAttribute("type", "start") == "start") {
+                if try TypeHelper.isTruthy(TypeHelper.isTruthy(note) && c.getAttribute("type", "start") == "start") {
                     note!.isHammerPullOrigin = true
                 }
             case "bend":
@@ -2616,7 +2616,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                     note!.vibrato = VibratoType.Slight
                 }
             case "golpe":
-                switch c.getAttribute("placement", "above") {
+                switch try c.getAttribute("placement", "above") {
                 case "above":
                     beat.golpe = GolpeType.Finger
                 case "below":
@@ -2705,11 +2705,11 @@ internal final class MusicXmlImporter: ScoreImporter {
         return Fingers.Unknown
     }
 
-    private func _parseOrnaments(_ element: XmlNode, _ note: Note, _ voice: String) {
+    private func _parseOrnaments(_ element: XmlNode, _ note: Note, _ voice: String) throws {
         var trillStep: Double = -1.0
         for c in element.childElements() {
             if c.localName == "trill-mark" {
-                switch c.getAttribute("trill-step", "whole") {
+                switch try c.getAttribute("trill-step", "whole") {
                 case "half":
                     trillStep = 1.0
                 case "unison":
@@ -2719,7 +2719,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                 }
             }
         }
-        let links: MusicXmlNoteLinks = self._noteLinks(note)
+        let links: MusicXmlNoteLinks = try self._noteLinks(note)
         var hasLine: Bool = false
         for c in element.childElements() {
             switch c.localName! {
@@ -2728,8 +2728,8 @@ internal final class MusicXmlImporter: ScoreImporter {
             case "inverted-turn":
                 note.ornament = NoteOrnament.InvertedTurn
             case "wavy-line":
-                let number: String = c.getAttribute("number", "1")
-                switch c.getAttribute("type") {
+                let number: String = try c.getAttribute("number", "1")
+                switch try c.getAttribute("type") {
                 case "start":
                     links.start(MusicXmlNoteLinkType.WavyLine, number, note, voice, trillStep)
                     hasLine = true
@@ -2749,7 +2749,7 @@ internal final class MusicXmlImporter: ScoreImporter {
                 let tremolo: TremoloPickingEffect = TremoloPickingEffect()
                 note.beat.tremoloPicking = tremolo
                 tremolo.marks = Number.parseInt(c.innerText, 10.0)
-                if (c.getAttribute("type", "") == "unmeasured" && tremolo.marks == 0.0) || c.getAttribute("smufl", "") == "buzzRoll" {
+                if try (c.getAttribute("type", "") == "unmeasured" && tremolo.marks == 0.0) || c.getAttribute("smufl", "") == "buzzRoll" {
                     tremolo.style = TremoloPickingStyle.BuzzRoll
                 }
             default:
@@ -2761,13 +2761,13 @@ internal final class MusicXmlImporter: ScoreImporter {
         }
     }
 
-    private func _parseTied(_ element: XmlNode, _ note: Note, _ voice: String) {
+    private func _parseTied(_ element: XmlNode, _ note: Note, _ voice: String) throws {
         let pitch: String = "\((self._calculatePitchedNoteValue(note)).toTemplate())"
-        switch element.getAttribute("type") {
+        switch try element.getAttribute("type") {
         case "start":
-            self._noteLinks(note).start(MusicXmlNoteLinkType.Tie, pitch, note, voice, 0.0)
+            try self._noteLinks(note).start(MusicXmlNoteLinkType.Tie, pitch, note, voice, 0.0)
         case "stop":
-            self._noteLinks(note).stop(MusicXmlNoteLinkType.Tie, pitch, note, voice)
+            try self._noteLinks(note).stop(MusicXmlNoteLinkType.Tie, pitch, note, voice)
         case "let-ring":
             note.isLetRing = true
         default:
@@ -2820,7 +2820,7 @@ internal final class MusicXmlImporter: ScoreImporter {
         return self._musicXmlDivisionsToAlphaTabTicks(Number.parseFloat(element.innerText))
     }
 
-    private func _parseUnpitched(_ element: XmlNode, _ _track: Track) -> Note {
+    private func _parseUnpitched(_ element: XmlNode, _ _track: Track) throws -> Note {
         var step: String = ""
         var octave: Double = 0.0
         for c in element.childElements() {
@@ -2838,14 +2838,14 @@ internal final class MusicXmlImporter: ScoreImporter {
             note.octave = 0.0
             note.tone = 0.0
         } else {
-            let value: Double = octave * 12.0 + (ModelUtils.getToneForText(step)?.noteValue ?? 0.0)
+            let value: Double = try octave * 12.0 + (ModelUtils.getToneForText(step)?.noteValue ?? 0.0)
             note.octave = jsOr(value / 12.0, 0)
             note.tone = value - note.octave * 12.0
         }
         return note
     }
 
-    private func _parsePitch(_ element: XmlNode) -> Note {
+    private func _parsePitch(_ element: XmlNode) throws -> Note {
         var step: String = ""
         var semitones: Double = 0.0
         var octave: Double = 0.0
@@ -2865,7 +2865,7 @@ internal final class MusicXmlImporter: ScoreImporter {
             }
         }
         semitones = jsOr(semitones, 0)
-        let value: Double = octave * 12.0 + (ModelUtils.getToneForText(step)?.noteValue ?? 0.0) + semitones
+        let value: Double = try octave * 12.0 + (ModelUtils.getToneForText(step)?.noteValue ?? 0.0) + semitones
         let note: Note = Note()
         note.octave = jsOr(value / 12.0, 0)
         note.tone = value - note.octave * 12.0
@@ -2896,30 +2896,30 @@ internal final class MusicXmlImporter: ScoreImporter {
         return NoteAccidentalMode.Default
     }
 
-    private func _applyNoteHead(_ note: Note, _ beatDuration: Duration, _ forceFill: Bool?, _ doubleWhole: MusicFontSymbol, _ whole: MusicFontSymbol, _ half: MusicFontSymbol, _ filled: MusicFontSymbol) {
+    private func _applyNoteHead(_ note: Note, _ beatDuration: Duration, _ forceFill: Bool?, _ doubleWhole: MusicFontSymbol, _ whole: MusicFontSymbol, _ half: MusicFontSymbol, _ filled: MusicFontSymbol) throws {
         if forceFill == nil {
             switch beatDuration {
             case Duration.QuadrupleWhole, Duration.DoubleWhole:
-                note.style!.noteHead = doubleWhole
+                try jsNonNull(note.style).noteHead = doubleWhole
             case Duration.Whole:
-                note.style!.noteHead = whole
+                try jsNonNull(note.style).noteHead = whole
             case Duration.Half:
-                note.style!.noteHead = half
+                try jsNonNull(note.style).noteHead = half
             default:
-                note.style!.noteHead = filled
+                try jsNonNull(note.style).noteHead = filled
             }
         } else if forceFill! == true {
-            note.style!.noteHead = filled
+            try jsNonNull(note.style).noteHead = filled
         } else {
             switch beatDuration {
             case Duration.QuadrupleWhole, Duration.DoubleWhole:
-                note.style!.noteHead = doubleWhole
+                try jsNonNull(note.style).noteHead = doubleWhole
             case Duration.Whole:
-                note.style!.noteHead = whole
+                try jsNonNull(note.style).noteHead = whole
             case Duration.Half:
-                note.style!.noteHead = half
+                try jsNonNull(note.style).noteHead = half
             default:
-                note.style!.noteHead = half
+                try jsNonNull(note.style).noteHead = half
             }
         }
     }
@@ -3059,9 +3059,9 @@ internal final class TrackInfo {
         self.track = track
     }
 
-    public func getLyricLine(_ number: String) -> Double {
+    public func getLyricLine(_ number: String) throws -> Double {
         if self._lyricsLines.has(number) {
-            return self._lyricsLines.get(number)!
+            return try jsNonNull(self._lyricsLines.get(number))
         }
         let line: Double = self._lyricsLine
         self._lyricsLines.set(number, line)
@@ -3071,15 +3071,15 @@ internal final class TrackInfo {
 
     nonisolated(unsafe) private static var _defaultNoteArticulation: InstrumentArticulation = InstrumentArticulation.create(0.0, "Default", 0.0, 0.0, MusicFontSymbol.NoteheadBlack, MusicFontSymbol.NoteheadHalf, MusicFontSymbol.NoteheadWhole)
 
-    public func getOrCreateArticulation(_ instrumentId: String, _ note: Note) -> Double {
+    public func getOrCreateArticulation(_ instrumentId: String, _ note: Note) throws -> Double {
         let noteValue: Double = note.octave * 12.0 + note.tone
         let lookup: String = "\((instrumentId).toTemplate())_\((noteValue).toTemplate())"
         if self._instrumentIdToArticulationIndex.has(lookup) {
-            return self._instrumentIdToArticulationIndex.get(lookup)!
+            return try jsNonNull(self._instrumentIdToArticulationIndex.get(lookup))
         }
         var articulation: InstrumentArticulation
         if self.instruments.has(instrumentId) {
-            articulation = self.instruments.get(instrumentId)!
+            try articulation = jsNonNull(self.instruments.get(instrumentId))
         } else {
             articulation = TrackInfo._defaultNoteArticulation
         }
@@ -3089,7 +3089,7 @@ internal final class TrackInfo {
         if noteValue == 0.0 {
             musicXmlStaffSteps = 4.0
         } else {
-            let spelling: ResolvedSpelling = ModelUtils.resolveSpelling(bar.keySignature, noteValue, NoteAccidentalMode.Default)
+            let spelling: ResolvedSpelling = try ModelUtils.resolveSpelling(bar.keySignature, noteValue, NoteAccidentalMode.Default)
             musicXmlStaffSteps = AccidentalHelper.calculateNoteSteps(bar.clef, spelling)
         }
         let actualSteps: Double = note.beat.voice.bar.staff.standardNotationLineCount * 2.0 - 1.0
@@ -3102,8 +3102,8 @@ internal final class TrackInfo {
         return index
     }
 
-    public func isUnpitchedInstrument(_ instrumentId: String) -> Bool {
-        return self.instruments.has(instrumentId) && self.instruments.get(instrumentId)!.isUnpitched
+    public func isUnpitchedInstrument(_ instrumentId: String) throws -> Bool {
+        return try self.instruments.has(instrumentId) && jsNonNull(self.instruments.get(instrumentId)).isUnpitched
     }
 }
 

@@ -38,7 +38,7 @@ internal final class CoreSettingsSerializer {
             obj.engine = (v! as! String)
             return true
         case "loglevel":
-            try obj.logLevel = JsonHelperPartials.parseEnum(v, LogLevel.self)!
+            try obj.logLevel = jsNonNull(JsonHelperPartials.parseEnum(v, LogLevel.self))
             return true
         case "useworkers":
             obj.useWorkers = (v! as! Bool)

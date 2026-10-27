@@ -219,7 +219,7 @@ internal final class XmlParser {
         self._skipWhitespace()
         try self._expect(self._pos, (XmlParser._charGreaterThan), "'>' to end </\((name).toTemplate())>")
         self._pos += 1
-        return self._openElements.pop()!
+        return try jsNonNull(self._openElements.pop())
     }
 
     /**

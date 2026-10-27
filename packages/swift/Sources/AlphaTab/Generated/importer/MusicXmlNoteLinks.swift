@@ -77,7 +77,7 @@ internal final class MusicXmlNoteLinks {
         self._links.push(MusicXmlNoteLink(type: type, key: "", voice: "", value: value, origin: note, destination: note))
     }
 
-    public func apply() {
+    public func apply() throws {
         for `open` in self._open {
             self._unclosed(`open`)
         }
@@ -92,17 +92,17 @@ internal final class MusicXmlNoteLinks {
                     destination!.tieOrigin = origin
                 }
             case MusicXmlNoteLinkType.Slur:
-                if MusicXmlNoteLinks._isLinkable(origin, link.destination!) {
-                    MusicXmlNoteLinks._applySlur(origin, link.destination!)
+                if try MusicXmlNoteLinks._isLinkable(origin, jsNonNull(link.destination)) {
+                    try MusicXmlNoteLinks._applySlur(origin, jsNonNull(link.destination))
                 }
             case MusicXmlNoteLinkType.Slide, MusicXmlNoteLinkType.Glissando:
-                if MusicXmlNoteLinks._isLinkable(origin, link.destination!) {
-                    origin.slideTarget = link.destination!
-                    link.destination!.slideOrigin = origin
+                if try MusicXmlNoteLinks._isLinkable(origin, jsNonNull(link.destination)) {
+                    try origin.slideTarget = jsNonNull(link.destination)
+                    try jsNonNull(link.destination).slideOrigin = origin
                     origin.slideOutType = SlideOutType.Shift
                 }
             case MusicXmlNoteLinkType.WavyLine:
-                MusicXmlNoteLinks._applyLine(link)
+                try MusicXmlNoteLinks._applyLine(link)
             default:
                 break
             }
@@ -134,8 +134,8 @@ internal final class MusicXmlNoteLinks {
     /**
      * Applies a line to all notes from the origin to the destination within the voice.
      */
-    private static func _applyLine(_ link: MusicXmlNoteLink) {
-        let last: Beat = link.destination!.beat.voice.index == link.origin.beat.voice.index ? link.destination!.beat : link.origin.beat
+    private static func _applyLine(_ link: MusicXmlNoteLink) throws {
+        let last: Beat = try jsNonNull(link.destination).beat.voice.index == link.origin.beat.voice.index ? jsNonNull(link.destination).beat : link.origin.beat
         var beat: Beat? = link.origin.beat
         while beat != nil && beat!.voice.bar.index <= last.voice.bar.index {
             for note in beat!.notes {
@@ -143,7 +143,7 @@ internal final class MusicXmlNoteLinks {
                     continue
                 }
                 if link.value >= 0 {
-                    note.trillValue = note.calculateRealValue(false, false) + link.value
+                    try note.trillValue = note.calculateRealValue(false, false) + link.value
                 } else if note.vibrato == VibratoType.None {
                     note.vibrato = VibratoType.Slight
                 }

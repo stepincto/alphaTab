@@ -34,7 +34,7 @@ internal final class GpxImporter: ScoreImporter {
         for entry in fileSystem.files {
             switch entry.fileName {
             case "score.gpif":
-                xml = IOHelper.toString(entry.data!, self.settings.importer.encoding)
+                try xml = IOHelper.toString(jsNonNull(entry.data), self.settings.importer.encoding)
             case "BinaryStylesheet":
                 binaryStylesheetData = entry.data
             case "PartConfiguration":
@@ -57,7 +57,7 @@ internal final class GpxImporter: ScoreImporter {
         if TypeHelper.isTruthy(binaryStylesheetData) {
             Logger.debug(self.name, "Start Parsing BinaryStylesheet")
             let binaryStylesheet: BinaryStylesheet = try BinaryStylesheet(binaryStylesheetData!, self.settings.importer.maxDecodingBufferSize)
-            binaryStylesheet.apply(score)
+            try binaryStylesheet.apply(score)
             Logger.debug(self.name, "BinaryStylesheet parsed")
         }
         var partConfigurationParser: PartConfiguration? = nil

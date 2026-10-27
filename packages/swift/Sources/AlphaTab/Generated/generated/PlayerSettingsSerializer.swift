@@ -48,7 +48,7 @@ internal final class PlayerSettingsSerializer {
             obj.enablePlayer = (v! as! Bool)
             return true
         case "playermode":
-            try obj.playerMode = JsonHelperPartials.parseEnum(v, PlayerMode.self)!
+            try obj.playerMode = jsNonNull(JsonHelperPartials.parseEnum(v, PlayerMode.self))
             return true
         case "enablecursor":
             obj.enableCursor = (v! as! Bool)
@@ -78,7 +78,7 @@ internal final class PlayerSettingsSerializer {
             obj.scrollOffsetY = TypeHelper.unknownToNumber(v)
             return true
         case "scrollmode":
-            try obj.scrollMode = JsonHelperPartials.parseEnum(v, ScrollMode.self)!
+            try obj.scrollMode = jsNonNull(JsonHelperPartials.parseEnum(v, ScrollMode.self))
             return true
         case "scrollspeed":
             obj.scrollSpeed = TypeHelper.unknownToNumber(v)

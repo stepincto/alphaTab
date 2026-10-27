@@ -250,7 +250,7 @@ internal final class EngravingSettingsSerializer {
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
                 let i: EngravingStemInfo = EngravingStemInfo()
                 try EngravingStemInfoSerializer.fromJson(i, (v as! Map<String, Any?>))
-                try obj.stemUp.set(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)!, i)
+                try obj.stemUp.set(jsNonNull(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)), i)
             })
             return true
         case "stemdown":
@@ -258,13 +258,13 @@ internal final class EngravingSettingsSerializer {
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
                 let i: EngravingStemInfo = EngravingStemInfo()
                 try EngravingStemInfoSerializer.fromJson(i, (v as! Map<String, Any?>))
-                try obj.stemDown.set(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)!, i)
+                try obj.stemDown.set(jsNonNull(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)), i)
             })
             return true
         case "repeatoffsetx":
             obj.repeatOffsetX = Map<MusicFontSymbol, Double>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try obj.repeatOffsetX.set(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)!, TypeHelper.unknownToNumber(v))
+                try obj.repeatOffsetX.set(jsNonNull(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)), TypeHelper.unknownToNumber(v))
             })
             return true
         case "standardstemlength":
@@ -273,31 +273,31 @@ internal final class EngravingSettingsSerializer {
         case "stemflagoffsets":
             obj.stemFlagOffsets = Map<Duration, Double>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try obj.stemFlagOffsets.set(JsonHelperPartials.parseEnum(k, Duration.self)!, TypeHelper.unknownToNumber(v))
+                try obj.stemFlagOffsets.set(jsNonNull(JsonHelperPartials.parseEnum(k, Duration.self)), TypeHelper.unknownToNumber(v))
             })
             return true
         case "glyphtop":
             obj.glyphTop = Map<MusicFontSymbol, Double>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try obj.glyphTop.set(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)!, TypeHelper.unknownToNumber(v))
+                try obj.glyphTop.set(jsNonNull(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)), TypeHelper.unknownToNumber(v))
             })
             return true
         case "glyphbottom":
             obj.glyphBottom = Map<MusicFontSymbol, Double>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try obj.glyphBottom.set(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)!, TypeHelper.unknownToNumber(v))
+                try obj.glyphBottom.set(jsNonNull(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)), TypeHelper.unknownToNumber(v))
             })
             return true
         case "glyphwidths":
             obj.glyphWidths = Map<MusicFontSymbol, Double>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try obj.glyphWidths.set(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)!, TypeHelper.unknownToNumber(v))
+                try obj.glyphWidths.set(jsNonNull(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)), TypeHelper.unknownToNumber(v))
             })
             return true
         case "glyphheights":
             obj.glyphHeights = Map<MusicFontSymbol, Double>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try obj.glyphHeights.set(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)!, TypeHelper.unknownToNumber(v))
+                try obj.glyphHeights.set(jsNonNull(JsonHelperPartials.parseEnum(k, MusicFontSymbol.self)), TypeHelper.unknownToNumber(v))
             })
             return true
         case "numberedbarrendererbarsize":
@@ -456,7 +456,7 @@ internal final class EngravingSettingsSerializer {
         case "stemflagheight":
             obj.stemFlagHeight = Map<Duration, Double>()
             try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
-                try obj.stemFlagHeight.set(JsonHelperPartials.parseEnum(k, Duration.self)!, TypeHelper.unknownToNumber(v))
+                try obj.stemFlagHeight.set(jsNonNull(JsonHelperPartials.parseEnum(k, Duration.self)), TypeHelper.unknownToNumber(v))
             })
             return true
         default:

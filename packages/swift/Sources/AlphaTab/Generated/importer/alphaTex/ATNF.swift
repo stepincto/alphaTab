@@ -26,12 +26,12 @@ internal final class Atnf {
         return (AlphaTexMetaDataNode(nodeType: (AlphaTexNodeType.Meta as! AlphaTexNodeType), tag: (AlphaTexMetaDataTagNode(nodeType: (AlphaTexNodeType.Tag as! AlphaTexNodeType), tag: (AlphaTexIdentifier(nodeType: (AlphaTexNodeType.Ident as! AlphaTexNodeType), text: tag) as AlphaTexIdentifier), prefix: (AlphaTexBackSlashTokenNode(nodeType: (AlphaTexNodeType.Backslash as! AlphaTexNodeType)) as AlphaTexBackSlashTokenNode)) as AlphaTexMetaDataTagNode), propertiesBeforeArguments: false, arguments: args, properties: properties) as AlphaTexMetaDataNode)
     }
 
-    public static func identMeta(_ tag: String, _ value: String) -> AlphaTexMetaDataNode {
-        return Atnf.meta(tag, Atnf.identValue(value))
+    public static func identMeta(_ tag: String, _ value: String) throws -> AlphaTexMetaDataNode {
+        return try Atnf.meta(tag, Atnf.identValue(value))
     }
 
-    public static func numberMeta(_ tag: String, _ value: Double) -> AlphaTexMetaDataNode {
-        return Atnf.meta(tag, Atnf.numberValue(value))
+    public static func numberMeta(_ tag: String, _ value: Double) throws -> AlphaTexMetaDataNode {
+        return try Atnf.meta(tag, Atnf.numberValue(value))
     }
 
     public static func args(_ args: List<(any IAlphaTexArgumentValue)?>, _ parentheses: Bool? = nil) -> AlphaTexArgumentList? {
@@ -47,16 +47,16 @@ internal final class Atnf {
         return valueList
     }
 
-    public static func stringValue(_ text: String) -> AlphaTexArgumentList {
-        return Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.string(text)))!
+    public static func stringValue(_ text: String) throws -> AlphaTexArgumentList {
+        return try jsNonNull(Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.string(text))))
     }
 
-    public static func identValue(_ text: String) -> AlphaTexArgumentList {
-        return Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.ident(text)))!
+    public static func identValue(_ text: String) throws -> AlphaTexArgumentList {
+        return try jsNonNull(Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.ident(text))))
     }
 
-    public static func numberValue(_ value: Double) -> AlphaTexArgumentList {
-        return Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.number(value)))!
+    public static func numberValue(_ value: Double) throws -> AlphaTexArgumentList {
+        return try jsNonNull(Atnf.args(List<(any IAlphaTexArgumentValue)?>(Atnf.number(value))))
     }
 
     public static func props(_ properties: List<(String, AlphaTexArgumentList?)?>) -> AlphaTexPropertiesNode {

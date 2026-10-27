@@ -45,7 +45,7 @@ final class AlphaTexImporterTest {
     }
 
     private static func testExportRoundtrip(_ expected: Score) throws {
-        ComparisonHelpers.alphaTexExportRoundtripPrepare(expected)
+        try ComparisonHelpers.alphaTexExportRoundtripPrepare(expected)
         let exported: String = try AlphaTexExporter().exportToString(expected)
         let actual: Score = try AlphaTexImporterTest.parseTex(exported)
         try ComparisonHelpers.alphaTexExportRoundtripEqual("export-roundtrip", actual, expected)
@@ -61,50 +61,50 @@ final class AlphaTexImporterTest {
         TestGlobals.expect(score.copyright).toBe("test")
         TestGlobals.expect(score.tempo).toBe(200.0)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].playbackInfo.program).toBe(30.0)
-        TestGlobals.expect(score.tracks[0].staves[0].capo).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].tuning.join(",")).toBe("55,38,43,47,50,69")
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.program).toBe(30.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).capo).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).tuning.join(",")).toBe("55,38,43,47,50,69")
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].duration).toBe(Duration.Half)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].fret).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].string).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].duration).toBe(Duration.Quarter)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].fret).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].string).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].duration).toBe(Duration.Quarter)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].fret).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].string).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats.length).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].duration).toBe(Duration.Eighth)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].fret).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].string).toBe(4.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[1].notes.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[1].duration).toBe(Duration.Eighth)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[1].notes[0].fret).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[1].notes[0].string).toBe(4.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[2].notes.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[2].duration).toBe(Duration.Eighth)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[2].notes[0].fret).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[2].notes[0].string).toBe(4.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[3].notes.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[3].duration).toBe(Duration.Eighth)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[3].notes[0].fret).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[3].notes[0].string).toBe(4.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[4].notes.length).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[4].duration).toBe(Duration.Half)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[4].isRest).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).duration).toBe(Duration.Half)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).fret).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).string).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).duration).toBe(Duration.Quarter)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).fret).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).string).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).duration).toBe(Duration.Quarter)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).fret).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).string).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.length).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).duration).toBe(Duration.Eighth)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).fret).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).string).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).notes.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).duration).toBe(Duration.Eighth)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).fret).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).string).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(2).notes.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(2).duration).toBe(Duration.Eighth)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).fret).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).string).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(3).notes.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(3).duration).toBe(Duration.Eighth)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).fret).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).string).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(4).notes.length).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(4).duration).toBe(Duration.Half)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(4).isRest).toBe(true)
     }
 
     @Test("tuning")
     func tuning() async throws {
         let tex: String = "\\tuning E4 B3 G3 D3 A2 E2\n        .\n        0.5.1"
         let score: Score = try AlphaTexImporterTest.parseTex((tex))
-        TestGlobals.expect(score.tracks[0].staves[0].tuning.join(",")).toBe(Tuning.getDefaultTuningFor(6.0)!.tunings.join(","))
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).tuning.join(",")).toBe(jsNonNull(Tuning.getDefaultTuningFor(6.0)).tunings.join(","))
     }
 
     @Test("dead-notes1-issue79")
@@ -113,9 +113,9 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].fret).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].isDead).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).fret).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isDead).toBe(true)
     }
 
     @Test("dead-notes2-issue79")
@@ -124,19 +124,19 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].fret).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].isDead).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).fret).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isDead).toBe(true)
     }
 
     @Test("dead")
     func dead() async throws {
         let tex: String = "x.1 3.1{x}"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].fret).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].string).toBe(6.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].fret).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].string).toBe(6.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).fret).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).string).toBe(6.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).fret).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).string).toBe(6.0)
     }
 
     @Test("trill-issue79")
@@ -145,11 +145,11 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].fret).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].isTrill).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].trillSpeed).toBe(Duration.Sixteenth)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].trillFret).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).fret).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isTrill).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).trillSpeed).toBe(Duration.Sixteenth)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).trillFret).toBe(5.0)
     }
 
     @Test("tremolo-issue79")
@@ -158,11 +158,11 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].fret).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].isTrill).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].trillSpeed).toBe(Duration.Sixteenth)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].trillFret).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).fret).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isTrill).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).trillSpeed).toBe(Duration.Sixteenth)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).trillFret).toBe(5.0)
     }
 
     @Test("tremolo-picking-issue79")
@@ -171,10 +171,10 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].fret).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].isTremolo).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].tremoloPicking!.marks).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).fret).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).isTremolo).toBe(true)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).tremoloPicking).marks).toBe(2.0)
     }
 
     @Test("brushes-arpeggio")
@@ -183,47 +183,47 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].brushType).toBe(BrushType.BrushDown)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].playbackDuration).toBe(960.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].brushDuration).toBe(60.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].brushType).toBe(BrushType.BrushUp)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].playbackDuration).toBe(480.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].brushDuration).toBe(60.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].brushType).toBe(BrushType.ArpeggioDown)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].playbackDuration).toBe(1920.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].brushDuration).toBe(60.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].brushType).toBe(BrushType.ArpeggioUp)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].playbackDuration).toBe(240.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].brushDuration).toBe(60.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[4].isRest).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[4].brushType).toBe(BrushType.None)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[4].playbackDuration).toBe(240.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[4].brushDuration).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats.length).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].brushType).toBe(BrushType.BrushDown)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].brushDuration).toBe(120.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[1].brushType).toBe(BrushType.BrushUp)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[1].brushDuration).toBe(120.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[2].brushType).toBe(BrushType.ArpeggioDown)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[2].brushDuration).toBe(120.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[3].brushType).toBe(BrushType.ArpeggioUp)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[3].brushDuration).toBe(120.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[4].isRest).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[4].brushType).toBe(BrushType.None)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[4].brushDuration).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats.length).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[0].brushType).toBe(BrushType.BrushDown)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[0].brushDuration).toBe(60.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[1].brushType).toBe(BrushType.BrushUp)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[1].brushDuration).toBe(30.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[2].brushType).toBe(BrushType.ArpeggioDown)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[2].brushDuration).toBe(480.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[3].brushType).toBe(BrushType.ArpeggioUp)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[3].brushDuration).toBe(60.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[4].isRest).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[4].brushType).toBe(BrushType.None)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[4].brushDuration).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).brushType).toBe(BrushType.BrushDown)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).playbackDuration).toBe(960.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).brushDuration).toBe(60.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).brushType).toBe(BrushType.BrushUp)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).playbackDuration).toBe(480.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).brushDuration).toBe(60.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).brushType).toBe(BrushType.ArpeggioDown)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).playbackDuration).toBe(1920.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).brushDuration).toBe(60.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).brushType).toBe(BrushType.ArpeggioUp)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).playbackDuration).toBe(240.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).brushDuration).toBe(60.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(4).isRest).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(4).brushType).toBe(BrushType.None)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(4).playbackDuration).toBe(240.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(4).brushDuration).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.length).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).brushType).toBe(BrushType.BrushDown)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).brushDuration).toBe(120.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).brushType).toBe(BrushType.BrushUp)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).brushDuration).toBe(120.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(2).brushType).toBe(BrushType.ArpeggioDown)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(2).brushDuration).toBe(120.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(3).brushType).toBe(BrushType.ArpeggioUp)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(3).brushDuration).toBe(120.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(4).isRest).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(4).brushType).toBe(BrushType.None)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(4).brushDuration).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.length).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(0).brushType).toBe(BrushType.BrushDown)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(0).brushDuration).toBe(60.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(1).brushType).toBe(BrushType.BrushUp)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(1).brushDuration).toBe(30.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(2).brushType).toBe(BrushType.ArpeggioDown)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(2).brushDuration).toBe(480.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(3).brushType).toBe(BrushType.ArpeggioUp)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(3).brushDuration).toBe(60.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(4).isRest).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(4).brushType).toBe(BrushType.None)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(4).brushDuration).toBe(0.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -233,17 +233,17 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].harmonicType).toBe(HarmonicType.Natural)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].harmonicType).toBe(HarmonicType.Artificial)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].harmonicType).toBe(HarmonicType.Tap)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].harmonicType).toBe(HarmonicType.Pinch)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[4].notes[0].harmonicType).toBe(HarmonicType.Semi)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).harmonicType).toBe(HarmonicType.Natural)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).harmonicType).toBe(HarmonicType.Artificial)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).harmonicType).toBe(HarmonicType.Tap)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).harmonicType).toBe(HarmonicType.Pinch)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(4).notes.jsElement(0).harmonicType).toBe(HarmonicType.Semi)
     }
 
     @Test("harmonics-pitched")
     func harmonicsPitched() async throws {
-        let notes: List<Note> = try AlphaTexImporterTest.parseTex("C4{ah 12} C4{ah 7} C4{nh}").tracks[0].staves[0].bars[0].voices[0].beats.map({ (b: Beat) -> Note in
+        let notes: List<Note> = try AlphaTexImporterTest.parseTex("C4{ah 12} C4{ah 7} C4{nh}").tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.map({ (b: Beat) -> Note in
             return b.notes[0]
         })
         TestGlobals.expect(notes.map({ (n: Note) -> Double in
@@ -260,9 +260,9 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].graceType).toBe(GraceType.BeforeBeat)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].graceType).toBe(GraceType.OnBeat)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).graceType).toBe(GraceType.BeforeBeat)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).graceType).toBe(GraceType.OnBeat)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -272,12 +272,12 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].leftHandFinger).toBe(Fingers.Thumb)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].leftHandFinger).toBe(Fingers.IndexFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].leftHandFinger).toBe(Fingers.MiddleFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].leftHandFinger).toBe(Fingers.AnnularFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[4].notes[0].leftHandFinger).toBe(Fingers.LittleFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).leftHandFinger).toBe(Fingers.Thumb)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).leftHandFinger).toBe(Fingers.IndexFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).leftHandFinger).toBe(Fingers.MiddleFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).leftHandFinger).toBe(Fingers.AnnularFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(4).notes.jsElement(0).leftHandFinger).toBe(Fingers.LittleFinger)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -287,12 +287,12 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].rightHandFinger).toBe(Fingers.Thumb)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].rightHandFinger).toBe(Fingers.IndexFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].rightHandFinger).toBe(Fingers.MiddleFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].rightHandFinger).toBe(Fingers.AnnularFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[4].notes[0].rightHandFinger).toBe(Fingers.LittleFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).rightHandFinger).toBe(Fingers.Thumb)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).rightHandFinger).toBe(Fingers.IndexFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).rightHandFinger).toBe(Fingers.MiddleFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).rightHandFinger).toBe(Fingers.AnnularFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(4).notes.jsElement(0).rightHandFinger).toBe(Fingers.LittleFinger)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -302,13 +302,13 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes.length).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].leftHandFinger).toBe(Fingers.Thumb)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[1].leftHandFinger).toBe(Fingers.IndexFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[2].leftHandFinger).toBe(Fingers.MiddleFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[3].leftHandFinger).toBe(Fingers.AnnularFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[4].leftHandFinger).toBe(Fingers.LittleFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.length).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).leftHandFinger).toBe(Fingers.Thumb)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(1).leftHandFinger).toBe(Fingers.IndexFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(2).leftHandFinger).toBe(Fingers.MiddleFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(3).leftHandFinger).toBe(Fingers.AnnularFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(4).leftHandFinger).toBe(Fingers.LittleFinger)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -318,13 +318,13 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes.length).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].rightHandFinger).toBe(Fingers.Thumb)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[1].rightHandFinger).toBe(Fingers.IndexFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[2].rightHandFinger).toBe(Fingers.MiddleFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[3].rightHandFinger).toBe(Fingers.AnnularFinger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[4].rightHandFinger).toBe(Fingers.LittleFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.length).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).rightHandFinger).toBe(Fingers.Thumb)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(1).rightHandFinger).toBe(Fingers.IndexFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(2).rightHandFinger).toBe(Fingers.MiddleFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(3).rightHandFinger).toBe(Fingers.AnnularFinger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(4).rightHandFinger).toBe(Fingers.LittleFinger)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -334,25 +334,25 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].displayTranspositionPitch).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(4.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].isPiano).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].realValue).toBe(60.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].isPiano).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].realValue).toBe(61.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].isPiano).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].realValue).toBe(62.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].isPiano).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].realValue).toBe(63.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats.length).toBe(4.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].isPiano).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].realValue).toBe(60.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].isPiano).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[1].notes[0].realValue).toBe(61.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].isPiano).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[2].notes[0].realValue).toBe(62.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].isPiano).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[3].notes[0].realValue).toBe(63.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).displayTranspositionPitch).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isPiano).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).realValue).toBe(60.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isPiano).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).realValue).toBe(61.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isPiano).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).realValue).toBe(62.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isPiano).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).realValue).toBe(63.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.length).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isPiano).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).realValue).toBe(60.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isPiano).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).realValue).toBe(61.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isPiano).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).realValue).toBe(62.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isPiano).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).realValue).toBe(63.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -362,13 +362,13 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].showTablature).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[1].showTablature).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[1].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[1].bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showTablature).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).showTablature).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).bars.length).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -378,13 +378,13 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].showTablature).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[1].showTablature).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[1].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[1].bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showTablature).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).showTablature).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).bars.length).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -394,10 +394,10 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].showTablature).toBe(false)
-        TestGlobals.expect(score.tracks[0].staves[0].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showTablature).toBe(false)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.length).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -407,11 +407,11 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].showSlash).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].showTablature).toBe(false)
-        TestGlobals.expect(score.tracks[0].staves[0].showStandardNotation).toBe(false)
-        TestGlobals.expect(score.tracks[0].staves[0].bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showSlash).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showTablature).toBe(false)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showStandardNotation).toBe(false)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.length).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -421,11 +421,11 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].showSlash).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].showTablature).toBe(false)
-        TestGlobals.expect(score.tracks[0].staves[0].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showSlash).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showTablature).toBe(false)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.length).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -435,18 +435,18 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex((tex))
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves.length).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].showTablature).toBe(false)
-        TestGlobals.expect(score.tracks[0].staves[0].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[1].showTablature).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[1].showStandardNotation).toBe(false)
-        TestGlobals.expect(score.tracks[0].staves[1].bars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[1].capo).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[2].showTablature).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[2].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[2].bars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[2].tuning.length).toBe(7.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.length).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showTablature).toBe(false)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).showTablature).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).showStandardNotation).toBe(false)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).capo).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(2).showTablature).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(2).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(2).bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(2).tuning.length).toBe(7.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -456,20 +456,20 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(2.0)
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].name).toBe("First")
-        TestGlobals.expect(score.tracks[0].playbackInfo.primaryChannel).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].playbackInfo.secondaryChannel).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].showTablature).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[1].staves.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[1].name).toBe("Second")
-        TestGlobals.expect(score.tracks[1].playbackInfo.primaryChannel).toBe(2.0)
-        TestGlobals.expect(score.tracks[1].playbackInfo.secondaryChannel).toBe(3.0)
-        TestGlobals.expect(score.tracks[1].staves[0].showTablature).toBe(true)
-        TestGlobals.expect(score.tracks[1].staves[0].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[1].staves[0].bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).name).toBe("First")
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.primaryChannel).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.secondaryChannel).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showTablature).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).name).toBe("Second")
+        try TestGlobals.expect(score.tracks.jsElement(1).playbackInfo.primaryChannel).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).playbackInfo.secondaryChannel).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.jsElement(0).showTablature).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.jsElement(0).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.jsElement(0).bars.length).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -479,30 +479,30 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(3.0)
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].name).toBe("")
-        TestGlobals.expect(score.tracks[0].shortName).toBe("")
-        TestGlobals.expect(score.tracks[0].playbackInfo.primaryChannel).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].playbackInfo.secondaryChannel).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].showTablature).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[1].staves.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[1].name).toBe("Only Long Name")
-        TestGlobals.expect(score.tracks[1].shortName).toBe("Only Long ")
-        TestGlobals.expect(score.tracks[1].playbackInfo.primaryChannel).toBe(2.0)
-        TestGlobals.expect(score.tracks[1].playbackInfo.secondaryChannel).toBe(3.0)
-        TestGlobals.expect(score.tracks[1].staves[0].showTablature).toBe(true)
-        TestGlobals.expect(score.tracks[1].staves[0].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[1].staves[0].bars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[2].staves.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[2].name).toBe("Very Long Name")
-        TestGlobals.expect(score.tracks[2].shortName).toBe("shrt")
-        TestGlobals.expect(score.tracks[2].playbackInfo.primaryChannel).toBe(4.0)
-        TestGlobals.expect(score.tracks[2].playbackInfo.secondaryChannel).toBe(5.0)
-        TestGlobals.expect(score.tracks[2].staves[0].showTablature).toBe(true)
-        TestGlobals.expect(score.tracks[2].staves[0].showStandardNotation).toBe(true)
-        TestGlobals.expect(score.tracks[2].staves[0].bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).name).toBe("")
+        try TestGlobals.expect(score.tracks.jsElement(0).shortName).toBe("")
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.primaryChannel).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.secondaryChannel).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showTablature).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).name).toBe("Only Long Name")
+        try TestGlobals.expect(score.tracks.jsElement(1).shortName).toBe("Only Long ")
+        try TestGlobals.expect(score.tracks.jsElement(1).playbackInfo.primaryChannel).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).playbackInfo.secondaryChannel).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.jsElement(0).showTablature).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.jsElement(0).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.jsElement(0).bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(2).staves.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(2).name).toBe("Very Long Name")
+        try TestGlobals.expect(score.tracks.jsElement(2).shortName).toBe("shrt")
+        try TestGlobals.expect(score.tracks.jsElement(2).playbackInfo.primaryChannel).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(2).playbackInfo.secondaryChannel).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(2).staves.jsElement(0).showTablature).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(2).staves.jsElement(0).showStandardNotation).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(2).staves.jsElement(0).bars.length).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -525,7 +525,7 @@ final class AlphaTexImporterTest {
                 TestGlobals.expect(staff1.showStandardNotation).toBe(true)
                 TestGlobals.expect(staff1.tuning.length).toBe(0.0)
                 TestGlobals.expect(staff1.bars.length).toBe(1.0)
-                TestGlobals.expect(staff1.bars[0].clef).toBe(Clef.G2)
+                try TestGlobals.expect(staff1.bars.jsElement(0).clef).toBe(Clef.G2)
             }
             do {
                 let staff2: Staff = track1.staves[1]
@@ -533,7 +533,7 @@ final class AlphaTexImporterTest {
                 TestGlobals.expect(staff2.showStandardNotation).toBe(true)
                 TestGlobals.expect(staff2.tuning.length).toBe(0.0)
                 TestGlobals.expect(staff2.bars.length).toBe(1.0)
-                TestGlobals.expect(staff2.bars[0].clef).toBe(Clef.F4)
+                try TestGlobals.expect(staff2.bars.jsElement(0).clef).toBe(Clef.F4)
             }
         }
         do {
@@ -549,7 +549,7 @@ final class AlphaTexImporterTest {
                 TestGlobals.expect(staff1.showStandardNotation).toBe(false)
                 TestGlobals.expect(staff1.tuning.length).toBe(6.0)
                 TestGlobals.expect(staff1.bars.length).toBe(1.0)
-                TestGlobals.expect(staff1.bars[0].clef).toBe(Clef.G2)
+                try TestGlobals.expect(staff1.bars.jsElement(0).clef).toBe(Clef.G2)
             }
         }
         do {
@@ -565,7 +565,7 @@ final class AlphaTexImporterTest {
                 TestGlobals.expect(staff1.showStandardNotation).toBe(true)
                 TestGlobals.expect(staff1.tuning.length).toBe(6.0)
                 TestGlobals.expect(staff1.bars.length).toBe(1.0)
-                TestGlobals.expect(staff1.bars[0].clef).toBe(Clef.G2)
+                try TestGlobals.expect(staff1.bars.jsElement(0).clef).toBe(Clef.G2)
             }
         }
         try AlphaTexImporterTest.testExportRoundtrip(score)
@@ -590,10 +590,10 @@ final class AlphaTexImporterTest {
                 TestGlobals.expect(staff1.showStandardNotation).toBe(true)
                 TestGlobals.expect(staff1.tuning.length).toBe(0.0)
                 TestGlobals.expect(staff1.bars.length).toBe(3.0)
-                TestGlobals.expect(staff1.bars[0].isEmpty).toBe(false)
-                TestGlobals.expect(staff1.bars[1].isEmpty).toBe(true)
-                TestGlobals.expect(staff1.bars[2].isEmpty).toBe(true)
-                TestGlobals.expect(staff1.bars[0].clef).toBe(Clef.G2)
+                try TestGlobals.expect(staff1.bars.jsElement(0).isEmpty).toBe(false)
+                try TestGlobals.expect(staff1.bars.jsElement(1).isEmpty).toBe(true)
+                try TestGlobals.expect(staff1.bars.jsElement(2).isEmpty).toBe(true)
+                try TestGlobals.expect(staff1.bars.jsElement(0).clef).toBe(Clef.G2)
             }
             do {
                 let staff2: Staff = track1.staves[1]
@@ -601,10 +601,10 @@ final class AlphaTexImporterTest {
                 TestGlobals.expect(staff2.showStandardNotation).toBe(true)
                 TestGlobals.expect(staff2.tuning.length).toBe(0.0)
                 TestGlobals.expect(staff2.bars.length).toBe(3.0)
-                TestGlobals.expect(staff2.bars[0].isEmpty).toBe(false)
-                TestGlobals.expect(staff2.bars[1].isEmpty).toBe(false)
-                TestGlobals.expect(staff2.bars[2].isEmpty).toBe(false)
-                TestGlobals.expect(staff2.bars[0].clef).toBe(Clef.F4)
+                try TestGlobals.expect(staff2.bars.jsElement(0).isEmpty).toBe(false)
+                try TestGlobals.expect(staff2.bars.jsElement(1).isEmpty).toBe(false)
+                try TestGlobals.expect(staff2.bars.jsElement(2).isEmpty).toBe(false)
+                try TestGlobals.expect(staff2.bars.jsElement(0).clef).toBe(Clef.F4)
             }
         }
         do {
@@ -620,10 +620,10 @@ final class AlphaTexImporterTest {
                 TestGlobals.expect(staff1.showStandardNotation).toBe(false)
                 TestGlobals.expect(staff1.tuning.length).toBe(6.0)
                 TestGlobals.expect(staff1.bars.length).toBe(3.0)
-                TestGlobals.expect(staff1.bars[0].isEmpty).toBe(false)
-                TestGlobals.expect(staff1.bars[1].isEmpty).toBe(false)
-                TestGlobals.expect(staff1.bars[2].isEmpty).toBe(true)
-                TestGlobals.expect(staff1.bars[0].clef).toBe(Clef.G2)
+                try TestGlobals.expect(staff1.bars.jsElement(0).isEmpty).toBe(false)
+                try TestGlobals.expect(staff1.bars.jsElement(1).isEmpty).toBe(false)
+                try TestGlobals.expect(staff1.bars.jsElement(2).isEmpty).toBe(true)
+                try TestGlobals.expect(staff1.bars.jsElement(0).clef).toBe(Clef.G2)
             }
         }
         do {
@@ -639,10 +639,10 @@ final class AlphaTexImporterTest {
                 TestGlobals.expect(staff1.showStandardNotation).toBe(true)
                 TestGlobals.expect(staff1.tuning.length).toBe(6.0)
                 TestGlobals.expect(staff1.bars.length).toBe(3.0)
-                TestGlobals.expect(staff1.bars[0].isEmpty).toBe(false)
-                TestGlobals.expect(staff1.bars[1].isEmpty).toBe(true)
-                TestGlobals.expect(staff1.bars[2].isEmpty).toBe(true)
-                TestGlobals.expect(staff1.bars[0].clef).toBe(Clef.G2)
+                try TestGlobals.expect(staff1.bars.jsElement(0).isEmpty).toBe(false)
+                try TestGlobals.expect(staff1.bars.jsElement(1).isEmpty).toBe(true)
+                try TestGlobals.expect(staff1.bars.jsElement(2).isEmpty).toBe(true)
+                try TestGlobals.expect(staff1.bars.jsElement(0).clef).toBe(Clef.G2)
             }
         }
         try AlphaTexImporterTest.testExportRoundtrip(score)
@@ -654,16 +654,16 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(4.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].slideOutType).toBe(SlideOutType.Legato)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].slideTarget!.id).toBe(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].id)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].slideOutType).toBe(SlideOutType.Shift)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].slideTarget!.id).toBe(score.tracks[0].staves[0].bars[1].voices[0].beats[1].notes[0].id)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[0].notes[0].slideInType).toBe(SlideInType.IntoFromBelow)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[1].notes[0].slideInType).toBe(SlideInType.IntoFromAbove)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[2].notes[0].slideOutType).toBe(SlideOutType.OutUp)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[3].notes[0].slideOutType).toBe(SlideOutType.OutDown)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[3].voices[0].beats[0].notes[0].slideOutType).toBe(SlideOutType.PickSlideDown)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[3].voices[0].beats[1].notes[0].slideOutType).toBe(SlideOutType.PickSlideUp)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).slideOutType).toBe(SlideOutType.Legato)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).slideTarget).id).toBe(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).id)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).slideOutType).toBe(SlideOutType.Shift)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).slideTarget).id).toBe(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).id)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).slideInType).toBe(SlideInType.IntoFromBelow)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).slideInType).toBe(SlideInType.IntoFromAbove)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).slideOutType).toBe(SlideOutType.OutUp)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).slideOutType).toBe(SlideOutType.OutDown)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(3).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).slideOutType).toBe(SlideOutType.PickSlideDown)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(3).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).slideOutType).toBe(SlideOutType.PickSlideUp)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -673,16 +673,16 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         TestGlobals.expect(score.tracks.length).toBe(1.0)
         TestGlobals.expect(score.masterBars.length).toBe(4.0)
-        TestGlobals.expect(score.masterBars[0].isSectionStart).toBe(true)
-        TestGlobals.expect(score.masterBars[0].section!.text).toBe("Intro")
-        TestGlobals.expect(score.masterBars[0].section!.marker).toBe("")
-        TestGlobals.expect(score.masterBars[1].isSectionStart).toBe(false)
-        TestGlobals.expect(score.masterBars[2].isSectionStart).toBe(true)
-        TestGlobals.expect(score.masterBars[2].section!.text).toBe("Chorus 01")
-        TestGlobals.expect(score.masterBars[2].section!.marker).toBe("")
-        TestGlobals.expect(score.masterBars[3].isSectionStart).toBe(true)
-        TestGlobals.expect(score.masterBars[3].section!.text).toBe("Solo")
-        TestGlobals.expect(score.masterBars[3].section!.marker).toBe("S")
+        try TestGlobals.expect(score.masterBars.jsElement(0).isSectionStart).toBe(true)
+        try TestGlobals.expect(jsNonNull(score.masterBars.jsElement(0).section).text).toBe("Intro")
+        try TestGlobals.expect(jsNonNull(score.masterBars.jsElement(0).section).marker).toBe("")
+        try TestGlobals.expect(score.masterBars.jsElement(1).isSectionStart).toBe(false)
+        try TestGlobals.expect(score.masterBars.jsElement(2).isSectionStart).toBe(true)
+        try TestGlobals.expect(jsNonNull(score.masterBars.jsElement(2).section).text).toBe("Chorus 01")
+        try TestGlobals.expect(jsNonNull(score.masterBars.jsElement(2).section).marker).toBe("")
+        try TestGlobals.expect(score.masterBars.jsElement(3).isSectionStart).toBe(true)
+        try TestGlobals.expect(jsNonNull(score.masterBars.jsElement(3).section).text).toBe("Solo")
+        try TestGlobals.expect(jsNonNull(score.masterBars.jsElement(3).section).marker).toBe("S")
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -690,13 +690,13 @@ final class AlphaTexImporterTest {
     func keySignature() async throws {
         let tex: String = ":1 3.3 | \\ks C 3.3 | \\ks Cmajor 3.3 | \\ks Aminor 3.3 |\n        \\ks F 3.3 | \\ks bbmajor 3.3 | \\ks CMINOR 3.3 | \\ks aB 3.3 | \\ks db 3.3 | \\ks Ebminor 3.3 |\n        \\ks g 3.3 | \\ks Dmajor 3.3 | \\ks f#minor 3.3 | \\ks E 3.3 | \\ks Bmajor 3.3 | \\ks d#minor 3.3"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        let bars: List<Bar> = score.tracks[0].staves[0].bars
+        let bars: List<Bar> = try score.tracks.jsElement(0).staves.jsElement(0).bars
         let expected: List<(KeySignature, KeySignatureType)> = List<(KeySignature, KeySignatureType)>((KeySignature.C, KeySignatureType.Major), (KeySignature.C, KeySignatureType.Major), (KeySignature.C, KeySignatureType.Major), (KeySignature.C, KeySignatureType.Minor), (KeySignature.F, KeySignatureType.Major), (KeySignature.Bb, KeySignatureType.Major), (KeySignature.Eb, KeySignatureType.Minor), (KeySignature.Ab, KeySignatureType.Major), (KeySignature.Db, KeySignatureType.Major), (KeySignature.Gb, KeySignatureType.Minor), (KeySignature.G, KeySignatureType.Major), (KeySignature.D, KeySignatureType.Major), (KeySignature.A, KeySignatureType.Minor), (KeySignature.E, KeySignatureType.Major), (KeySignature.B, KeySignatureType.Major), (KeySignature.FSharp, KeySignatureType.Minor))
         do {
             var i: Double = 0.0
             while i < expected.length {
-                TestGlobals.expect(bars[(i).toInt()].keySignature).toBe(expected[(i).toInt()].0)
-                TestGlobals.expect(bars[(i).toInt()].keySignatureType).toBe(expected[(i).toInt()].1)
+                try TestGlobals.expect(bars.jsElement((i).toInt()).keySignature).toBe(expected[(i).toInt()].0)
+                try TestGlobals.expect(bars.jsElement((i).toInt()).keySignatureType).toBe(expected[(i).toInt()].1)
                 i += 1
             }
         }
@@ -707,23 +707,23 @@ final class AlphaTexImporterTest {
     func keySignatureMultiStaff() async throws {
         let tex: String = "\n        \\track \"T1\"\n            \\staff\n                :1 3.3 | \\ks C 3.3 | \\ks Cmajor 3.3 | \\ks Aminor 3.3 |\n                \\ks F 3.3 | \\ks bbmajor 3.3 | \\ks CMINOR 3.3 | \\ks aB 3.3 | \\ks db 3.3 | \\ks Ebminor 3.3 |\n                \\ks g 3.3 | \\ks Dmajor 3.3 | \\ks f#minor 3.3 | \\ks E 3.3 | \\ks Bmajor 3.3 | \\ks d#minor 3.3\n            \\staff\n                \\ks d#minor :1 3.3 | \\ks Bmajor 3.3 | \\ks E 3.3 |\n                \\ks f#minor 3.3 | \\ks Dmajor 3.3 | \\ks g 3.3 | \\ks Ebminor 3.3 | \\ks db 3.3 | \\ks aB 3.3 |\n                \\ks CMINOR 3.3 | \\ks bbmajor 3.3 | \\ks F 3.3 | \\ks Aminor 3.3 | \\ks Cmajor 3.3 | \\ks C 3.3 | \\ks C 3.3\n        "
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        var bars: List<Bar> = score.tracks[0].staves[0].bars
+        var bars: List<Bar> = try score.tracks.jsElement(0).staves.jsElement(0).bars
         let expected: List<(KeySignature, KeySignatureType)> = List<(KeySignature, KeySignatureType)>((KeySignature.C, KeySignatureType.Major), (KeySignature.C, KeySignatureType.Major), (KeySignature.C, KeySignatureType.Major), (KeySignature.C, KeySignatureType.Minor), (KeySignature.F, KeySignatureType.Major), (KeySignature.Bb, KeySignatureType.Major), (KeySignature.Eb, KeySignatureType.Minor), (KeySignature.Ab, KeySignatureType.Major), (KeySignature.Db, KeySignatureType.Major), (KeySignature.Gb, KeySignatureType.Minor), (KeySignature.G, KeySignatureType.Major), (KeySignature.D, KeySignatureType.Major), (KeySignature.A, KeySignatureType.Minor), (KeySignature.E, KeySignatureType.Major), (KeySignature.B, KeySignatureType.Major), (KeySignature.FSharp, KeySignatureType.Minor))
         do {
             var i: Double = 0.0
             while i < expected.length {
-                TestGlobals.expect(bars[(i).toInt()].keySignature).toBe(expected[(i).toInt()].0)
-                TestGlobals.expect(bars[(i).toInt()].keySignatureType).toBe(expected[(i).toInt()].1)
+                try TestGlobals.expect(bars.jsElement((i).toInt()).keySignature).toBe(expected[(i).toInt()].0)
+                try TestGlobals.expect(bars.jsElement((i).toInt()).keySignatureType).toBe(expected[(i).toInt()].1)
                 i += 1
             }
         }
-        bars = score.tracks[0].staves[1].bars
+        try bars = score.tracks.jsElement(0).staves.jsElement(1).bars
         expected.reverse()
         do {
             var i: Double = 0.0
             while i < expected.length {
-                TestGlobals.expect(bars[(i).toInt()].keySignature, "at \((i).toTemplate())").toBe(expected[(i).toInt()].0)
-                TestGlobals.expect(bars[(i).toInt()].keySignatureType, "at \((i).toTemplate())").toBe(expected[(i).toInt()].1)
+                try TestGlobals.expect(bars.jsElement((i).toInt()).keySignature, "at \((i).toTemplate())").toBe(expected[(i).toInt()].0)
+                try TestGlobals.expect(bars.jsElement((i).toInt()).keySignatureType, "at \((i).toTemplate())").toBe(expected[(i).toInt()].1)
                 i += 1
             }
         }
@@ -734,9 +734,9 @@ final class AlphaTexImporterTest {
     func popSlapTap() async throws {
         let tex: String = "3.3{p} 3.3{s} 3.3{tt} r"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].pop).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].slap).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].tap).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).pop).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).slap).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).tap).toBe(true)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -744,13 +744,13 @@ final class AlphaTexImporterTest {
     func tripletFeelNumeric() async throws {
         let tex: String = "\\tf 0 | \\tf 1 | \\tf 2 | \\tf 3 | \\tf 4 | \\tf 5 | \\tf 6"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.masterBars[0].tripletFeel).toBe(TripletFeel.NoTripletFeel)
-        TestGlobals.expect(score.masterBars[1].tripletFeel).toBe(TripletFeel.Triplet16th)
-        TestGlobals.expect(score.masterBars[2].tripletFeel).toBe(TripletFeel.Triplet8th)
-        TestGlobals.expect(score.masterBars[3].tripletFeel).toBe(TripletFeel.Dotted16th)
-        TestGlobals.expect(score.masterBars[4].tripletFeel).toBe(TripletFeel.Dotted8th)
-        TestGlobals.expect(score.masterBars[5].tripletFeel).toBe(TripletFeel.Scottish16th)
-        TestGlobals.expect(score.masterBars[6].tripletFeel).toBe(TripletFeel.Scottish8th)
+        try TestGlobals.expect(score.masterBars.jsElement(0).tripletFeel).toBe(TripletFeel.NoTripletFeel)
+        try TestGlobals.expect(score.masterBars.jsElement(1).tripletFeel).toBe(TripletFeel.Triplet16th)
+        try TestGlobals.expect(score.masterBars.jsElement(2).tripletFeel).toBe(TripletFeel.Triplet8th)
+        try TestGlobals.expect(score.masterBars.jsElement(3).tripletFeel).toBe(TripletFeel.Dotted16th)
+        try TestGlobals.expect(score.masterBars.jsElement(4).tripletFeel).toBe(TripletFeel.Dotted8th)
+        try TestGlobals.expect(score.masterBars.jsElement(5).tripletFeel).toBe(TripletFeel.Scottish16th)
+        try TestGlobals.expect(score.masterBars.jsElement(6).tripletFeel).toBe(TripletFeel.Scottish8th)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -758,13 +758,13 @@ final class AlphaTexImporterTest {
     func tripletFeelLongNames() async throws {
         let tex: String = "\\tf none | \\tf triplet-16th | \\tf triplet-8th | \\tf dotted-16th | \\tf dotted-8th | \\tf scottish-16th | \\tf scottish-8th"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.masterBars[0].tripletFeel).toBe(TripletFeel.NoTripletFeel)
-        TestGlobals.expect(score.masterBars[1].tripletFeel).toBe(TripletFeel.Triplet16th)
-        TestGlobals.expect(score.masterBars[2].tripletFeel).toBe(TripletFeel.Triplet8th)
-        TestGlobals.expect(score.masterBars[3].tripletFeel).toBe(TripletFeel.Dotted16th)
-        TestGlobals.expect(score.masterBars[4].tripletFeel).toBe(TripletFeel.Dotted8th)
-        TestGlobals.expect(score.masterBars[5].tripletFeel).toBe(TripletFeel.Scottish16th)
-        TestGlobals.expect(score.masterBars[6].tripletFeel).toBe(TripletFeel.Scottish8th)
+        try TestGlobals.expect(score.masterBars.jsElement(0).tripletFeel).toBe(TripletFeel.NoTripletFeel)
+        try TestGlobals.expect(score.masterBars.jsElement(1).tripletFeel).toBe(TripletFeel.Triplet16th)
+        try TestGlobals.expect(score.masterBars.jsElement(2).tripletFeel).toBe(TripletFeel.Triplet8th)
+        try TestGlobals.expect(score.masterBars.jsElement(3).tripletFeel).toBe(TripletFeel.Dotted16th)
+        try TestGlobals.expect(score.masterBars.jsElement(4).tripletFeel).toBe(TripletFeel.Dotted8th)
+        try TestGlobals.expect(score.masterBars.jsElement(5).tripletFeel).toBe(TripletFeel.Scottish16th)
+        try TestGlobals.expect(score.masterBars.jsElement(6).tripletFeel).toBe(TripletFeel.Scottish8th)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -772,13 +772,13 @@ final class AlphaTexImporterTest {
     func tripletFeelShortNames() async throws {
         let tex: String = "\\tf no | \\tf t16 | \\tf t8 | \\tf d16 | \\tf d8 | \\tf s16 | \\tf s8"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.masterBars[0].tripletFeel).toBe(TripletFeel.NoTripletFeel)
-        TestGlobals.expect(score.masterBars[1].tripletFeel).toBe(TripletFeel.Triplet16th)
-        TestGlobals.expect(score.masterBars[2].tripletFeel).toBe(TripletFeel.Triplet8th)
-        TestGlobals.expect(score.masterBars[3].tripletFeel).toBe(TripletFeel.Dotted16th)
-        TestGlobals.expect(score.masterBars[4].tripletFeel).toBe(TripletFeel.Dotted8th)
-        TestGlobals.expect(score.masterBars[5].tripletFeel).toBe(TripletFeel.Scottish16th)
-        TestGlobals.expect(score.masterBars[6].tripletFeel).toBe(TripletFeel.Scottish8th)
+        try TestGlobals.expect(score.masterBars.jsElement(0).tripletFeel).toBe(TripletFeel.NoTripletFeel)
+        try TestGlobals.expect(score.masterBars.jsElement(1).tripletFeel).toBe(TripletFeel.Triplet16th)
+        try TestGlobals.expect(score.masterBars.jsElement(2).tripletFeel).toBe(TripletFeel.Triplet8th)
+        try TestGlobals.expect(score.masterBars.jsElement(3).tripletFeel).toBe(TripletFeel.Dotted16th)
+        try TestGlobals.expect(score.masterBars.jsElement(4).tripletFeel).toBe(TripletFeel.Dotted8th)
+        try TestGlobals.expect(score.masterBars.jsElement(5).tripletFeel).toBe(TripletFeel.Scottish16th)
+        try TestGlobals.expect(score.masterBars.jsElement(6).tripletFeel).toBe(TripletFeel.Scottish8th)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -786,15 +786,15 @@ final class AlphaTexImporterTest {
     func tripletFeelMultiBar() async throws {
         let tex: String = "\\tf t16 C4 | C4  | C4  | \\tf t8 C4 | C4 | C4 | \\tf no | C4  | C4 "
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.masterBars[0].tripletFeel).toBe(TripletFeel.Triplet16th)
-        TestGlobals.expect(score.masterBars[1].tripletFeel).toBe(TripletFeel.Triplet16th)
-        TestGlobals.expect(score.masterBars[2].tripletFeel).toBe(TripletFeel.Triplet16th)
-        TestGlobals.expect(score.masterBars[3].tripletFeel).toBe(TripletFeel.Triplet8th)
-        TestGlobals.expect(score.masterBars[4].tripletFeel).toBe(TripletFeel.Triplet8th)
-        TestGlobals.expect(score.masterBars[5].tripletFeel).toBe(TripletFeel.Triplet8th)
-        TestGlobals.expect(score.masterBars[6].tripletFeel).toBe(TripletFeel.NoTripletFeel)
-        TestGlobals.expect(score.masterBars[7].tripletFeel).toBe(TripletFeel.NoTripletFeel)
-        TestGlobals.expect(score.masterBars[8].tripletFeel).toBe(TripletFeel.NoTripletFeel)
+        try TestGlobals.expect(score.masterBars.jsElement(0).tripletFeel).toBe(TripletFeel.Triplet16th)
+        try TestGlobals.expect(score.masterBars.jsElement(1).tripletFeel).toBe(TripletFeel.Triplet16th)
+        try TestGlobals.expect(score.masterBars.jsElement(2).tripletFeel).toBe(TripletFeel.Triplet16th)
+        try TestGlobals.expect(score.masterBars.jsElement(3).tripletFeel).toBe(TripletFeel.Triplet8th)
+        try TestGlobals.expect(score.masterBars.jsElement(4).tripletFeel).toBe(TripletFeel.Triplet8th)
+        try TestGlobals.expect(score.masterBars.jsElement(5).tripletFeel).toBe(TripletFeel.Triplet8th)
+        try TestGlobals.expect(score.masterBars.jsElement(6).tripletFeel).toBe(TripletFeel.NoTripletFeel)
+        try TestGlobals.expect(score.masterBars.jsElement(7).tripletFeel).toBe(TripletFeel.NoTripletFeel)
+        try TestGlobals.expect(score.masterBars.jsElement(8).tripletFeel).toBe(TripletFeel.NoTripletFeel)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -805,7 +805,7 @@ final class AlphaTexImporterTest {
         let durations: List<Duration> = List<Duration>(Duration.Eighth, Duration.Eighth, Duration.Eighth)
         let tuplets: List<Double> = List<Double>(3.0, 3.0, 3.0)
         var i: Double = 0.0
-        var b: Beat? = score.tracks[0].staves[0].bars[0].voices[0].beats[0]
+        var b: Beat? = try score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats[0]
         while TypeHelper.isTruthy(b) {
             TestGlobals.expect(b!.duration, "Duration on beat \((i).toTemplate()) was wrong").toBe(durations[(i).toInt()])
             if tuplets[(i).toInt()] == 1.0 {
@@ -827,7 +827,7 @@ final class AlphaTexImporterTest {
         let tupletNumerators: List<Double> = List<Double>(5.0, 5.0, 5.0, 5.0, 5.0)
         let tupletDenominators: List<Double> = List<Double>(2.0, 2.0, 2.0, 2.0, 2.0)
         var i: Double = 0.0
-        var b: Beat? = score.tracks[0].staves[0].bars[0].voices[0].beats[0]
+        var b: Beat? = try score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats[0]
         while TypeHelper.isTruthy(b) {
             TestGlobals.expect(b!.tupletNumerator, "Tuplet on beat \((i).toTemplate()) was wrong").toBe(tupletNumerators[(i).toInt()])
             TestGlobals.expect(b!.tupletDenominator, "Tuplet on beat \((i).toTemplate()) was wrong").toBe(tupletDenominators[(i).toInt()])
@@ -840,7 +840,7 @@ final class AlphaTexImporterTest {
     @Test("anacrusis-sustain-pedal")
     func anacrusisSustainPedal() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\\ts 2 4 \\ac C4.8 D4.8 E4.8 {spd} | F4.4 {spu} G4.4")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].sustainPedals.map({ (p: SustainPedalMarker) -> Double in
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).sustainPedals.map({ (p: SustainPedalMarker) -> Double in
             return p.ratioPosition
         }).join(",")).toBe("0.5")
         try AlphaTexImporterTest.testExportRoundtrip(score)
@@ -850,9 +850,9 @@ final class AlphaTexImporterTest {
     func simpleAnacrusis() async throws {
         let tex: String = "\\ac 3.3 3.3 | 1.1 2.1 3.1 4.1"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.masterBars[0].isAnacrusis).toBe(true)
-        TestGlobals.expect(score.masterBars[0].calculateDuration()).toBe(1920.0)
-        TestGlobals.expect(score.masterBars[1].calculateDuration()).toBe(3840.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).isAnacrusis).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(0).calculateDuration()).toBe(1920.0)
+        try TestGlobals.expect(score.masterBars.jsElement(1).calculateDuration()).toBe(3840.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -860,11 +860,11 @@ final class AlphaTexImporterTest {
     func multiBarAnacrusis() async throws {
         let tex: String = "\\ac 3.3 3.3 | \\ac 3.3 3.3 | 1.1 2.1 3.1 4.1"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.masterBars[0].isAnacrusis).toBe(true)
-        TestGlobals.expect(score.masterBars[1].isAnacrusis).toBe(true)
-        TestGlobals.expect(score.masterBars[0].calculateDuration()).toBe(1920.0)
-        TestGlobals.expect(score.masterBars[1].calculateDuration()).toBe(1920.0)
-        TestGlobals.expect(score.masterBars[2].calculateDuration()).toBe(3840.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).isAnacrusis).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(1).isAnacrusis).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(0).calculateDuration()).toBe(1920.0)
+        try TestGlobals.expect(score.masterBars.jsElement(1).calculateDuration()).toBe(1920.0)
+        try TestGlobals.expect(score.masterBars.jsElement(2).calculateDuration()).toBe(3840.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -872,14 +872,14 @@ final class AlphaTexImporterTest {
     func randomAnacrusis() async throws {
         let tex: String = "\\ac 3.3 3.3 | 1.1 2.1 3.1 4.1 | \\ac 3.3 3.3 | 1.1 2.1 3.1 4.1"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.masterBars[0].isAnacrusis).toBe(true)
-        TestGlobals.expect(score.masterBars[1].isAnacrusis).toBe(false)
-        TestGlobals.expect(score.masterBars[2].isAnacrusis).toBe(true)
-        TestGlobals.expect(score.masterBars[3].isAnacrusis).toBe(false)
-        TestGlobals.expect(score.masterBars[0].calculateDuration()).toBe(1920.0)
-        TestGlobals.expect(score.masterBars[1].calculateDuration()).toBe(3840.0)
-        TestGlobals.expect(score.masterBars[2].calculateDuration()).toBe(1920.0)
-        TestGlobals.expect(score.masterBars[3].calculateDuration()).toBe(3840.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).isAnacrusis).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(1).isAnacrusis).toBe(false)
+        try TestGlobals.expect(score.masterBars.jsElement(2).isAnacrusis).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(3).isAnacrusis).toBe(false)
+        try TestGlobals.expect(score.masterBars.jsElement(0).calculateDuration()).toBe(1920.0)
+        try TestGlobals.expect(score.masterBars.jsElement(1).calculateDuration()).toBe(3840.0)
+        try TestGlobals.expect(score.masterBars.jsElement(2).calculateDuration()).toBe(1920.0)
+        try TestGlobals.expect(score.masterBars.jsElement(3).calculateDuration()).toBe(3840.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -887,14 +887,14 @@ final class AlphaTexImporterTest {
     func `repeat`() async throws {
         let tex: String = "\\ro 1.3 2.3 3.3 4.3 | 5.3 6.3 7.3 8.3 | \\rc 2 1.3 2.3 3.3 4.3 | \\ro \\rc 3 1.3 2.3 3.3 4.3 |"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.masterBars[0].isRepeatStart).toBe(true)
-        TestGlobals.expect(score.masterBars[1].isRepeatStart).toBe(false)
-        TestGlobals.expect(score.masterBars[2].isRepeatStart).toBe(false)
-        TestGlobals.expect(score.masterBars[3].isRepeatStart).toBe(true)
-        TestGlobals.expect(score.masterBars[0].repeatCount).toBe(0.0)
-        TestGlobals.expect(score.masterBars[1].repeatCount).toBe(0.0)
-        TestGlobals.expect(score.masterBars[2].repeatCount).toBe(2.0)
-        TestGlobals.expect(score.masterBars[3].repeatCount).toBe(3.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).isRepeatStart).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(1).isRepeatStart).toBe(false)
+        try TestGlobals.expect(score.masterBars.jsElement(2).isRepeatStart).toBe(false)
+        try TestGlobals.expect(score.masterBars.jsElement(3).isRepeatStart).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(0).repeatCount).toBe(0.0)
+        try TestGlobals.expect(score.masterBars.jsElement(1).repeatCount).toBe(0.0)
+        try TestGlobals.expect(score.masterBars.jsElement(2).repeatCount).toBe(2.0)
+        try TestGlobals.expect(score.masterBars.jsElement(3).repeatCount).toBe(3.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -902,15 +902,15 @@ final class AlphaTexImporterTest {
     func alternateEndings() async throws {
         let tex: String = "\\ro 4.3*4 | \\ae (1 2 3) 6.3*4 | \\ae 4 \\rc 4 6.3 6.3 6.3 5.3 |"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.masterBars[0].isRepeatStart).toBe(true)
-        TestGlobals.expect(score.masterBars[1].isRepeatStart).toBe(false)
-        TestGlobals.expect(score.masterBars[2].isRepeatStart).toBe(false)
-        TestGlobals.expect(score.masterBars[0].repeatCount).toBe(0.0)
-        TestGlobals.expect(score.masterBars[1].repeatCount).toBe(0.0)
-        TestGlobals.expect(score.masterBars[2].repeatCount).toBe(4.0)
-        TestGlobals.expect(score.masterBars[0].alternateEndings).toBe(0.0)
-        TestGlobals.expect(score.masterBars[1].alternateEndings).toBe(7.0)
-        TestGlobals.expect(score.masterBars[2].alternateEndings).toBe(8.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).isRepeatStart).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(1).isRepeatStart).toBe(false)
+        try TestGlobals.expect(score.masterBars.jsElement(2).isRepeatStart).toBe(false)
+        try TestGlobals.expect(score.masterBars.jsElement(0).repeatCount).toBe(0.0)
+        try TestGlobals.expect(score.masterBars.jsElement(1).repeatCount).toBe(0.0)
+        try TestGlobals.expect(score.masterBars.jsElement(2).repeatCount).toBe(4.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).alternateEndings).toBe(0.0)
+        try TestGlobals.expect(score.masterBars.jsElement(1).alternateEndings).toBe(7.0)
+        try TestGlobals.expect(score.masterBars.jsElement(2).alternateEndings).toBe(8.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -918,32 +918,32 @@ final class AlphaTexImporterTest {
     func randomAlternateEndings() async throws {
         let tex: String = "\n            \\ro \\ae 1 1.1.1 | \\ae 2 2.1 | \\ae 3 3.1 |\n            4.3.4*4 |\n            \\ae 1 1.1.1 | \\ae 2 2.1 | \\ae 3 3.1 |\n            4.3.4*4 |\n            \\ae (1 3) 1.1.1 | \\ae 2 \\rc 3 2.1 |\n        "
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.masterBars[0].isRepeatStart).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(0).isRepeatStart).toBe(true)
         do {
             var i: Double = 1.0
             while i <= 9 {
-                TestGlobals.expect(score.masterBars[(i).toInt()].isRepeatStart).toBe(false)
+                try TestGlobals.expect(score.masterBars.jsElement((i).toInt()).isRepeatStart).toBe(false)
                 i += 1
             }
         }
         do {
             var i: Double = 0.0
             while i <= 8 {
-                TestGlobals.expect(score.masterBars[(i).toInt()].repeatCount).toBe(0.0)
+                try TestGlobals.expect(score.masterBars.jsElement((i).toInt()).repeatCount).toBe(0.0)
                 i += 1
             }
         }
-        TestGlobals.expect(score.masterBars[9].repeatCount).toBe(3.0)
-        TestGlobals.expect(score.masterBars[0].alternateEndings).toBe(1.0)
-        TestGlobals.expect(score.masterBars[1].alternateEndings).toBe(2.0)
-        TestGlobals.expect(score.masterBars[2].alternateEndings).toBe(4.0)
-        TestGlobals.expect(score.masterBars[3].alternateEndings).toBe(0.0)
-        TestGlobals.expect(score.masterBars[4].alternateEndings).toBe(1.0)
-        TestGlobals.expect(score.masterBars[5].alternateEndings).toBe(2.0)
-        TestGlobals.expect(score.masterBars[6].alternateEndings).toBe(4.0)
-        TestGlobals.expect(score.masterBars[7].alternateEndings).toBe(0.0)
-        TestGlobals.expect(score.masterBars[8].alternateEndings).toBe(5.0)
-        TestGlobals.expect(score.masterBars[9].alternateEndings).toBe(2.0)
+        try TestGlobals.expect(score.masterBars.jsElement(9).repeatCount).toBe(3.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).alternateEndings).toBe(1.0)
+        try TestGlobals.expect(score.masterBars.jsElement(1).alternateEndings).toBe(2.0)
+        try TestGlobals.expect(score.masterBars.jsElement(2).alternateEndings).toBe(4.0)
+        try TestGlobals.expect(score.masterBars.jsElement(3).alternateEndings).toBe(0.0)
+        try TestGlobals.expect(score.masterBars.jsElement(4).alternateEndings).toBe(1.0)
+        try TestGlobals.expect(score.masterBars.jsElement(5).alternateEndings).toBe(2.0)
+        try TestGlobals.expect(score.masterBars.jsElement(6).alternateEndings).toBe(4.0)
+        try TestGlobals.expect(score.masterBars.jsElement(7).alternateEndings).toBe(0.0)
+        try TestGlobals.expect(score.masterBars.jsElement(8).alternateEndings).toBe(5.0)
+        try TestGlobals.expect(score.masterBars.jsElement(9).alternateEndings).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -951,12 +951,12 @@ final class AlphaTexImporterTest {
     func defaultTranspositionOnInstruments() async throws {
         let tex: String = "\n            \\track \"Piano with Grand Staff\" \"pno.\"\n                \\staff{score} \\tuning piano \\instrument acousticgrandpiano\n                c4 d4 e4 f4 |\n                \\staff{score} \\tuning piano \\clef F4\n                c2 c2 c2 c2 |\n            \\track \"Guitar\"\n                \\staff{tabs} \\instrument acousticguitarsteel \\capo 5\n                1.2 3.2 0.1 1.1\n        "
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.tracks[0].staves[0].transpositionPitch).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].displayTranspositionPitch).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[1].transpositionPitch).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[1].displayTranspositionPitch).toBe(0.0)
-        TestGlobals.expect(score.tracks[1].staves[0].transpositionPitch).toBe(0.0)
-        TestGlobals.expect(score.tracks[1].staves[0].displayTranspositionPitch).toBe(-12.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).transpositionPitch).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).displayTranspositionPitch).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).transpositionPitch).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).displayTranspositionPitch).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.jsElement(0).transpositionPitch).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.jsElement(0).displayTranspositionPitch).toBe(-12.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -964,14 +964,14 @@ final class AlphaTexImporterTest {
     func dynamics() async throws {
         let tex: String = "1.1.8{dy ppp} 1.1{dy pp} 1.1{dy p} 1.1{dy mp} 1.1{dy mf} 1.1{dy f} 1.1{dy ff} 1.1{dy fff}"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].dynamics).toBe(DynamicValue.PPP)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].dynamics).toBe(DynamicValue.PP)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].dynamics).toBe(DynamicValue.P)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].dynamics).toBe(DynamicValue.MP)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[4].dynamics).toBe(DynamicValue.MF)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[5].dynamics).toBe(DynamicValue.F)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[6].dynamics).toBe(DynamicValue.FF)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[7].dynamics).toBe(DynamicValue.FFF)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).dynamics).toBe(DynamicValue.PPP)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).dynamics).toBe(DynamicValue.PP)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).dynamics).toBe(DynamicValue.P)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).dynamics).toBe(DynamicValue.MP)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(4).dynamics).toBe(DynamicValue.MF)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(5).dynamics).toBe(DynamicValue.F)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(6).dynamics).toBe(DynamicValue.FF)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(7).dynamics).toBe(DynamicValue.FFF)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -979,10 +979,10 @@ final class AlphaTexImporterTest {
     func dynamicsAuto() async throws {
         let tex: String = "1.1.4{dy ppp} 1.1 1.1{dy mp} 1.1"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].dynamics).toBe(DynamicValue.PPP)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].dynamics).toBe(DynamicValue.PPP)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].dynamics).toBe(DynamicValue.MP)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].dynamics).toBe(DynamicValue.MP)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).dynamics).toBe(DynamicValue.PPP)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).dynamics).toBe(DynamicValue.PPP)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).dynamics).toBe(DynamicValue.MP)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).dynamics).toBe(DynamicValue.MP)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -990,9 +990,9 @@ final class AlphaTexImporterTest {
     func dynamicsAutoResetOnTrack() async throws {
         let tex: String = "1.1.4{dy ppp} 1.1 \\track \"Second\" 1.1.4"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].dynamics).toBe(DynamicValue.PPP)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].dynamics).toBe(DynamicValue.PPP)
-        TestGlobals.expect(score.tracks[1].staves[0].bars[0].voices[0].beats[0].dynamics).toBe(DynamicValue.F)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).dynamics).toBe(DynamicValue.PPP)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).dynamics).toBe(DynamicValue.PPP)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).dynamics).toBe(DynamicValue.F)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1000,9 +1000,9 @@ final class AlphaTexImporterTest {
     func dynamicsAutoResetOnStaff() async throws {
         let tex: String = "1.1.4{dy ppp} 1.1 \\staff 1.1.4"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].dynamics).toBe(DynamicValue.PPP)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].dynamics).toBe(DynamicValue.PPP)
-        TestGlobals.expect(score.tracks[0].staves[1].bars[0].voices[0].beats[0].dynamics).toBe(DynamicValue.F)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).dynamics).toBe(DynamicValue.PPP)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).dynamics).toBe(DynamicValue.PPP)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).dynamics).toBe(DynamicValue.F)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1010,10 +1010,10 @@ final class AlphaTexImporterTest {
     func crescendo() async throws {
         let tex: String = "1.1.4{dec} 1.1{dec} 1.1{cre} 1.1{cre}"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].crescendo).toBe(CrescendoType.Decrescendo)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].crescendo).toBe(CrescendoType.Decrescendo)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].crescendo).toBe(CrescendoType.Crescendo)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].crescendo).toBe(CrescendoType.Crescendo)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).crescendo).toBe(CrescendoType.Decrescendo)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).crescendo).toBe(CrescendoType.Decrescendo)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).crescendo).toBe(CrescendoType.Crescendo)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).crescendo).toBe(CrescendoType.Crescendo)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1021,10 +1021,10 @@ final class AlphaTexImporterTest {
     func leftHandTapping() async throws {
         let tex: String = ":4 1.1{lht} 1.1 1.1{lht} 1.1"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].isLeftHandTapped).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].isLeftHandTapped).toBe(false)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].isLeftHandTapped).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].isLeftHandTapped).toBe(false)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isLeftHandTapped).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).isLeftHandTapped).toBe(false)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).isLeftHandTapped).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).isLeftHandTapped).toBe(false)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1045,17 +1045,17 @@ final class AlphaTexImporterTest {
     @Test("auto-detect-tuning-from-instrument")
     func autoDetectTuningFromInstrument() async throws {
         var score: Score = try AlphaTexImporterTest.parseTex("\\instrument acousticguitarsteel . 3.3")
-        TestGlobals.expect(score.tracks[0].staves[0].tuning.length).toBe(6.0)
-        TestGlobals.expect(score.tracks[0].staves[0].displayTranspositionPitch).toBe(-12.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).tuning.length).toBe(6.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).displayTranspositionPitch).toBe(-12.0)
         try score = AlphaTexImporterTest.parseTex("\\instrument acousticbass . 3.3")
-        TestGlobals.expect(score.tracks[0].staves[0].tuning.length).toBe(4.0)
-        TestGlobals.expect(score.tracks[0].staves[0].displayTranspositionPitch).toBe(-12.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).tuning.length).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).displayTranspositionPitch).toBe(-12.0)
         try score = AlphaTexImporterTest.parseTex("\\instrument violin . 3.3")
-        TestGlobals.expect(score.tracks[0].staves[0].tuning.length).toBe(4.0)
-        TestGlobals.expect(score.tracks[0].staves[0].displayTranspositionPitch).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).tuning.length).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).displayTranspositionPitch).toBe(0.0)
         try score = AlphaTexImporterTest.parseTex("\\instrument acousticpiano . C4")
-        TestGlobals.expect(score.tracks[0].staves[0].tuning.length).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].displayTranspositionPitch).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).tuning.length).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).displayTranspositionPitch).toBe(0.0)
     }
 
     @Test("multibyte-encoding")
@@ -1063,18 +1063,18 @@ final class AlphaTexImporterTest {
         let multiByteChars: String = "爱你ÖÄÜ🎸🎵🎶"
         let score: Score = try AlphaTexImporterTest.parseTex("\\title \"\((multiByteChars).toTemplate())\"\n        .\n        \\track \"🎸\"\n        \\lyrics \"Test Lyrics 🤘\"\n        (1.2 1.1).4 x.2.8 0.1 1.1 | 1.2 3.2 0.1 1.1")
         TestGlobals.expect(score.title).toBe((multiByteChars))
-        TestGlobals.expect(score.tracks[0].name).toBe("🎸")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].lyrics![0]).toBe("🤘")
+        try TestGlobals.expect(score.tracks.jsElement(0).name).toBe("🎸")
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).lyrics)[0]).toBe("🤘")
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     private static func runSectionNoteSymbolTest(_ noteSymbol: String) throws {
         let score: Score = try AlphaTexImporterTest.parseTex("1.3.4 * 4 | \\section \"Verse\" \((noteSymbol).toTemplate()).1 | 2.3.4*4")
         TestGlobals.expect(score.masterBars.length).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(4.0)
-        TestGlobals.expect(score.masterBars[1].section!.text).toBe("Verse")
-        TestGlobals.expect(score.masterBars[1].section!.marker).toBe("")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(4.0)
+        try TestGlobals.expect(jsNonNull(score.masterBars.jsElement(1).section).text).toBe("Verse")
+        try TestGlobals.expect(jsNonNull(score.masterBars.jsElement(1).section).marker).toBe("")
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.length).toBe(1.0)
     }
 
     @Test("does-not-interpret-note-symbols-on-section")
@@ -1097,43 +1097,43 @@ final class AlphaTexImporterTest {
             TestGlobals.expect(score.copyright).toBe("test")
             TestGlobals.expect(score.tempo).toBe(200.0)
             TestGlobals.expect(score.tracks.length).toBe(1.0)
-            TestGlobals.expect(score.tracks[0].playbackInfo.program).toBe(30.0)
-            TestGlobals.expect(score.tracks[0].staves[0].capo).toBe(2.0)
-            TestGlobals.expect(score.tracks[0].staves[0].tuning.join(",")).toBe("55,38,43,47,50,69")
+            try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.program).toBe(30.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).capo).toBe(2.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).tuning.join(",")).toBe("55,38,43,47,50,69")
             TestGlobals.expect(score.masterBars.length).toBe(2.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats.length).toBe(3.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes.length).toBe(1.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].duration).toBe(Duration.Half)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].fret).toBe(0.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].string).toBe(2.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes.length).toBe(1.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].duration).toBe(Duration.Quarter)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].fret).toBe(1.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].string).toBe(2.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes.length).toBe(1.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].duration).toBe(Duration.Quarter)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].fret).toBe(3.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].string).toBe(3.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats.length).toBe(5.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes.length).toBe(1.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].duration).toBe(Duration.Eighth)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].fret).toBe(5.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].string).toBe(4.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[1].notes.length).toBe(1.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[1].duration).toBe(Duration.Eighth)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[1].notes[0].fret).toBe(5.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[1].notes[0].string).toBe(4.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[2].notes.length).toBe(1.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[2].duration).toBe(Duration.Eighth)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[2].notes[0].fret).toBe(5.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[2].notes[0].string).toBe(4.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[3].notes.length).toBe(1.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[3].duration).toBe(Duration.Eighth)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[3].notes[0].fret).toBe(5.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[3].notes[0].string).toBe(4.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[4].notes.length).toBe(0.0)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[4].duration).toBe(Duration.Half)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[4].isRest).toBe(true)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.length).toBe(3.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.length).toBe(1.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).duration).toBe(Duration.Half)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).fret).toBe(0.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).string).toBe(2.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.length).toBe(1.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).duration).toBe(Duration.Quarter)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).fret).toBe(1.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).string).toBe(2.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.length).toBe(1.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).duration).toBe(Duration.Quarter)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).fret).toBe(3.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).string).toBe(3.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.length).toBe(5.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.length).toBe(1.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).duration).toBe(Duration.Eighth)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).fret).toBe(5.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).string).toBe(4.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).notes.length).toBe(1.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).duration).toBe(Duration.Eighth)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).fret).toBe(5.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).string).toBe(4.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(2).notes.length).toBe(1.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(2).duration).toBe(Duration.Eighth)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).fret).toBe(5.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).string).toBe(4.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(3).notes.length).toBe(1.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(3).duration).toBe(Duration.Eighth)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).fret).toBe(5.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).string).toBe(4.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(4).notes.length).toBe(0.0)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(4).duration).toBe(Duration.Half)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(4).isRest).toBe(true)
         }
     }
 
@@ -1148,82 +1148,82 @@ final class AlphaTexImporterTest {
     func tempoAsFloatInBar() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\\tempo 112 . 3.3.1 | \\tempo 333.3 3.3")
         TestGlobals.expect(score.tempo).toBe(112.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].masterBar.tempoAutomations[0].value).toBe(333.3)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).masterBar.tempoAutomations.jsElement(0).value).toBe(333.3)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("percussion-numbers")
     func percussionNumbers() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\instrument \"percussion\"\n            .\n            30 31 33 34\n        ")
-        TestGlobals.expect(score.tracks[0].playbackInfo.primaryChannel).toBe(9.0)
-        TestGlobals.expect(score.tracks[0].staves[0].isPercussion).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].percussionArticulation).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[0].outputMidiNumber).toBe(49.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].percussionArticulation).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[1].outputMidiNumber).toBe(40.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].percussionArticulation).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[2].outputMidiNumber).toBe(37.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].percussionArticulation).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[3].outputMidiNumber).toBe(38.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.primaryChannel).toBe(9.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).isPercussion).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).percussionArticulation).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(0).outputMidiNumber).toBe(49.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).percussionArticulation).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(1).outputMidiNumber).toBe(40.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).percussionArticulation).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(2).outputMidiNumber).toBe(37.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).percussionArticulation).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(3).outputMidiNumber).toBe(38.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("percussion-custom-articulation")
     func percussionCustomArticulation() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\instrument \"percussion\"\n            \\articulation A 30\n            \\articulation B 31\n            \\articulation C 33\n            \\articulation D 34\n            .\n            A B C D\n        ")
-        TestGlobals.expect(score.tracks[0].playbackInfo.primaryChannel).toBe(9.0)
-        TestGlobals.expect(score.tracks[0].staves[0].isPercussion).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].percussionArticulation).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[0].outputMidiNumber).toBe(49.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].percussionArticulation).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[1].outputMidiNumber).toBe(40.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].percussionArticulation).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[2].outputMidiNumber).toBe(37.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].percussionArticulation).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[3].outputMidiNumber).toBe(38.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.primaryChannel).toBe(9.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).isPercussion).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).percussionArticulation).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(0).outputMidiNumber).toBe(49.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).percussionArticulation).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(1).outputMidiNumber).toBe(40.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).percussionArticulation).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(2).outputMidiNumber).toBe(37.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).percussionArticulation).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(3).outputMidiNumber).toBe(38.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("percussion-default-articulations")
     func percussionDefaultArticulations() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\instrument \"percussion\"\n            \\articulation defaults\n            .\n            \"Cymbal (hit)\" \"Snare (side stick)\" \"Snare (side stick) 2\" \"Snare (hit)\"\n        ")
-        TestGlobals.expect(score.tracks[0].playbackInfo.primaryChannel).toBe(9.0)
-        TestGlobals.expect(score.tracks[0].staves[0].isPercussion).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].percussionArticulation).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[0].outputMidiNumber).toBe(49.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].percussionArticulation).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[1].outputMidiNumber).toBe(37.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].percussionArticulation).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[2].outputMidiNumber).toBe(40.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].percussionArticulation).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[3].outputMidiNumber).toBe(38.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.primaryChannel).toBe(9.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).isPercussion).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).percussionArticulation).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(0).outputMidiNumber).toBe(49.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).percussionArticulation).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(1).outputMidiNumber).toBe(37.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).percussionArticulation).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(2).outputMidiNumber).toBe(40.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).percussionArticulation).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(3).outputMidiNumber).toBe(38.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("percussion-default-articulations-short")
     func percussionDefaultArticulationsShort() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\instrument \"percussion\"\n            \\articulation defaults\n            .\n            CymbalHit SnareSideStick SnareSideStick2 SnareHit\n        ")
-        TestGlobals.expect(score.tracks[0].playbackInfo.primaryChannel).toBe(9.0)
-        TestGlobals.expect(score.tracks[0].staves[0].isPercussion).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].percussionArticulation).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[0].outputMidiNumber).toBe(49.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].percussionArticulation).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[1].outputMidiNumber).toBe(37.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].percussionArticulation).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[2].outputMidiNumber).toBe(40.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].percussionArticulation).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].percussionArticulations[3].outputMidiNumber).toBe(38.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.primaryChannel).toBe(9.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).isPercussion).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).percussionArticulation).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(0).outputMidiNumber).toBe(49.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).percussionArticulation).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(1).outputMidiNumber).toBe(37.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).percussionArticulation).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(2).outputMidiNumber).toBe(40.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).percussionArticulation).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).percussionArticulations.jsElement(3).outputMidiNumber).toBe(38.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("beat-tempo-change")
     func beatTempoChange() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            . \\tempo 120 1.1.4 1.1 1.1{tempo 60} 1.1 | 1.1.4{tempo 100} 1.1 1.1{tempo 120} 1.1\n        ")
-        TestGlobals.expect(score.masterBars[0].tempoAutomations.length).toBe(2.0)
-        TestGlobals.expect(score.masterBars[0].tempoAutomations[0].value).toBe(120.0)
-        TestGlobals.expect(score.masterBars[0].tempoAutomations[0].ratioPosition).toBe(0.0)
-        TestGlobals.expect(score.masterBars[0].tempoAutomations[1].value).toBe(60.0)
-        TestGlobals.expect(score.masterBars[0].tempoAutomations[1].ratioPosition).toBe(0.5)
+        try TestGlobals.expect(score.masterBars.jsElement(0).tempoAutomations.length).toBe(2.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).tempoAutomations.jsElement(0).value).toBe(120.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).tempoAutomations.jsElement(0).ratioPosition).toBe(0.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).tempoAutomations.jsElement(1).value).toBe(60.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).tempoAutomations.jsElement(1).ratioPosition).toBe(0.5)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1239,9 +1239,9 @@ final class AlphaTexImporterTest {
         }
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
         let actualAccidentalModes: List<NoteAccidentalMode> = List<NoteAccidentalMode>()
-        var b: Beat? = score.tracks[0].staves[0].bars[0].voices[0].beats[0]
+        var b: Beat? = try score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats[0]
         while b != nil {
-            actualAccidentalModes.push(b!.notes[0].accidentalMode)
+            try actualAccidentalModes.push(b!.notes.jsElement(0).accidentalMode)
             b = b!.nextBeat
         }
         TestGlobals.expect(actualAccidentalModes.join(",")).toBe(expectedAccidentalModes.join(","))
@@ -1251,51 +1251,51 @@ final class AlphaTexImporterTest {
     @Test("accidental-mode")
     func accidentalMode() async throws {
         var score: Score = try AlphaTexImporterTest.parseTex("\\accidentals auto . F##4")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].accidentalMode).toBe(NoteAccidentalMode.Default)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).accidentalMode).toBe(NoteAccidentalMode.Default)
         try score = AlphaTexImporterTest.parseTex("\\track \"T1\" F##4 | \\track \"T2\" \\accidentals auto F##4")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].accidentalMode).toBe(NoteAccidentalMode.ForceDoubleSharp)
-        TestGlobals.expect(score.tracks[1].staves[0].bars[0].voices[0].beats[0].notes[0].accidentalMode).toBe(NoteAccidentalMode.Default)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).accidentalMode).toBe(NoteAccidentalMode.ForceDoubleSharp)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).accidentalMode).toBe(NoteAccidentalMode.Default)
         try score = AlphaTexImporterTest.parseTex("\\track \"T1\" \\staff F##4 \\staff \\accidentals auto F##4")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].accidentalMode).toBe(NoteAccidentalMode.ForceDoubleSharp)
-        TestGlobals.expect(score.tracks[0].staves[1].bars[0].voices[0].beats[0].notes[0].accidentalMode).toBe(NoteAccidentalMode.Default)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).accidentalMode).toBe(NoteAccidentalMode.ForceDoubleSharp)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(1).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).accidentalMode).toBe(NoteAccidentalMode.Default)
         try score = AlphaTexImporterTest.parseTex("F##4 | \\accidentals auto F##4")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].accidentalMode).toBe(NoteAccidentalMode.ForceDoubleSharp)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].notes[0].accidentalMode).toBe(NoteAccidentalMode.Default)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).accidentalMode).toBe(NoteAccidentalMode.ForceDoubleSharp)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).accidentalMode).toBe(NoteAccidentalMode.Default)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("dead-slap")
     func deadSlap() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("r { ds }")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].isRest).toBe(false)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].deadSlapped).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).isRest).toBe(false)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).deadSlapped).toBe(true)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("golpe")
     func golpe() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("3.3 { glpf } 3.3 { glpt }")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].golpe).toBe(GolpeType.Finger)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].golpe).toBe(GolpeType.Thumb)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).golpe).toBe(GolpeType.Finger)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).golpe).toBe(GolpeType.Thumb)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("fade")
     func fade() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("3.3 { f } 3.3 { fo } 3.3 { vs } ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].fade).toBe(FadeType.FadeIn)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].fade).toBe(FadeType.FadeOut)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].fade).toBe(FadeType.VolumeSwell)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).fade).toBe(FadeType.FadeIn)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).fade).toBe(FadeType.FadeOut)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).fade).toBe(FadeType.VolumeSwell)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("barre")
     func barre() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("3.3 { barre 5 } 3.3 { barre 14 half }")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].barreFret).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].barreShape).toBe(BarreShape.Full)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].barreFret).toBe(14.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].barreShape).toBe(BarreShape.Half)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).barreFret).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).barreShape).toBe(BarreShape.Full)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).barreFret).toBe(14.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).barreShape).toBe(BarreShape.Half)
         try AlphaTexImporterTest.testExportRoundtrip(score)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
@@ -1303,35 +1303,35 @@ final class AlphaTexImporterTest {
     @Test("ornaments")
     func ornaments() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("3.3 { turn } 3.3 { iturn } 3.3 { umordent } 3.3 { lmordent }")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].ornament).toBe(NoteOrnament.Turn)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].ornament).toBe(NoteOrnament.InvertedTurn)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].ornament).toBe(NoteOrnament.UpperMordent)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].ornament).toBe(NoteOrnament.LowerMordent)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).ornament).toBe(NoteOrnament.Turn)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).ornament).toBe(NoteOrnament.InvertedTurn)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).ornament).toBe(NoteOrnament.UpperMordent)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).ornament).toBe(NoteOrnament.LowerMordent)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("rasgueado")
     func rasgueado() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("3.3 { rasg mi } 3.3 { rasg pmptriplet } 3.3 { rasg amianapaest }")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].rasgueado).toBe(Rasgueado.Mi)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].hasRasgueado).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].rasgueado).toBe(Rasgueado.PmpTriplet)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].hasRasgueado).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].rasgueado).toBe(Rasgueado.AmiAnapaest)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].hasRasgueado).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).rasgueado).toBe(Rasgueado.Mi)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).hasRasgueado).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).rasgueado).toBe(Rasgueado.PmpTriplet)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).hasRasgueado).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).rasgueado).toBe(Rasgueado.AmiAnapaest)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).hasRasgueado).toBe(true)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("directions")
     func directions() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex(". \\jump Segno | | \\jump DaCapoAlCoda \\jump Coda \\jump SegnoSegno ")
-        TestGlobals.expect(score.masterBars[0].directions).toBeTruthy()
-        TestGlobals.expect(score.masterBars[0].directions).toContain(Direction.TargetSegno)
-        TestGlobals.expect(score.masterBars[1].directions).not().toBeTruthy()
-        TestGlobals.expect(score.masterBars[2].directions).toBeTruthy()
-        TestGlobals.expect(score.masterBars[2].directions).toContain(Direction.JumpDaCapoAlCoda)
-        TestGlobals.expect(score.masterBars[2].directions).toContain(Direction.TargetCoda)
-        TestGlobals.expect(score.masterBars[2].directions).toContain(Direction.TargetSegnoSegno)
+        try TestGlobals.expect(score.masterBars.jsElement(0).directions).toBeTruthy()
+        try TestGlobals.expect(score.masterBars.jsElement(0).directions).toContain(Direction.TargetSegno)
+        try TestGlobals.expect(score.masterBars.jsElement(1).directions).not().toBeTruthy()
+        try TestGlobals.expect(score.masterBars.jsElement(2).directions).toBeTruthy()
+        try TestGlobals.expect(score.masterBars.jsElement(2).directions).toContain(Direction.JumpDaCapoAlCoda)
+        try TestGlobals.expect(score.masterBars.jsElement(2).directions).toContain(Direction.TargetCoda)
+        try TestGlobals.expect(score.masterBars.jsElement(2).directions).toContain(Direction.TargetSegnoSegno)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1339,9 +1339,9 @@ final class AlphaTexImporterTest {
     func multiVoiceFull() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\track \"Piano\"\n                \\staff{score} \\tuning piano \\instrument acousticgrandpiano\n                    \\voice\n                        c4 d4 e4 f4 | c4 d4 e4 f4\n                    \\voice\n                        c3 d3 e3 f3 | c3 d3 e3 f3\n        ")
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.length).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1349,9 +1349,9 @@ final class AlphaTexImporterTest {
     func multiVoiceSimpleAllVoices() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\voice\n                c4 d4 e4 f4 | c4 d4 e4 f4\n            \\voice\n                c3 d3 e3 f3 | c3 d3 e3 f3\n        ")
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.length).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1359,16 +1359,16 @@ final class AlphaTexImporterTest {
     func multiVoiceSimpleSkipInitial() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            c4 d4 e4 f4 | c4 d4 e4 f4\n            \\voice\n            c3 d3 e3 f3 | c3 d3 e3 f3\n        ")
         TestGlobals.expect(score.masterBars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.length).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("standard-notation-line-count")
     func standardNotationLineCount() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\staff { score 3 }\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].standardNotationLineCount).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).standardNotationLineCount).toBe(3.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1391,159 +1391,159 @@ final class AlphaTexImporterTest {
     @Test("transpose")
     func transpose() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\staff\n            \\displaytranspose 12\n            \\transpose 6\n            .\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].displayTranspositionPitch).toBe(-12.0)
-        TestGlobals.expect(score.tracks[0].staves[0].transpositionPitch).toBe(-6.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).displayTranspositionPitch).toBe(-12.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).transpositionPitch).toBe(-6.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("beat-vibrato")
     func beatVibrato() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            3.3.4{v} 3.3.4{vw}\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].vibrato).toBe(VibratoType.Slight)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].vibrato).toBe(VibratoType.Wide)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).vibrato).toBe(VibratoType.Slight)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).vibrato).toBe(VibratoType.Wide)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("note-vibrato")
     func noteVibrato() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            3.3{v}.4 3.3{vw}.4\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].vibrato).toBe(VibratoType.Slight)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].vibrato).toBe(VibratoType.Wide)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).vibrato).toBe(VibratoType.Slight)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).vibrato).toBe(VibratoType.Wide)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("whammy")
     func whammy() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            3.3.4{ tb dive (0 -12.5) } |\n            3.3.4{ tb dive gradual (0 -12.5) } |\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].whammyBarType).toBe(WhammyType.Dive)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].whammyBarPoints!.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].whammyBarPoints![0].value).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].whammyBarPoints![1].value).toBe(-12.5)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].whammyBarType).toBe(WhammyType.Dive)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].whammyStyle).toBe(BendStyle.Gradual)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].whammyBarPoints!.length).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].whammyBarPoints![0].value).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].whammyBarPoints![1].value).toBe(-12.5)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).whammyBarType).toBe(WhammyType.Dive)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).whammyBarPoints).length).toBe(2.0)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).whammyBarPoints).jsElement(0).value).toBe(0.0)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).whammyBarPoints).jsElement(1).value).toBe(-12.5)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).whammyBarType).toBe(WhammyType.Dive)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).whammyStyle).toBe(BendStyle.Gradual)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).whammyBarPoints).length).toBe(2.0)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).whammyBarPoints).jsElement(0).value).toBe(0.0)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).whammyBarPoints).jsElement(1).value).toBe(-12.5)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("beat-ottava")
     func beatOttava() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            3.3.4{ ot 15ma } 3.3.4{ ot 8vb }\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].ottava).toBe(Ottavia._15ma)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].ottava).toBe(Ottavia._8vb)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).ottava).toBe(Ottavia._15ma)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).ottava).toBe(Ottavia._8vb)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("beat-text")
     func beatText() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            3.3.4{ txt \"Hello World\" } 3.3.4{ txt Hello }\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].text).toBe("Hello World")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].text).toBe("Hello")
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).text).toBe("Hello World")
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).text).toBe("Hello")
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("legato-origin")
     func legatoOrigin() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            3.3.4{ legatoOrigin } 4.3.4\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].isLegatoOrigin).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].isLegatoDestination).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).isLegatoOrigin).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).isLegatoDestination).toBe(true)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("instrument-change")
     func instrumentChange() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\instrument acousticgrandpiano\n            G4 G4 G4 { instrument brightacousticpiano }\n        ")
-        TestGlobals.expect(score.tracks[0].playbackInfo.program).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].automations.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].automations[0].type).toBe(AutomationType.Instrument)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].automations[0].value).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.program).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).automations.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).automations.jsElement(0).type).toBe(AutomationType.Instrument)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).automations.jsElement(0).value).toBe(1.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("beat-fermata")
     func beatFermata() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            G4 G4 G4 { fermata medium 4 }\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].fermata).toBeTruthy()
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].fermata!.type).toBe(FermataType.Medium)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].fermata!.length).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).fermata).toBeTruthy()
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).fermata).type).toBe(FermataType.Medium)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).fermata).length).toBe(4.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("bend-type")
     func bendType() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            3.3{ b bend gradual (0 4)}\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].bendType).toBe(BendType.Bend)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].bendStyle).toBe(BendStyle.Gradual)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].bendPoints!.length).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).bendType).toBe(BendType.Bend)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).bendStyle).toBe(BendStyle.Gradual)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).bendPoints).length).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("harmonic-values")
     func harmonicValues() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n        2.3{nh} 2.3{ah} 2.3{ah 7} 2.3{th} 2.3{th 7} 2.3{ph} 2.3{ph 7} 2.3{sh} 2.3{sh 7} 2.3{fh} 2.3{fh 7}\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].harmonicType).toBe(HarmonicType.Natural)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].harmonicValue).toBe(2.4)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].harmonicType).toBe(HarmonicType.Artificial)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].harmonicValue).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].harmonicType).toBe(HarmonicType.Artificial)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].notes[0].harmonicValue).toBe(7.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].harmonicType).toBe(HarmonicType.Tap)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].notes[0].harmonicValue).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[4].notes[0].harmonicType).toBe(HarmonicType.Tap)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[4].notes[0].harmonicValue).toBe(7.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[5].notes[0].harmonicType).toBe(HarmonicType.Pinch)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[5].notes[0].harmonicValue).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[6].notes[0].harmonicType).toBe(HarmonicType.Pinch)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[6].notes[0].harmonicValue).toBe(7.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[7].notes[0].harmonicType).toBe(HarmonicType.Semi)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[7].notes[0].harmonicValue).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[8].notes[0].harmonicType).toBe(HarmonicType.Semi)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[8].notes[0].harmonicValue).toBe(7.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[9].notes[0].harmonicType).toBe(HarmonicType.Feedback)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[9].notes[0].harmonicValue).toBe(0.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[10].notes[0].harmonicType).toBe(HarmonicType.Feedback)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[10].notes[0].harmonicValue).toBe(7.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).harmonicType).toBe(HarmonicType.Natural)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).harmonicValue).toBe(2.4)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).harmonicType).toBe(HarmonicType.Artificial)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).harmonicValue).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).harmonicType).toBe(HarmonicType.Artificial)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).notes.jsElement(0).harmonicValue).toBe(7.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).harmonicType).toBe(HarmonicType.Tap)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).notes.jsElement(0).harmonicValue).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(4).notes.jsElement(0).harmonicType).toBe(HarmonicType.Tap)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(4).notes.jsElement(0).harmonicValue).toBe(7.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(5).notes.jsElement(0).harmonicType).toBe(HarmonicType.Pinch)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(5).notes.jsElement(0).harmonicValue).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(6).notes.jsElement(0).harmonicType).toBe(HarmonicType.Pinch)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(6).notes.jsElement(0).harmonicValue).toBe(7.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(7).notes.jsElement(0).harmonicType).toBe(HarmonicType.Semi)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(7).notes.jsElement(0).harmonicValue).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(8).notes.jsElement(0).harmonicType).toBe(HarmonicType.Semi)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(8).notes.jsElement(0).harmonicValue).toBe(7.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(9).notes.jsElement(0).harmonicType).toBe(HarmonicType.Feedback)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(9).notes.jsElement(0).harmonicValue).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(10).notes.jsElement(0).harmonicType).toBe(HarmonicType.Feedback)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(10).notes.jsElement(0).harmonicValue).toBe(7.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("harmonic-values-fractional")
     func harmonicValuesFractional() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n        2.3{ah 2.4} 2.3{th 2.7} 2.3{ph 3.5} 2.3{sh 8.5} 2.3{fh 2.4}\n        ")
-        let beats: List<Beat> = score.tracks[0].staves[0].bars[0].voices[0].beats
-        TestGlobals.expect(beats[0].notes[0].harmonicType).toBe(HarmonicType.Artificial)
-        TestGlobals.expect(beats[0].notes[0].harmonicValue).toBe(2.4)
-        TestGlobals.expect(beats[1].notes[0].harmonicType).toBe(HarmonicType.Tap)
-        TestGlobals.expect(beats[1].notes[0].harmonicValue).toBe(2.7)
-        TestGlobals.expect(beats[2].notes[0].harmonicType).toBe(HarmonicType.Pinch)
-        TestGlobals.expect(beats[2].notes[0].harmonicValue).toBe(3.5)
-        TestGlobals.expect(beats[3].notes[0].harmonicType).toBe(HarmonicType.Semi)
-        TestGlobals.expect(beats[3].notes[0].harmonicValue).toBe(8.5)
-        TestGlobals.expect(beats[4].notes[0].harmonicType).toBe(HarmonicType.Feedback)
-        TestGlobals.expect(beats[4].notes[0].harmonicValue).toBe(2.4)
+        let beats: List<Beat> = try score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats
+        try TestGlobals.expect(beats.jsElement(0).notes.jsElement(0).harmonicType).toBe(HarmonicType.Artificial)
+        try TestGlobals.expect(beats.jsElement(0).notes.jsElement(0).harmonicValue).toBe(2.4)
+        try TestGlobals.expect(beats.jsElement(1).notes.jsElement(0).harmonicType).toBe(HarmonicType.Tap)
+        try TestGlobals.expect(beats.jsElement(1).notes.jsElement(0).harmonicValue).toBe(2.7)
+        try TestGlobals.expect(beats.jsElement(2).notes.jsElement(0).harmonicType).toBe(HarmonicType.Pinch)
+        try TestGlobals.expect(beats.jsElement(2).notes.jsElement(0).harmonicValue).toBe(3.5)
+        try TestGlobals.expect(beats.jsElement(3).notes.jsElement(0).harmonicType).toBe(HarmonicType.Semi)
+        try TestGlobals.expect(beats.jsElement(3).notes.jsElement(0).harmonicValue).toBe(8.5)
+        try TestGlobals.expect(beats.jsElement(4).notes.jsElement(0).harmonicType).toBe(HarmonicType.Feedback)
+        try TestGlobals.expect(beats.jsElement(4).notes.jsElement(0).harmonicValue).toBe(2.4)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("time-signature-commons")
     func timeSignatureCommons() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n        \\ts common\n        ")
-        TestGlobals.expect(score.masterBars[0].timeSignatureNumerator).toBe(4.0)
-        TestGlobals.expect(score.masterBars[0].timeSignatureDenominator).toBe(4.0)
-        TestGlobals.expect(score.masterBars[0].timeSignatureCommon).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(0).timeSignatureNumerator).toBe(4.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).timeSignatureDenominator).toBe(4.0)
+        try TestGlobals.expect(score.masterBars.jsElement(0).timeSignatureCommon).toBe(true)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("clef-ottava")
     func clefOttava() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n        \\ottava 15ma\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].clefOttava).toBe(Ottavia._15ma)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).clefOttava).toBe(Ottavia._15ma)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("simile-mark")
     func simileMark() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n        \\simile simple\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].simileMark).toBe(SimileMark.Simple)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).simileMark).toBe(SimileMark.Simple)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1552,9 +1552,9 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex("\n        \\tempo (100 \"T1\")\n        .\n        3.3.4 * 4 | \\tempo (80 \"T2\") 4.3.4*4\n        ")
         TestGlobals.expect(score.tempo).toBe(100.0)
         TestGlobals.expect(score.tempoLabel).toBe("T1")
-        TestGlobals.expect(score.masterBars[1].tempoAutomations.length).toBe(1.0)
-        TestGlobals.expect(score.masterBars[1].tempoAutomations[0].value).toBe(80.0)
-        TestGlobals.expect(score.masterBars[1].tempoAutomations[0].text).toBe("T2")
+        try TestGlobals.expect(score.masterBars.jsElement(1).tempoAutomations.length).toBe(1.0)
+        try TestGlobals.expect(score.masterBars.jsElement(1).tempoAutomations.jsElement(0).value).toBe(80.0)
+        try TestGlobals.expect(score.masterBars.jsElement(1).tempoAutomations.jsElement(0).text).toBe("T2")
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1562,7 +1562,7 @@ final class AlphaTexImporterTest {
     func doubleBar() async throws {
         let tex: String = "3.3 3.3 3.3 3.3 | \\db 1.1 2.1 3.1 4.1"
         let score: Score = try AlphaTexImporterTest.parseTex(tex)
-        TestGlobals.expect(score.masterBars[1].isDoubleBar).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(1).isDoubleBar).toBe(true)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1590,61 +1590,61 @@ final class AlphaTexImporterTest {
     @Test("bar-sizing")
     func barSizing() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            3.3.4 | \\scale 0.5 3.3.4 | \\width 300 3.3.4\n        ")
-        TestGlobals.expect(score.masterBars[1].displayScale).toBe(0.5)
-        TestGlobals.expect(score.masterBars[2].displayWidth).toBe(300.0)
+        try TestGlobals.expect(score.masterBars.jsElement(1).displayScale).toBe(0.5)
+        try TestGlobals.expect(score.masterBars.jsElement(2).displayWidth).toBe(300.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("track-properties")
     func trackProperties() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\track \"First\" {\n                color \"#FF0000\"\n                defaultSystemsLayout 6\n                systemsLayout 3 2 3\n                volume 7\n                balance 3\n                mute\n                solo\n            }\n        ")
-        TestGlobals.expect(score.tracks[0].color.rgba).toBe("#FF0000")
-        TestGlobals.expect(score.tracks[0].defaultSystemsLayout).toBe(6.0)
-        TestGlobals.expect(score.tracks[0].systemsLayout.length).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].systemsLayout[0]).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].systemsLayout[1]).toBe(2.0)
-        TestGlobals.expect(score.tracks[0].systemsLayout[0]).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].playbackInfo.volume).toBe(7.0)
-        TestGlobals.expect(score.tracks[0].playbackInfo.balance).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].playbackInfo.isMute).toBe(true)
-        TestGlobals.expect(score.tracks[0].playbackInfo.isSolo).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).color.rgba).toBe("#FF0000")
+        try TestGlobals.expect(score.tracks.jsElement(0).defaultSystemsLayout).toBe(6.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).systemsLayout.length).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).systemsLayout[0]).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).systemsLayout[1]).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).systemsLayout[0]).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.volume).toBe(7.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.balance).toBe(3.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.isMute).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.isSolo).toBe(true)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("beat-beam")
     func beatBeam() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            :8 3.3{ beam invert } 3.3 |\n            3.3{ beam up } 3.3 |\n            3.3{ beam down } 3.3 |\n            3.3{ beam auto } 3.3 |\n            3.3{ beam split } 3.3 |\n            3.3{ beam merge } 3.3 |\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].invertBeamDirection).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[1].voices[0].beats[0].preferredBeamDirection).toBe(BeamDirection.Up)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[2].voices[0].beats[0].preferredBeamDirection).toBe(BeamDirection.Down)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[3].voices[0].beats[0].beamingMode).toBe(BeatBeamingMode.Auto)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[4].voices[0].beats[0].beamingMode).toBe(BeatBeamingMode.ForceSplitToNext)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[5].voices[0].beats[0].beamingMode).toBe(BeatBeamingMode.ForceMergeWithNext)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).invertBeamDirection).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).voices.jsElement(0).beats.jsElement(0).preferredBeamDirection).toBe(BeamDirection.Up)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(2).voices.jsElement(0).beats.jsElement(0).preferredBeamDirection).toBe(BeamDirection.Down)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(3).voices.jsElement(0).beats.jsElement(0).beamingMode).toBe(BeatBeamingMode.Auto)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(4).voices.jsElement(0).beats.jsElement(0).beamingMode).toBe(BeatBeamingMode.ForceSplitToNext)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(5).voices.jsElement(0).beats.jsElement(0).beamingMode).toBe(BeatBeamingMode.ForceMergeWithNext)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("note-show-string")
     func noteShowString() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            :8 3.3{ string }\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].showStringNumber).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).showStringNumber).toBe(true)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("note-show-string-pitched")
     func noteShowStringPitched() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\instrument piano\n            \\tuning piano\n            .\n            :8 a4{ string 1 } c4{ string 6 } e4\n        ")
-        let beats: List<Beat> = score.tracks[0].staves[0].bars[0].voices[0].beats
-        let first: Note = beats[0].notes[0]
+        let beats: List<Beat> = try score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats
+        let first: Note = try beats.jsElement(0).notes[0]
         TestGlobals.expect(first.isPiano).toBe(true)
         TestGlobals.expect(first.isStringed).toBe(false)
         TestGlobals.expect(first.showStringNumber).toBe(true)
         TestGlobals.expect(first.string).toBe(6.0)
         TestGlobals.expect(first.realValue).toBe(69.0)
-        let second: Note = beats[1].notes[0]
+        let second: Note = try beats.jsElement(1).notes[0]
         TestGlobals.expect(second.showStringNumber).toBe(true)
         TestGlobals.expect(second.string).toBe(1.0)
         TestGlobals.expect(second.realValue).toBe(60.0)
-        let third: Note = beats[2].notes[0]
+        let third: Note = try beats.jsElement(2).notes[0]
         TestGlobals.expect(third.showStringNumber).toBe(false)
         TestGlobals.expect(Number.isNaN(third.string)).toBe(true)
         try AlphaTexImporterTest.testExportRoundtrip(score)
@@ -1680,24 +1680,24 @@ final class AlphaTexImporterTest {
     @Test("note-hide")
     func noteHide() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            :8 3.3{ hide }\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].isVisible).toBe(false)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isVisible).toBe(false)
     }
 
     @Test("note-slur")
     func noteSlur() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            :8 (3.3{ slur s1 } 3.4 3.5)  (10.3 {slur s1} 17.4 15.5)\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes[0].isSlurOrigin).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].notes[0].isSlurDestination).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.jsElement(0).isSlurOrigin).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).notes.jsElement(0).isSlurDestination).toBe(true)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("hide-tuning")
     func hideTuning() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\track \"Track 1\"\n            \\track \"Track 2\"\n            \\staff {tabs}\n            \\tuning A1 D2 A2 D3 G3 B3 E4 hide\n            4.1 3.1 2.1 1.1")
-        TestGlobals.expect(score.tracks[1].staves[0].stringTuning.tunings[0]).toBe(33.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).staves.jsElement(0).stringTuning.tunings[0]).toBe(33.0)
         TestGlobals.expect(score.stylesheet.perTrackDisplayTuning).toBeTruthy()
-        TestGlobals.expect(score.stylesheet.perTrackDisplayTuning!.has(1.0)).toBe(true)
-        TestGlobals.expect(score.stylesheet.perTrackDisplayTuning!.get(1.0)).toBe(false)
+        try TestGlobals.expect(jsNonNull(score.stylesheet.perTrackDisplayTuning).has(1.0)).toBe(true)
+        try TestGlobals.expect(jsNonNull(score.stylesheet.perTrackDisplayTuning).get(1.0)).toBe(false)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1705,18 +1705,18 @@ final class AlphaTexImporterTest {
     func clefs() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n        \\clef C4 \\ottava 15ma C4 | C4 |\n        \\clef 0 | \\clef 48 | \\clef 60 | \\clef 65 | \\clef 43 |\n        \\clef Neutral | \\clef C3 | \\clef C4 | \\clef F4 | \\clef G2 |\n        \\clef \"Neutral\" | \\clef \"C3\" | \\clef \"C4\" | \\clef \"F4\" | \\clef \"G2\" |\n        \\clef n | \\clef alto | \\clef tenor | \\clef bass | \\clef treble |\n        \\clef \"n\" | \\clef \"alto\" | \\clef \"tenor\" | \\clef \"bass\" | \\clef \"treble\"\n        ")
         var barIndex: Double = 0.0
-        TestGlobals.expect(score.tracks[0].staves[0].bars[(barIndex).toInt()].clef).toBe(Clef.C4)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[(jsPostInc(&barIndex)).toInt()].clefOttava).toBe(Ottavia._15ma)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[(barIndex).toInt()].clef).toBe(Clef.C4)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[(jsPostInc(&barIndex)).toInt()].clefOttava).toBe(Ottavia._15ma)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement((barIndex).toInt()).clef).toBe(Clef.C4)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement((jsPostInc(&barIndex)).toInt()).clefOttava).toBe(Ottavia._15ma)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement((barIndex).toInt()).clef).toBe(Clef.C4)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement((jsPostInc(&barIndex)).toInt()).clefOttava).toBe(Ottavia._15ma)
         do {
             var i: Double = 0.0
             while i < 5 {
-                TestGlobals.expect(score.tracks[0].staves[0].bars[(jsPostInc(&barIndex)).toInt()].clef, "Invalid clef at index \((barIndex - 1.0).toTemplate())").toBe(Clef.Neutral)
-                TestGlobals.expect(score.tracks[0].staves[0].bars[(jsPostInc(&barIndex)).toInt()].clef, "Invalid clef at index \((barIndex - 1.0).toTemplate())").toBe(Clef.C3)
-                TestGlobals.expect(score.tracks[0].staves[0].bars[(jsPostInc(&barIndex)).toInt()].clef, "Invalid clef at index \((barIndex - 1.0).toTemplate())").toBe(Clef.C4)
-                TestGlobals.expect(score.tracks[0].staves[0].bars[(jsPostInc(&barIndex)).toInt()].clef, "Invalid clef at index \((barIndex - 1.0).toTemplate())").toBe(Clef.F4)
-                TestGlobals.expect(score.tracks[0].staves[0].bars[(jsPostInc(&barIndex)).toInt()].clef, "Invalid clef at index \((barIndex - 1.0).toTemplate())").toBe(Clef.G2)
+                try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement((jsPostInc(&barIndex)).toInt()).clef, "Invalid clef at index \((barIndex - 1.0).toTemplate())").toBe(Clef.Neutral)
+                try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement((jsPostInc(&barIndex)).toInt()).clef, "Invalid clef at index \((barIndex - 1.0).toTemplate())").toBe(Clef.C3)
+                try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement((jsPostInc(&barIndex)).toInt()).clef, "Invalid clef at index \((barIndex - 1.0).toTemplate())").toBe(Clef.C4)
+                try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement((jsPostInc(&barIndex)).toInt()).clef, "Invalid clef at index \((barIndex - 1.0).toTemplate())").toBe(Clef.F4)
+                try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement((jsPostInc(&barIndex)).toInt()).clef, "Invalid clef at index \((barIndex - 1.0).toTemplate())").toBe(Clef.G2)
                 i += 1
             }
         }
@@ -1728,8 +1728,8 @@ final class AlphaTexImporterTest {
         let score: Score = try AlphaTexImporterTest.parseTex("\n        \\multiBarRest\n        .\n        \\track \"A\" { multiBarRest }\n        3.3\n        \\track \"B\"\n        3.3\n\n        ")
         TestGlobals.expect(score.stylesheet.multiTrackMultiBarRest).toBe(true)
         TestGlobals.expect(score.stylesheet.perTrackMultiBarRest).toBeTruthy()
-        TestGlobals.expect(score.stylesheet.perTrackMultiBarRest!.has(0.0)).toBe(true)
-        TestGlobals.expect(score.stylesheet.perTrackMultiBarRest!.has(1.0)).toBe(false)
+        try TestGlobals.expect(jsNonNull(score.stylesheet.perTrackMultiBarRest).has(0.0)).toBe(true)
+        try TestGlobals.expect(jsNonNull(score.stylesheet.perTrackMultiBarRest).has(1.0)).toBe(false)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1737,46 +1737,46 @@ final class AlphaTexImporterTest {
     func headerFooter() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\title \"Title\" \"Title: %TITLE%\" left\n            \\subtitle \"Subtitle\" \"Subtitle: %SUBTITLE%\" center\n            \\artist \"Artist\" \"Artist: %ARTIST%\" right\n            \\album \"Album\" \"Album: %ALBUM%\" left\n            \\words \"Words\" \"Words: %WORDS%\" center\n            \\music \"Music\" \"Music: %MUSIC%\" right\n            \\wordsAndMusic \"Words & Music: %MUSIC%\" left\n            \\tab \"Tab\" \"Transcriber: %TABBER%\" center\n            \\copyright \"Copyright\" \"Copyright: %COPYRIGHT%\" right\n            \\copyright2 \"Copyright2\" right\n            .\n            ")
         TestGlobals.expect(score.style).toBeTruthy()
-        TestGlobals.expect(score.style!.headerAndFooter.has(ScoreSubElement.Title)).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Title)!.template).toBe("Title: %TITLE%")
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Title)!.isVisible).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Title)!.textAlign).toBe(TextAlign.Left)
-        TestGlobals.expect(score.style!.headerAndFooter.has(ScoreSubElement.SubTitle)).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.SubTitle)!.template).toBe("Subtitle: %SUBTITLE%")
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.SubTitle)!.isVisible).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.SubTitle)!.textAlign).toBe(TextAlign.Center)
-        TestGlobals.expect(score.style!.headerAndFooter.has(ScoreSubElement.Artist)).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Artist)!.template).toBe("Artist: %ARTIST%")
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Artist)!.isVisible).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Artist)!.textAlign).toBe(TextAlign.Right)
-        TestGlobals.expect(score.style!.headerAndFooter.has(ScoreSubElement.Album)).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Album)!.template).toBe("Album: %ALBUM%")
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Album)!.isVisible).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Album)!.textAlign).toBe(TextAlign.Left)
-        TestGlobals.expect(score.style!.headerAndFooter.has(ScoreSubElement.Words)).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Words)!.template).toBe("Words: %WORDS%")
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Words)!.isVisible).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Words)!.textAlign).toBe(TextAlign.Center)
-        TestGlobals.expect(score.style!.headerAndFooter.has(ScoreSubElement.Music)).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Music)!.template).toBe("Music: %MUSIC%")
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Music)!.isVisible).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Music)!.textAlign).toBe(TextAlign.Right)
-        TestGlobals.expect(score.style!.headerAndFooter.has(ScoreSubElement.WordsAndMusic)).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.WordsAndMusic)!.template).toBe("Words & Music: %MUSIC%")
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.WordsAndMusic)!.isVisible).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.WordsAndMusic)!.textAlign).toBe(TextAlign.Left)
-        TestGlobals.expect(score.style!.headerAndFooter.has(ScoreSubElement.Transcriber)).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Transcriber)!.template).toBe("Transcriber: %TABBER%")
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Transcriber)!.isVisible).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Transcriber)!.textAlign).toBe(TextAlign.Center)
-        TestGlobals.expect(score.style!.headerAndFooter.has(ScoreSubElement.Copyright)).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Copyright)!.template).toBe("Copyright: %COPYRIGHT%")
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Copyright)!.isVisible).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.Copyright)!.textAlign).toBe(TextAlign.Right)
-        TestGlobals.expect(score.style!.headerAndFooter.has(ScoreSubElement.CopyrightSecondLine)).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.CopyrightSecondLine)!.template).toBe("Copyright2")
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.CopyrightSecondLine)!.isVisible).toBe(true)
-        TestGlobals.expect(score.style!.headerAndFooter.get(ScoreSubElement.CopyrightSecondLine)!.textAlign).toBe(TextAlign.Right)
+        try TestGlobals.expect(jsNonNull(score.style).headerAndFooter.has(ScoreSubElement.Title)).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Title)).template).toBe("Title: %TITLE%")
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Title)).isVisible).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Title)).textAlign).toBe(TextAlign.Left)
+        try TestGlobals.expect(jsNonNull(score.style).headerAndFooter.has(ScoreSubElement.SubTitle)).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.SubTitle)).template).toBe("Subtitle: %SUBTITLE%")
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.SubTitle)).isVisible).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.SubTitle)).textAlign).toBe(TextAlign.Center)
+        try TestGlobals.expect(jsNonNull(score.style).headerAndFooter.has(ScoreSubElement.Artist)).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Artist)).template).toBe("Artist: %ARTIST%")
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Artist)).isVisible).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Artist)).textAlign).toBe(TextAlign.Right)
+        try TestGlobals.expect(jsNonNull(score.style).headerAndFooter.has(ScoreSubElement.Album)).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Album)).template).toBe("Album: %ALBUM%")
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Album)).isVisible).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Album)).textAlign).toBe(TextAlign.Left)
+        try TestGlobals.expect(jsNonNull(score.style).headerAndFooter.has(ScoreSubElement.Words)).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Words)).template).toBe("Words: %WORDS%")
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Words)).isVisible).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Words)).textAlign).toBe(TextAlign.Center)
+        try TestGlobals.expect(jsNonNull(score.style).headerAndFooter.has(ScoreSubElement.Music)).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Music)).template).toBe("Music: %MUSIC%")
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Music)).isVisible).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Music)).textAlign).toBe(TextAlign.Right)
+        try TestGlobals.expect(jsNonNull(score.style).headerAndFooter.has(ScoreSubElement.WordsAndMusic)).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.WordsAndMusic)).template).toBe("Words & Music: %MUSIC%")
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.WordsAndMusic)).isVisible).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.WordsAndMusic)).textAlign).toBe(TextAlign.Left)
+        try TestGlobals.expect(jsNonNull(score.style).headerAndFooter.has(ScoreSubElement.Transcriber)).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Transcriber)).template).toBe("Transcriber: %TABBER%")
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Transcriber)).isVisible).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Transcriber)).textAlign).toBe(TextAlign.Center)
+        try TestGlobals.expect(jsNonNull(score.style).headerAndFooter.has(ScoreSubElement.Copyright)).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Copyright)).template).toBe("Copyright: %COPYRIGHT%")
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Copyright)).isVisible).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.Copyright)).textAlign).toBe(TextAlign.Right)
+        try TestGlobals.expect(jsNonNull(score.style).headerAndFooter.has(ScoreSubElement.CopyrightSecondLine)).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.CopyrightSecondLine)).template).toBe("Copyright2")
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.CopyrightSecondLine)).isVisible).toBe(true)
+        try TestGlobals.expect(jsNonNull(jsNonNull(score.style).headerAndFooter.get(ScoreSubElement.CopyrightSecondLine)).textAlign).toBe(TextAlign.Right)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1810,8 +1810,8 @@ final class AlphaTexImporterTest {
     func syncFloatMillisecondOffset() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\tempo 148\n            .\n            3.3.4*4 | 3.3.4*4 | 3.3.4*4 | 3.3.4*4\n            .\n            \\sync 0 0 0\n            \\sync 1 0 1621.6216216216217\n            \\sync 2 0 3243.25 0.5\n            \\sync (3 0 4864.865)\n        ")
         TestGlobals.expect(score.masterBars.length).toBe(4.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[3].voices[0].beats.length).toBe(4.0)
-        let syncPoints: List<FlatSyncPoint> = score.exportFlatSyncPoints()
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(3).voices.jsElement(0).beats.length).toBe(4.0)
+        let syncPoints: List<FlatSyncPoint> = try score.exportFlatSyncPoints()
         TestGlobals.expect(syncPoints.map({ (p: FlatSyncPoint) -> String in
             return "\((p.barIndex).toTemplate()),\((p.barOccurence).toTemplate()),\((p.barPosition).toTemplate()),\((p.millisecondOffset).toTemplate())"
         })).toEqual(List<String>("0,0,0,0", "1,0,0,1621.6216216216217", "2,0,0.5,3243.25", "3,0,0,4864.865"))
@@ -1821,50 +1821,50 @@ final class AlphaTexImporterTest {
     @Test("tuning-name")
     func tuningName() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\tuning E4 B3 G3 D3 A2 E2 \"Default\"\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].stringTuning.tunings.join(",")).toBe(Tuning.getDefaultTuningFor(6.0)!.tunings.join(","))
-        TestGlobals.expect(score.tracks[0].staves[0].stringTuning.name).toBe("Default")
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).stringTuning.tunings.join(",")).toBe(jsNonNull(Tuning.getDefaultTuningFor(6.0)).tunings.join(","))
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).stringTuning.name).toBe("Default")
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("volume-change")
     func volumeChange() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\track \"T1\" {\n                volume 7\n            }\n            G4 G4 { volume 8 } G4 { volume 9 }\n        ")
-        TestGlobals.expect(score.tracks[0].playbackInfo.volume).toBe(7.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].automations.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].automations[0].type).toBe(AutomationType.Volume)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].automations[0].value).toBe(8.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].automations.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].automations[0].type).toBe(AutomationType.Volume)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].automations[0].value).toBe(9.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.volume).toBe(7.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).automations.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).automations.jsElement(0).type).toBe(AutomationType.Volume)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).automations.jsElement(0).value).toBe(8.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).automations.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).automations.jsElement(0).type).toBe(AutomationType.Volume)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).automations.jsElement(0).value).toBe(9.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("balance-change")
     func balanceChange() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\track \"T1\" {\n                balance 7\n            }\n            G4 G4 { balance 8 } G4 { balance 9 }\n        ")
-        TestGlobals.expect(score.tracks[0].playbackInfo.balance).toBe(7.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].automations.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].automations[0].type).toBe(AutomationType.Balance)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].automations[0].value).toBe(8.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].automations.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].automations[0].type).toBe(AutomationType.Balance)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].automations[0].value).toBe(9.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.balance).toBe(7.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).automations.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).automations.jsElement(0).type).toBe(AutomationType.Balance)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).automations.jsElement(0).value).toBe(8.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).automations.length).toBe(1.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).automations.jsElement(0).type).toBe(AutomationType.Balance)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).automations.jsElement(0).value).toBe(9.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("beat-barre")
     func beatBarre() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            3.3.4 { barre 5 half }\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].barreFret).toBe(5.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].barreShape).toBe(BarreShape.Half)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).barreFret).toBe(5.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).barreShape).toBe(BarreShape.Half)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("beat-dead-slapped")
     func beatDeadSlapped() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            ().16 {ds}\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].deadSlapped).toBe(true)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].notes.length).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).deadSlapped).toBe(true)
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).notes.length).toBe(0.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1883,28 +1883,28 @@ final class AlphaTexImporterTest {
     @Test("beat-lyrics")
     func beatLyrics() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            .\n            3.3.4\n            3.3.4 {lyrics \"A\"}\n            3.3.4 {lyrics 0 \"B C D\"}\n            3.3.4 {lyrics 0 \"E\" lyrics 1 \"F\" lyrics 2 \"G\"}\n        ")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[0].lyrics).not().toBeTruthy()
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].lyrics).toBeTruthy()
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].lyrics!.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[1].lyrics![0]).toBe("A")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].lyrics).toBeTruthy()
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].lyrics!.length).toBe(1.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[2].lyrics![0]).toBe("B C D")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].lyrics).toBeTruthy()
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].lyrics!.length).toBe(3.0)
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].lyrics![0]).toBe("E")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].lyrics![1]).toBe("F")
-        TestGlobals.expect(score.tracks[0].staves[0].bars[0].voices[0].beats[3].lyrics![2]).toBe("G")
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(0).lyrics).not().toBeTruthy()
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).lyrics).toBeTruthy()
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).lyrics).length).toBe(1.0)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(1).lyrics)[0]).toBe("A")
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).lyrics).toBeTruthy()
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).lyrics).length).toBe(1.0)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(2).lyrics)[0]).toBe("B C D")
+        try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).lyrics).toBeTruthy()
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).lyrics).length).toBe(3.0)
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).lyrics)[0]).toBe("E")
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).lyrics)[1]).toBe("F")
+        try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats.jsElement(3).lyrics)[2]).toBe("G")
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("bank")
     func bank() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n            \\track \"Piano\" { instrument electricpiano1}\n            c4 d4 e4 f4\n\n            \\track \"Piano\" { instrument electricpiano1 bank 2 }\n            c4 d4 e4 f4\n        ")
-        TestGlobals.expect(score.tracks[0].playbackInfo.program).toBe(4.0)
-        TestGlobals.expect(score.tracks[0].playbackInfo.bank).toBe(0.0)
-        TestGlobals.expect(score.tracks[1].playbackInfo.program).toBe(4.0)
-        TestGlobals.expect(score.tracks[1].playbackInfo.bank).toBe(2.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.program).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(0).playbackInfo.bank).toBe(0.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).playbackInfo.program).toBe(4.0)
+        try TestGlobals.expect(score.tracks.jsElement(1).playbackInfo.bank).toBe(2.0)
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
@@ -1977,6 +1977,16 @@ final class AlphaTexImporterTest {
                 AlphaTexImporterTest.importErrorTest(". \\rc (\"a\")")
             }
 
+            @Test("score optional")
+            func scoreOptional() async throws {
+                AlphaTexImporterTest.importErrorTest("\\title (\"Title\" 1)")
+            }
+
+            @Test("bar optional")
+            func barOptional() async throws {
+                AlphaTexImporterTest.importErrorTest(". \\section (\"a\" 1)")
+            }
+
             @Test("bracketextendmode")
             func bracketextendmode() async throws {
                 AlphaTexImporterTest.importErrorTest("\\bracketextendmode invalid")
@@ -2017,6 +2027,11 @@ final class AlphaTexImporterTest {
                 AlphaTexImporterTest.importErrorTest("\\accidentals invalid")
             }
 
+            @Test("whammybartype")
+            func whammybartype() async throws {
+                AlphaTexImporterTest.importErrorTest("C4 {tb invalid (0 1)}")
+            }
+
             @Test("whammybarstyle")
             func whammybarstyle() async throws {
                 AlphaTexImporterTest.importErrorTest("C4 {tb none invalid (0 1)}")
@@ -2040,6 +2055,16 @@ final class AlphaTexImporterTest {
             @Test("fermata")
             func fermata() async throws {
                 AlphaTexImporterTest.importErrorTest("C4 {fermata (invalid)}")
+            }
+
+            @Test("bendtype")
+            func bendtype() async throws {
+                AlphaTexImporterTest.importErrorTest("C4 {b invalid (0 4)}")
+            }
+
+            @Test("bendstyle")
+            func bendstyle() async throws {
+                AlphaTexImporterTest.importErrorTest("C4 {b bend invalid (0 4)}")
             }
 
             @Test("gracetype")
@@ -2238,7 +2263,7 @@ final class AlphaTexImporterTest {
             let importer: AlphaTexImporter = AlphaTexImporter()
             importer.initFromString(tex, Settings())
             let s: Score = try importer.readScore()
-            TestGlobals.expect(importer.getStaffNoteKind(s.tracks[0].staves[0])).toBe(type)
+            try TestGlobals.expect(importer.getStaffNoteKind(s.tracks.jsElement(0).staves[0])).toBe(type)
         }
 
         @Suite("direct")
@@ -2341,8 +2366,8 @@ final class AlphaTexImporterTest {
     final class TremolosSuite {
         private static func test(_ tex: String) throws {
             let score: Score = try AlphaTexImporterTest.parseTex(tex)
-            let beat: Beat = score.tracks[0].staves[0].bars[0].voices[0].beats[0]
-            let serialized: Map<String, Any?>? = TremoloPickingEffectSerializer.toJson(beat.tremoloPicking!)
+            let beat: Beat = try score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).voices.jsElement(0).beats[0]
+            let serialized: Map<String, Any?>? = try TremoloPickingEffectSerializer.toJson(jsNonNull(beat.tremoloPicking))
             TestGlobals.expect(serialized).toMatchSnapshot()
             try AlphaTexImporterTest.testExportRoundtrip(score)
         }
@@ -2470,8 +2495,8 @@ final class AlphaTexImporterTest {
     final class BarNumberDisplaySuite {
         private static func test(_ tex: String, _ mode: BarNumberDisplay?) throws {
             let score: Score = try AlphaTexImporterTest.parseTex(tex)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[0].barNumberDisplay).toBeUndefined()
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].barNumberDisplay).toBe(mode)
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(0).barNumberDisplay).toBeUndefined()
+            try TestGlobals.expect(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).barNumberDisplay).toBe(mode)
             try AlphaTexImporterTest.testExportRoundtrip(score)
         }
 
@@ -2504,34 +2529,34 @@ final class AlphaTexImporterTest {
         func levels() async throws {
             let score: Score = try AlphaTexImporterTest.parseTex("\n                \\defaultStaffDisplay tabs { tsVisibility false tsPlacement allStaves rhythm showWithBeams }\n                \\staff {score tabs}\n                \\staffDisplay { ksVisibility false barNumber hide }\n                C4 | \\barDisplay (score tabs) { clefVisibility false tsSystems firstSystemOnly } C4 | C4\n            ")
             let tabs: TabStaffConfig = score.stylesheet.tabConfig
-            TestGlobals.expect(tabs.timeSignature!.isVisible).toBe(false)
-            TestGlobals.expect(tabs.timeSignature!.staffPlacement).toBe(StaffPlacement.AllStaves)
-            TestGlobals.expect(tabs.timeSignature!.systemDisplay).toBe(SystemDisplay.AllSystems)
+            try TestGlobals.expect(jsNonNull(tabs.timeSignature).isVisible).toBe(false)
+            try TestGlobals.expect(jsNonNull(tabs.timeSignature).staffPlacement).toBe(StaffPlacement.AllStaves)
+            try TestGlobals.expect(jsNonNull(tabs.timeSignature).systemDisplay).toBe(SystemDisplay.AllSystems)
             TestGlobals.expect(tabs.rhythm).toBe(TabRhythmMode.ShowWithBeams)
-            TestGlobals.expect(score.stylesheet.scoreConfig.timeSignature!.isVisible).toBe(true)
-            let staff: Staff = score.tracks[0].staves[0]
-            TestGlobals.expect(staff.scoreConfig!.keySignature!.isVisible).toBe(false)
-            TestGlobals.expect(staff.slashConfig!.keySignature!.isVisible).toBe(false)
-            TestGlobals.expect(staff.scoreConfig!.clef).toBeUndefined()
-            TestGlobals.expect(staff.tabConfig!.barNumber).toBe(BarNumberDisplay.Hide)
-            TestGlobals.expect(staff.numberedConfig!.barNumber).toBe(BarNumberDisplay.Hide)
+            try TestGlobals.expect(jsNonNull(score.stylesheet.scoreConfig.timeSignature).isVisible).toBe(true)
+            let staff: Staff = try score.tracks.jsElement(0).staves[0]
+            try TestGlobals.expect(jsNonNull(jsNonNull(staff.scoreConfig).keySignature).isVisible).toBe(false)
+            try TestGlobals.expect(jsNonNull(jsNonNull(staff.slashConfig).keySignature).isVisible).toBe(false)
+            try TestGlobals.expect(jsNonNull(staff.scoreConfig).clef).toBeUndefined()
+            try TestGlobals.expect(jsNonNull(staff.tabConfig).barNumber).toBe(BarNumberDisplay.Hide)
+            try TestGlobals.expect(jsNonNull(staff.numberedConfig).barNumber).toBe(BarNumberDisplay.Hide)
             let bars: List<Bar> = staff.bars
-            TestGlobals.expect(bars[0].scoreDisplay).toBeUndefined()
-            TestGlobals.expect(bars[1].scoreDisplay!.clef!.isVisible).toBe(false)
-            TestGlobals.expect(bars[1].tabDisplay!.clef!.isVisible).toBe(false)
-            TestGlobals.expect(bars[1].tabDisplay!.timeSignature!.systemDisplay).toBe(SystemDisplay.FirstSystemOnly)
-            TestGlobals.expect(bars[1].slashDisplay).toBeUndefined()
-            TestGlobals.expect(bars[2].scoreDisplay).toBeUndefined()
+            try TestGlobals.expect(bars.jsElement(0).scoreDisplay).toBeUndefined()
+            try TestGlobals.expect(jsNonNull(jsNonNull(bars.jsElement(1).scoreDisplay).clef).isVisible).toBe(false)
+            try TestGlobals.expect(jsNonNull(jsNonNull(bars.jsElement(1).tabDisplay).clef).isVisible).toBe(false)
+            try TestGlobals.expect(jsNonNull(jsNonNull(bars.jsElement(1).tabDisplay).timeSignature).systemDisplay).toBe(SystemDisplay.FirstSystemOnly)
+            try TestGlobals.expect(bars.jsElement(1).slashDisplay).toBeUndefined()
+            try TestGlobals.expect(bars.jsElement(2).scoreDisplay).toBeUndefined()
             try AlphaTexImporterTest.testExportRoundtrip(score)
         }
 
         @Test("later-tags-win")
         func laterTagsWin() async throws {
             let score: Score = try AlphaTexImporterTest.parseTex("\\defaultStaffDisplay { tsVisibility false } \\defaultStaffDisplay tabs { tsVisibility true tsSystems firstSystemOnly } C4")
-            TestGlobals.expect(score.stylesheet.scoreConfig.timeSignature!.isVisible).toBe(false)
-            TestGlobals.expect(score.stylesheet.tabConfig.timeSignature!.isVisible).toBe(true)
-            TestGlobals.expect(score.stylesheet.tabConfig.timeSignature!.systemDisplay).toBe(SystemDisplay.FirstSystemOnly)
-            TestGlobals.expect(score.stylesheet.tabConfig.timeSignature!.staffPlacement).toBe(StaffPlacement.Primary)
+            try TestGlobals.expect(jsNonNull(score.stylesheet.scoreConfig.timeSignature).isVisible).toBe(false)
+            try TestGlobals.expect(jsNonNull(score.stylesheet.tabConfig.timeSignature).isVisible).toBe(true)
+            try TestGlobals.expect(jsNonNull(score.stylesheet.tabConfig.timeSignature).systemDisplay).toBe(SystemDisplay.FirstSystemOnly)
+            try TestGlobals.expect(jsNonNull(score.stylesheet.tabConfig.timeSignature).staffPlacement).toBe(StaffPlacement.Primary)
             try AlphaTexImporterTest.testExportRoundtrip(score)
         }
 
@@ -2543,7 +2568,7 @@ final class AlphaTexImporterTest {
                 var i: Double = 0.0
                 while i < values.length {
                     let score: Score = try AlphaTexImporterTest.parseTex("\\staffDisplay score { tsVisibility \((values[(i).toInt()]).toTemplate()) } C4")
-                    TestGlobals.expect(score.tracks[0].staves[0].scoreConfig!.timeSignature!.isVisible).toBe(expected[(i).toInt()])
+                    try TestGlobals.expect(jsNonNull(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).scoreConfig).timeSignature).isVisible).toBe(expected[(i).toInt()])
                     i += 1
                 }
             }
@@ -2568,14 +2593,14 @@ final class AlphaTexImporterTest {
             TestGlobals.expect(barLevel.parserDiagnostics.items.map({ (d: AlphaTexDiagnostic) -> AlphaTexDiagnosticCode in
                 return d.code
             })).toContain(AlphaTexDiagnosticCode.AT205)
-            try TestGlobals.expect(AlphaTexImporterTest.parseTex("\\staffDisplay tabs { ksVisibility false } C4").tracks[0].staves[0].tabConfig).toBe(nil)
+            try TestGlobals.expect(AlphaTexImporterTest.parseTex("\\staffDisplay tabs { ksVisibility false } C4").tracks.jsElement(0).staves.jsElement(0).tabConfig).toBe(nil)
         }
 
         @Test("legacy-shorthands")
         func legacyShorthands() async throws {
             let score: Score = try AlphaTexImporterTest.parseTex("\\defaultBarNumberDisplay hide C4 | \\barNumberDisplay allBars C4")
             TestGlobals.expect(score.stylesheet.tabConfig.barNumber).toBe(BarNumberDisplay.Hide)
-            TestGlobals.expect(score.tracks[0].staves[0].bars[1].tabDisplay!.barNumber).toBe(BarNumberDisplay.AllBars)
+            try TestGlobals.expect(jsNonNull(score.tracks.jsElement(0).staves.jsElement(0).bars.jsElement(1).tabDisplay).barNumber).toBe(BarNumberDisplay.AllBars)
             try AlphaTexImporterTest.testExportRoundtrip(score)
         }
 
@@ -2592,26 +2617,26 @@ final class AlphaTexImporterTest {
     @Test("bar-numbers")
     func barNumbers() async throws {
         let score: Score = try AlphaTexImporterTest.parseTex("\n             // anacrusis (no number)\n                \\ac \n                    C4.1 \n                | \n                // standard bar number 1\n                    C4 \n                | \n                // custom text instead of bar number 2\n                \\barNumber \"Hello\" \n                    C4\n                |\n                // a jump to 10 \n                \\barNumber 10\n                    C4\n                |\n                // now becomes 11 after the customization before\n                    C4\n        ")
-        TestGlobals.expect(Number.isNaN(score.masterBars[0].barNumber)).toBe(true)
-        TestGlobals.expect(score.masterBars[0].barNumberText).toBe("")
-        TestGlobals.expect(score.masterBars[0].customBarNumber).toBeUndefined()
-        TestGlobals.expect(score.masterBars[0].customBarNumberText).toBeUndefined()
-        TestGlobals.expect(score.masterBars[1].barNumber).toBe(1.0)
-        TestGlobals.expect(score.masterBars[1].barNumberText).toBe("1")
-        TestGlobals.expect(score.masterBars[1].customBarNumber).toBeUndefined()
-        TestGlobals.expect(score.masterBars[1].customBarNumberText).toBeUndefined()
-        TestGlobals.expect(score.masterBars[2].barNumber).toBe(2.0)
-        TestGlobals.expect(score.masterBars[2].barNumberText).toBe("Hello")
-        TestGlobals.expect(score.masterBars[2].customBarNumber).toBeUndefined()
-        TestGlobals.expect(score.masterBars[2].customBarNumberText).toBe("Hello")
-        TestGlobals.expect(score.masterBars[3].barNumber).toBe(10.0)
-        TestGlobals.expect(score.masterBars[3].barNumberText).toBe("10")
-        TestGlobals.expect(score.masterBars[3].customBarNumber).toBe(10.0)
-        TestGlobals.expect(score.masterBars[3].customBarNumberText).toBeUndefined()
-        TestGlobals.expect(score.masterBars[4].barNumber).toBe(11.0)
-        TestGlobals.expect(score.masterBars[4].barNumberText).toBe("11")
-        TestGlobals.expect(score.masterBars[4].customBarNumber).toBeUndefined()
-        TestGlobals.expect(score.masterBars[4].customBarNumberText).toBeUndefined()
+        try TestGlobals.expect(Number.isNaN(score.masterBars.jsElement(0).barNumber)).toBe(true)
+        try TestGlobals.expect(score.masterBars.jsElement(0).barNumberText).toBe("")
+        try TestGlobals.expect(score.masterBars.jsElement(0).customBarNumber).toBeUndefined()
+        try TestGlobals.expect(score.masterBars.jsElement(0).customBarNumberText).toBeUndefined()
+        try TestGlobals.expect(score.masterBars.jsElement(1).barNumber).toBe(1.0)
+        try TestGlobals.expect(score.masterBars.jsElement(1).barNumberText).toBe("1")
+        try TestGlobals.expect(score.masterBars.jsElement(1).customBarNumber).toBeUndefined()
+        try TestGlobals.expect(score.masterBars.jsElement(1).customBarNumberText).toBeUndefined()
+        try TestGlobals.expect(score.masterBars.jsElement(2).barNumber).toBe(2.0)
+        try TestGlobals.expect(score.masterBars.jsElement(2).barNumberText).toBe("Hello")
+        try TestGlobals.expect(score.masterBars.jsElement(2).customBarNumber).toBeUndefined()
+        try TestGlobals.expect(score.masterBars.jsElement(2).customBarNumberText).toBe("Hello")
+        try TestGlobals.expect(score.masterBars.jsElement(3).barNumber).toBe(10.0)
+        try TestGlobals.expect(score.masterBars.jsElement(3).barNumberText).toBe("10")
+        try TestGlobals.expect(score.masterBars.jsElement(3).customBarNumber).toBe(10.0)
+        try TestGlobals.expect(score.masterBars.jsElement(3).customBarNumberText).toBeUndefined()
+        try TestGlobals.expect(score.masterBars.jsElement(4).barNumber).toBe(11.0)
+        try TestGlobals.expect(score.masterBars.jsElement(4).barNumberText).toBe("11")
+        try TestGlobals.expect(score.masterBars.jsElement(4).customBarNumber).toBeUndefined()
+        try TestGlobals.expect(score.masterBars.jsElement(4).customBarNumberText).toBeUndefined()
     }
 
     init() {}

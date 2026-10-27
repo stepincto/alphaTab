@@ -37,12 +37,12 @@ internal final class CapellaParser {
             throw UnsupportedFormatError("Could not parse XML", (e as! JsError))
         }
         try self._parseDom(dom)
-        self._consolidate()
-        self.score.finish(settings)
+        try self._consolidate()
+        try self.score.finish(settings)
     }
 
-    private func _consolidate() {
-        ModelUtils.consolidate(self.score)
+    private func _consolidate() throws {
+        try ModelUtils.consolidate(self.score)
         CapellaParser._applyEffectRange(self._slurs, { (_: SlurDrawObject, beat: Beat) in
             beat.isLegatoOrigin = true
         })
@@ -85,13 +85,13 @@ internal final class CapellaParser {
                 case "info":
                     self._parseInfo(n)
                 case "layout":
-                    self._parseLayout(n)
+                    try self._parseLayout(n)
                 case "gallery":
-                    self._parseGallery(n)
+                    try self._parseGallery(n)
                 case "pageObjects":
-                    self._parsePageObjects(n)
+                    try self._parsePageObjects(n)
                 case "systems":
-                    self._parseSystems(n)
+                    try self._parseSystems(n)
                 default:
                     break
                 }
@@ -103,13 +103,13 @@ internal final class CapellaParser {
 
     private var _staffLookup: Map<Double, Staff> = Map<Double, Staff>()
 
-    private func _parseLayout(_ element: XmlNode) {
+    private func _parseLayout(_ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "staves":
-                self._parseLayoutStaves(c)
+                try self._parseLayoutStaves(c)
             case "brackets":
-                self._parseBrackets(c)
+                try self._parseBrackets(c)
             default:
                 break
             }
@@ -126,10 +126,10 @@ internal final class CapellaParser {
             var i: Double = 0.0
             while i < self._staffLayouts.length {
                 let staffLayout: StaffLayout = self._staffLayouts[(i).toInt()]
-                while currentBracketIndex < curlyBrackets.length && i > curlyBrackets[(currentBracketIndex).toInt()].to {
+                while try currentBracketIndex < curlyBrackets.length && i > curlyBrackets.jsElement((currentBracketIndex).toInt()).to {
                     currentBracketIndex += 1
                 }
-                if TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(currentTrack) && currentBracketIndex < curlyBrackets.length) && i > curlyBrackets[(currentBracketIndex).toInt()].from) && i <= curlyBrackets[(currentBracketIndex).toInt()].to) {
+                if try TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(TypeHelper.isTruthy(currentTrack) && currentBracketIndex < curlyBrackets.length) && i > curlyBrackets.jsElement((currentBracketIndex).toInt()).from) && i <= curlyBrackets.jsElement((currentBracketIndex).toInt()).to) {
                     currentTrack!.ensureStaveCount(currentTrack!.staves.length + 1.0)
                 } else {
                     currentTrack = Track()
@@ -159,32 +159,32 @@ internal final class CapellaParser {
 
     private var _brackets: List<Bracket> = List<Bracket>()
 
-    private func _parseBrackets(_ element: XmlNode) {
+    private func _parseBrackets(_ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "bracket":
-                self._parseBracket(c)
+                try self._parseBracket(c)
             default:
                 break
             }
         }
     }
 
-    private func _parseBracket(_ element: XmlNode) {
+    private func _parseBracket(_ element: XmlNode) throws {
         let bracket: Bracket = Bracket()
-        bracket.from = Number.parseInt(element.getAttribute("from"), 10.0)
-        bracket.to = Number.parseInt(element.getAttribute("to"), 10.0)
+        try bracket.from = Number.parseInt(element.getAttribute("from"), 10.0)
+        try bracket.to = Number.parseInt(element.getAttribute("to"), 10.0)
         if element.attributes.has("curly") {
             bracket.curly = element.attributes.get("curly") == "true"
         }
         self._brackets.push(bracket)
     }
 
-    private func _parseLayoutStaves(_ element: XmlNode) {
+    private func _parseLayoutStaves(_ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "staffLayout":
-                self._parseStaffLayout(c)
+                try self._parseStaffLayout(c)
             default:
                 break
             }
@@ -195,27 +195,27 @@ internal final class CapellaParser {
 
     private var _staffLayouts: List<StaffLayout> = List<StaffLayout>()
 
-    private func _parseStaffLayout(_ element: XmlNode) {
+    private func _parseStaffLayout(_ element: XmlNode) throws {
         let layout: StaffLayout = StaffLayout()
-        layout.description = element.getAttribute("description")
+        try layout.description = element.getAttribute("description")
         for c in element.childElements() {
             switch c.localName! {
             case "notation":
                 if c.attributes.has("defaultClef") {
-                    layout.defaultClef = self._parseClef(c.attributes.get("defaultClef")!)
+                    try layout.defaultClef = self._parseClef(jsNonNull(c.attributes.get("defaultClef")))
                 }
             case "sound":
                 if c.attributes.has("percussion") {
                     layout.percussion = c.attributes.get("percussion") == "true"
                 }
                 if c.attributes.has("instr") {
-                    layout.instrument = Number.parseInt(c.attributes.get("instr")!, 10.0)
+                    try layout.instrument = Number.parseInt(jsNonNull(c.attributes.get("instr")), 10.0)
                 }
                 if c.attributes.has("volume") {
-                    layout.volume = Number.parseInt(c.attributes.get("volume")!, 10.0)
+                    try layout.volume = Number.parseInt(jsNonNull(c.attributes.get("volume")), 10.0)
                 }
                 if c.attributes.has("transpose") {
-                    layout.transpose = Number.parseInt(c.attributes.get("transpose")!, 10.0)
+                    try layout.transpose = Number.parseInt(jsNonNull(c.attributes.get("transpose")), 10.0)
                 }
             default:
                 break
@@ -252,30 +252,30 @@ internal final class CapellaParser {
         return Ottavia.Regular
     }
 
-    private func _parseSystems(_ element: XmlNode) {
+    private func _parseSystems(_ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "system":
-                self._parseSystem(c)
+                try self._parseSystem(c)
             default:
                 break
             }
         }
     }
 
-    private func _parseSystem(_ element: XmlNode) {
+    private func _parseSystem(_ element: XmlNode) throws {
         if element.attributes.has("tempo") {
             if self.score.masterBars.length == 0.0 {
-                self._initialTempo = Number.parseInt(element.attributes.get("tempo")!, 10.0)
+                try self._initialTempo = Number.parseInt(jsNonNull(element.attributes.get("tempo")), 10.0)
             }
         }
-        if element.getAttribute("beamGrouping") == "0" {
+        if try element.getAttribute("beamGrouping") == "0" {
             self._beamingMode = BeatBeamingMode.ForceSplitToNext
         }
         for c in element.childElements() {
             switch c.localName! {
             case "staves":
-                self._parseStaves(element, c)
+                try self._parseStaves(element, c)
             default:
                 break
             }
@@ -283,12 +283,12 @@ internal final class CapellaParser {
         self._isFirstSystem = false
     }
 
-    private func _parseStaves(_ systemElement: XmlNode, _ element: XmlNode) {
+    private func _parseStaves(_ systemElement: XmlNode, _ element: XmlNode) throws {
         let firstBarIndex: Double = self.score.masterBars.length
         for c in element.childElements() {
             switch c.localName! {
             case "staff":
-                self._parseStaff(systemElement, firstBarIndex, c)
+                try self._parseStaff(systemElement, firstBarIndex, c)
             default:
                 break
             }
@@ -299,21 +299,21 @@ internal final class CapellaParser {
 
     private var _currentStaffLayout: StaffLayout!
 
-    private func _parseStaff(_ systemElement: XmlNode, _ firstBarIndex: Double, _ element: XmlNode) {
-        let staffId: String = element.getAttribute("layout")
-        self._currentStaffLayout = self._staffLayoutLookup.get(staffId)!
+    private func _parseStaff(_ systemElement: XmlNode, _ firstBarIndex: Double, _ element: XmlNode) throws {
+        let staffId: String = try element.getAttribute("layout")
+        try self._currentStaffLayout = jsNonNull(self._staffLayoutLookup.get(staffId))
         self._timeSignature.timeSignatureNumerator = 4.0
         self._timeSignature.timeSignatureDenominator = 4.0
         self._timeSignature.timeSignatureCommon = false
-        self._parseTime(element.getAttribute("defaultTime"))
-        let staff: Staff = self._staffLookup.get(self._currentStaffLayout.index)!
+        try self._parseTime(element.getAttribute("defaultTime"))
+        let staff: Staff = try jsNonNull(self._staffLookup.get(self._currentStaffLayout.index))
         while staff.bars.length < firstBarIndex {
-            self._addNewBar(staff)
+            try self._addNewBar(staff)
         }
         for c in element.childElements() {
             switch c.localName! {
             case "voices":
-                self._parseVoices(staffId, staff, systemElement, firstBarIndex, c)
+                try self._parseVoices(staffId, staff, systemElement, firstBarIndex, c)
             default:
                 break
             }
@@ -340,12 +340,12 @@ internal final class CapellaParser {
         }
     }
 
-    private func _parseVoices(_ staffId: String, _ staff: Staff, _ systemElement: XmlNode, _ firstBarIndex: Double, _ element: XmlNode) {
+    private func _parseVoices(_ staffId: String, _ staff: Staff, _ systemElement: XmlNode, _ firstBarIndex: Double, _ element: XmlNode) throws {
         var voiceIndex: Double = 0.0
         for c in element.childElements() {
             switch c.localName! {
             case "voice":
-                self._parseVoice(staffId, staff, systemElement, voiceIndex, firstBarIndex, c)
+                try self._parseVoice(staffId, staff, systemElement, voiceIndex, firstBarIndex, c)
                 voiceIndex += 1
             default:
                 break
@@ -353,20 +353,20 @@ internal final class CapellaParser {
         }
     }
 
-    private func _getOrCreateBar(_ staff: Staff, _ barIndex: Double) -> Bar {
+    private func _getOrCreateBar(_ staff: Staff, _ barIndex: Double) throws -> Bar {
         if barIndex < staff.bars.length {
             return staff.bars[(barIndex).toInt()]
         }
-        return self._addNewBar(staff)
+        return try self._addNewBar(staff)
     }
 
-    private func _addNewBar(_ staff: Staff) -> Bar {
+    private func _addNewBar(_ staff: Staff) throws -> Bar {
         let currentBar: Bar = Bar()
         if staff.bars.length > 0 {
-            currentBar.clef = staff.bars[(staff.bars.length - 1.0).toInt()].clef
-            currentBar.clefOttava = staff.bars[(staff.bars.length - 1.0).toInt()].clefOttava
-            currentBar.keySignature = staff.bars[(staff.bars.length - 1.0).toInt()].keySignature
-            currentBar.keySignatureType = staff.bars[(staff.bars.length - 1.0).toInt()].keySignatureType
+            try currentBar.clef = staff.bars.jsElement((staff.bars.length - 1.0).toInt()).clef
+            try currentBar.clefOttava = staff.bars.jsElement((staff.bars.length - 1.0).toInt()).clefOttava
+            try currentBar.keySignature = staff.bars.jsElement((staff.bars.length - 1.0).toInt()).keySignature
+            try currentBar.keySignatureType = staff.bars.jsElement((staff.bars.length - 1.0).toInt()).keySignatureType
         } else {
             currentBar.clef = self._currentStaffLayout.defaultClef
         }
@@ -375,7 +375,7 @@ internal final class CapellaParser {
             let master: MasterBar = MasterBar()
             self.score.addMasterBar(master)
             if master.index > 0 {
-                master.tripletFeel = master.previousMasterBar!.tripletFeel
+                try master.tripletFeel = jsNonNull(master.previousMasterBar).tripletFeel
             } else if self._initialTempo > 0 {
                 master.tempoAutomations.push(Automation.buildTempoAutomation(false, 0.0, self._initialTempo, 0.0))
             }
@@ -394,16 +394,16 @@ internal final class CapellaParser {
 
     private var _currentVoice: Voice!
 
-    private func _newBar(_ staff: Staff, _ voiceIndex: Double) {
+    private func _newBar(_ staff: Staff, _ voiceIndex: Double) throws {
         self._currentVoiceState.currentBarIndex += 1
-        self._currentBar = self._getOrCreateBar(staff, self._currentVoiceState.currentBarIndex)
+        try self._currentBar = self._getOrCreateBar(staff, self._currentVoiceState.currentBarIndex)
         self._currentVoiceState.currentBarDuration = self._currentBar.masterBar.calculateDuration(false)
         self._currentVoiceState.currentBarComplete = false
         self._currentVoiceState.currentPosition = 0.0
-        self._ensureVoice(staff, voiceIndex)
+        try self._ensureVoice(staff, voiceIndex)
     }
 
-    private func _parseVoice(_ staffId: String, _ staff: Staff, _ systemElement: XmlNode, _ voiceIndex: Double, _ firstBarIndex: Double, _ element: XmlNode) {
+    private func _parseVoice(_ staffId: String, _ staff: Staff, _ systemElement: XmlNode, _ voiceIndex: Double, _ firstBarIndex: Double, _ element: XmlNode) throws {
         let voiceStateKey: String = "\((staffId).toTemplate())_\((voiceIndex).toTemplate())"
         if TypeHelper.isTruthy(self._currentVoiceState) && !self._currentVoiceState.currentBarComplete {
             self._currentBar.masterBar.isAnacrusis = true
@@ -412,14 +412,14 @@ internal final class CapellaParser {
             self._currentVoiceState = CapellaVoiceState()
             self._currentVoiceState.currentBarIndex = firstBarIndex - 1.0
             self._voiceStates.set(voiceStateKey, self._currentVoiceState)
-            self._newBar(staff, voiceIndex)
+            try self._newBar(staff, voiceIndex)
         } else {
-            self._currentVoiceState = self._voiceStates.get(voiceStateKey)!
-            self._currentBar = self._getOrCreateBar(staff, self._currentVoiceState.currentBarIndex)
-            self._ensureVoice(staff, voiceIndex)
+            try self._currentVoiceState = jsNonNull(self._voiceStates.get(voiceStateKey))
+            try self._currentBar = self._getOrCreateBar(staff, self._currentVoiceState.currentBarIndex)
+            try self._ensureVoice(staff, voiceIndex)
         }
         if element.attributes.has("stemDir") {
-            switch element.attributes.get("stemDir")! {
+            switch try jsNonNull(element.attributes.get("stemDir")) {
             case "up":
                 self._currentVoiceState.voiceStemDir = BeamDirection.Up
             case "down":
@@ -435,30 +435,30 @@ internal final class CapellaParser {
             let automation: Automation = Automation()
             automation.isLinear = true
             automation.type = AutomationType.Tempo
-            automation.value = Number.parseInt(systemElement.attributes.get("tempo")!, 10.0)
+            try automation.value = Number.parseInt(jsNonNull(systemElement.attributes.get("tempo")), 10.0)
             automation.ratioPosition = self._currentVoiceState.currentPosition / self._currentVoiceState.currentBarDuration
             self._currentBar.masterBar.tempoAutomations.push(automation)
         }
         if TypeHelper.isTruthy(noteObjects) {
             for c in noteObjects!.childElements() {
                 if self._currentVoiceState.currentBarComplete && c.localName != "barline" {
-                    self._newBar(staff, voiceIndex)
+                    try self._newBar(staff, voiceIndex)
                 }
                 switch c.localName! {
                 case "clefSign":
-                    self._currentBar.clef = self._parseClef(c.getAttribute("clef"))
-                    self._currentBar.clefOttava = self._parseClefOttava(c.getAttribute("clef"))
+                    try self._currentBar.clef = self._parseClef(c.getAttribute("clef"))
+                    try self._currentBar.clefOttava = self._parseClefOttava(c.getAttribute("clef"))
                 case "keySign":
-                    self._currentBar.keySignature = KeySignature.fromValue(Number.parseInt(c.getAttribute("fifths"), 10.0))
+                    try self._currentBar.keySignature = KeySignature.fromValue(Number.parseInt(c.getAttribute("fifths"), 10.0))
                 case "timeSign":
-                    self._parseTime(c.getAttribute("time"))
+                    try self._parseTime(c.getAttribute("time"))
                     self._currentBar.masterBar.timeSignatureDenominator = self._timeSignature.timeSignatureDenominator
                     self._currentBar.masterBar.timeSignatureNumerator = self._timeSignature.timeSignatureNumerator
                     self._currentBar.masterBar.timeSignatureCommon = self._timeSignature.timeSignatureCommon
                     self._currentVoiceState.currentPosition = 0.0
                     self._currentVoiceState.currentBarDuration = self._currentBar.masterBar.calculateDuration(false)
                 case "barline":
-                    switch c.getAttribute("type") {
+                    switch try c.getAttribute("type") {
                     case "double":
                         self._currentBar.barLineRight = BarLineStyle.LightLight
                         if !self._currentVoiceState.currentBarComplete {
@@ -474,13 +474,13 @@ internal final class CapellaParser {
                         if self._currentBar.masterBar.repeatCount < self._currentVoiceState.repeatCount {
                             self._currentBar.masterBar.repeatCount = self._currentVoiceState.repeatCount
                         }
-                        self._parseBarDrawObject(c)
+                        try self._parseBarDrawObject(c)
                         if !self._currentVoiceState.currentBarComplete {
                             self._currentBar.masterBar.isAnacrusis = true
                         }
                         self._currentVoiceState.currentBarComplete = true
                     case "repBegin":
-                        self._newBar(staff, voiceIndex)
+                        try self._newBar(staff, voiceIndex)
                         self._currentBar.masterBar.isRepeatStart = true
                         self._currentVoiceState.repeatEnd = nil
                         self._currentVoiceState.repeatCount = 0.0
@@ -489,8 +489,8 @@ internal final class CapellaParser {
                         if self._currentBar.masterBar.repeatCount < self._currentVoiceState.repeatCount {
                             self._currentBar.masterBar.repeatCount = self._currentVoiceState.repeatCount
                         }
-                        self._parseBarDrawObject(c)
-                        self._newBar(staff, voiceIndex)
+                        try self._parseBarDrawObject(c)
+                        try self._newBar(staff, voiceIndex)
                         self._currentBar.masterBar.isRepeatStart = true
                     case "dashed":
                         if !self._currentVoiceState.currentBarComplete {
@@ -510,16 +510,16 @@ internal final class CapellaParser {
                     if TypeHelper.isTruthy(self._currentVoiceState.voiceStemDir) {
                         chordBeat.preferredBeamDirection = self._currentVoiceState.voiceStemDir
                     }
-                    self._parseDuration(chordBeat, c.findChildElement("duration")!)
+                    try self._parseDuration(chordBeat, jsNonNull(c.findChildElement("duration")))
                     chordBeat.updateDurations()
                     self._currentVoiceState.currentPosition += chordBeat.playbackDuration
                     self._currentVoice.addBeat(chordBeat)
-                    self._parseChord(chordBeat, c)
+                    try self._parseChord(chordBeat, c)
                     if self._currentVoiceState.currentPosition >= self._currentVoiceState.currentBarDuration {
                         self._currentVoiceState.currentBarComplete = true
                     }
                 case "rest":
-                    let restBeat: Beat? = self._parseRestDurations(c.findChildElement("duration")!)
+                    let restBeat: Beat? = try self._parseRestDurations(jsNonNull(c.findChildElement("duration")))
                     if TypeHelper.isTruthy(restBeat) {
                         self._initFromPreviousBeat(restBeat!, self._currentVoice)
                         restBeat!.updateDurations()
@@ -557,22 +557,22 @@ internal final class CapellaParser {
         return nil
     }
 
-    private func _ensureVoice(_ staff: Staff, _ voiceIndex: Double) {
+    private func _ensureVoice(_ staff: Staff, _ voiceIndex: Double) throws {
         while self._currentBar.voices.length < voiceIndex + 1.0 {
             self._currentBar.addVoice(Voice())
         }
-        if !self._voiceCounts.has(staff.track.index) || self._voiceCounts.get(staff.track.index)! < self._currentBar.voices.length {
+        if try !self._voiceCounts.has(staff.track.index) || jsNonNull(self._voiceCounts.get(staff.track.index)) < self._currentBar.voices.length {
             self._voiceCounts.set(staff.track.index, self._currentBar.voices.length)
         }
         self._currentVoice = self._currentBar.voices[(voiceIndex).toInt()]
     }
 
-    private func _parseChord(_ beat: Beat, _ element: XmlNode) {
+    private func _parseChord(_ beat: Beat, _ element: XmlNode) throws {
         let articulation: Note = Note()
         for c in element.childElements() {
             switch c.localName! {
             case "stem":
-                switch c.getAttribute("dir") {
+                switch try c.getAttribute("dir") {
                 case "up":
                     beat.preferredBeamDirection = BeamDirection.Up
                 case "down":
@@ -581,7 +581,7 @@ internal final class CapellaParser {
                     break
                 }
             case "articulation":
-                switch c.getAttribute("type") {
+                switch try c.getAttribute("type") {
                 case "staccato":
                     articulation.isStaccato = true
                 case "normalAccent":
@@ -592,13 +592,13 @@ internal final class CapellaParser {
                     break
                 }
             case "lyric":
-                self._parseLyric(beat, c)
+                try self._parseLyric(beat, c)
             case "drawObjects":
-                self._parseBeatDrawObject(beat, c)
+                try self._parseBeatDrawObject(beat, c)
             case "heads":
-                self._parseHeads(beat, articulation, c)
+                try self._parseHeads(beat, articulation, c)
             case "beam":
-                switch c.getAttribute("group") {
+                switch try c.getAttribute("group") {
                 case "force":
                     beat.beamingMode = BeatBeamingMode.ForceMergeWithNext
                 case "divide":
@@ -612,11 +612,11 @@ internal final class CapellaParser {
         }
     }
 
-    private func _parseHeads(_ beat: Beat, _ articulation: Note, _ element: XmlNode) {
+    private func _parseHeads(_ beat: Beat, _ articulation: Note, _ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "head":
-                self._parseHead(beat, articulation, c)
+                try self._parseHead(beat, articulation, c)
             default:
                 break
             }
@@ -631,11 +631,11 @@ internal final class CapellaParser {
 
     private var _crescendo: Map<Beat, WedgeDrawObject>!
 
-    private func _parseHead(_ beat: Beat, _ articulation: Note, _ element: XmlNode) {
+    private func _parseHead(_ beat: Beat, _ articulation: Note, _ element: XmlNode) throws {
         let note: Note = Note()
-        let pitch: TuningParseResult? = ModelUtils.parseTuning(element.getAttribute("pitch"))
-        note.octave = pitch!.octave - 1.0
-        note.tone = pitch!.tone.noteValue
+        let pitch: TuningParseResult? = try ModelUtils.parseTuning(element.getAttribute("pitch"))
+        try note.octave = jsNonNull(pitch).octave - 1.0
+        try note.tone = jsNonNull(pitch).tone.noteValue
         note.isStaccato = articulation.isStaccato
         note.accentuated = articulation.accentuated
         beat.addNote(note)
@@ -643,7 +643,7 @@ internal final class CapellaParser {
             switch c.localName! {
             case "alter":
                 if c.attributes.has("step") {
-                    note.tone += Number.parseInt(c.attributes.get("step")!, 10.0)
+                    try note.tone += Number.parseInt(jsNonNull(c.attributes.get("step")), 10.0)
                 }
             case "tie":
                 if c.attributes.has("begin") {
@@ -663,11 +663,11 @@ internal final class CapellaParser {
         }
     }
 
-    private func _parseBeatDrawObject(_ beat: Beat, _ element: XmlNode) {
+    private func _parseBeatDrawObject(_ beat: Beat, _ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "drawObj":
-                let obj: DrawObject? = self._parseDrawObj(c)
+                let obj: DrawObject? = try self._parseDrawObj(c)
                 if TypeHelper.isTruthy(obj) {
                     if obj! is TextDrawObject {
                         if (obj as! TextDrawObject).fontFace.startsWith("capella") {
@@ -708,11 +708,11 @@ internal final class CapellaParser {
         }
     }
 
-    private func _parseBarDrawObject(_ element: XmlNode) {
+    private func _parseBarDrawObject(_ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "drawObj":
-                let obj: DrawObject? = self._parseDrawObj(c)
+                let obj: DrawObject? = try self._parseDrawObj(c)
                 if TypeHelper.isTruthy(obj) {
                     if obj! is VoltaDrawObject {
                         self._applyVolta((obj as! VoltaDrawObject))
@@ -753,7 +753,7 @@ internal final class CapellaParser {
         }
     }
 
-    private func _parseLyric(_ beat: Beat, _ element: XmlNode) {
+    private func _parseLyric(_ beat: Beat, _ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "verse":
@@ -761,7 +761,7 @@ internal final class CapellaParser {
                     beat.lyrics = List<String>()
                 }
                 var text: String = c.innerText
-                if c.getAttribute("hyphen") == "true" {
+                if try c.getAttribute("hyphen") == "true" {
                     text += "-"
                 }
                 beat.lyrics!.push(text)
@@ -771,12 +771,12 @@ internal final class CapellaParser {
         }
     }
 
-    private func _parseRestDurations(_ element: XmlNode) -> Beat? {
-        let durationBase: String = element.getAttribute("base")
+    private func _parseRestDurations(_ element: XmlNode) throws -> Beat? {
+        let durationBase: String = try element.getAttribute("base")
         if durationBase.indexOfInDouble("/") != -1.0 {
             let restBeat: Beat = Beat()
             restBeat.beamingMode = self._beamingMode
-            self._parseDuration(restBeat, element)
+            try self._parseDuration(restBeat, element)
             return restBeat
         }
         let fullBars: Double = Number.parseInt(durationBase, 10.0)
@@ -816,17 +816,17 @@ internal final class CapellaParser {
         }
     }
 
-    private func _parseDuration(_ beat: Beat, _ element: XmlNode) {
-        let durationBase: String = element.getAttribute("base")
+    private func _parseDuration(_ beat: Beat, _ element: XmlNode) throws {
+        let durationBase: String = try element.getAttribute("base")
         beat.duration = self._parseDurationValue(durationBase)
         if element.attributes.has("dots") {
-            beat.dots = Number.parseInt(element.attributes.get("dots")!, 10.0)
+            try beat.dots = Number.parseInt(jsNonNull(element.attributes.get("dots")), 10.0)
         }
         let tuplet: XmlNode? = element.findChildElement("tuplet")
         if TypeHelper.isTruthy(tuplet) {
-            beat.tupletNumerator = Number.parseInt(tuplet!.getAttribute("count"), 10.0)
-            let tripartiteMultiplicator: Double = tuplet!.getAttribute("tripartite") == "true" ? 3.0 : 1.0
-            let prolongDiff: Double = tuplet!.getAttribute("prolong") == "true" ? 0.0 : 1.0
+            try beat.tupletNumerator = Number.parseInt(tuplet!.getAttribute("count"), 10.0)
+            let tripartiteMultiplicator: Double = try tuplet!.getAttribute("tripartite") == "true" ? 3.0 : 1.0
+            let prolongDiff: Double = try tuplet!.getAttribute("prolong") == "true" ? 0.0 : 1.0
             var power: Double = 0.0
             while tripartiteMultiplicator * Math.pow(2.0, power + prolongDiff) < beat.tupletNumerator {
                 power += 1
@@ -835,11 +835,11 @@ internal final class CapellaParser {
         }
     }
 
-    private func _parsePageObjects(_ element: XmlNode) {
+    private func _parsePageObjects(_ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "drawObj":
-                let obj: DrawObject? = self._parseDrawObj(c)
+                let obj: DrawObject? = try self._parseDrawObj(c)
                 if TypeHelper.isTruthy(obj) {
                     if obj! is TextDrawObject {
                         switch (obj as! TextDrawObject).align {
@@ -864,13 +864,13 @@ internal final class CapellaParser {
         }
     }
 
-    private func _parseGallery(_ element: XmlNode) {
+    private func _parseGallery(_ element: XmlNode) throws {
         for c in element.childElements() {
             switch c.localName! {
             case "drawObj":
-                let obj: DrawObject? = self._parseDrawObj(c)
+                let obj: DrawObject? = try self._parseDrawObj(c)
                 if TypeHelper.isTruthy(obj) {
-                    self._galleryObjects.set(c.getAttribute("name"), obj!)
+                    try self._galleryObjects.set(c.getAttribute("name"), obj!)
                 }
             default:
                 break
@@ -878,13 +878,13 @@ internal final class CapellaParser {
         }
     }
 
-    private func _parseDrawObj(_ element: XmlNode) -> DrawObject? {
+    private func _parseDrawObj(_ element: XmlNode) throws -> DrawObject? {
         var obj: DrawObject? = nil
         var noteRange: Double = 1.0
         for c in element.childElements() {
             switch c.localName! {
             case "text":
-                obj = self._parseText(c)
+                try obj = self._parseText(c)
             case "guitar":
                 obj = self._parseGuitar(c)
             case "slur":
@@ -892,18 +892,18 @@ internal final class CapellaParser {
             case "wavyLine":
                 obj = self._parseWavyLine(c)
             case "bracket":
-                obj = self._parseTupletBracket(c)
+                try obj = self._parseTupletBracket(c)
             case "wedge":
                 obj = self._parseWedge(c)
             case "volta":
-                obj = self._parseVolta(c)
+                try obj = self._parseVolta(c)
             case "octaveClef":
-                obj = self._parseOctaveClef(c)
+                try obj = self._parseOctaveClef(c)
             case "trill":
                 obj = self._parseTrill(c)
             case "basic":
                 if c.attributes.has("noteRange") {
-                    noteRange = Number.parseInt(c.attributes.get("noteRange")!, 10.0)
+                    try noteRange = Number.parseInt(jsNonNull(c.attributes.get("noteRange")), 10.0)
                 }
             default:
                 break
@@ -920,22 +920,22 @@ internal final class CapellaParser {
         return obj
     }
 
-    private func _parseOctaveClef(_ element: XmlNode) -> OctaveClefDrawObject {
+    private func _parseOctaveClef(_ element: XmlNode) throws -> OctaveClefDrawObject {
         let obj: OctaveClefDrawObject = OctaveClefDrawObject()
         if element.attributes.has("octave") {
-            obj.octave = Number.parseInt(element.attributes.get("octave")!, 10.0)
+            try obj.octave = Number.parseInt(jsNonNull(element.attributes.get("octave")), 10.0)
         }
         return obj
     }
 
-    private func _parseVolta(_ element: XmlNode) -> VoltaDrawObject {
+    private func _parseVolta(_ element: XmlNode) throws -> VoltaDrawObject {
         let obj: VoltaDrawObject = VoltaDrawObject()
         obj.allNumbers = element.attributes.get("allNumbers") == "true"
         if element.attributes.has("firstNumber") {
-            obj.firstNumber = Number.parseInt(element.attributes.get("firstNumber")!, 10.0)
+            try obj.firstNumber = Number.parseInt(jsNonNull(element.attributes.get("firstNumber")), 10.0)
         }
         if element.attributes.has("lastNumber") {
-            obj.lastNumber = Number.parseInt(element.attributes.get("lastNumber")!, 10.0)
+            try obj.lastNumber = Number.parseInt(jsNonNull(element.attributes.get("lastNumber")), 10.0)
         }
         return obj
     }
@@ -946,10 +946,10 @@ internal final class CapellaParser {
         return obj
     }
 
-    private func _parseTupletBracket(_ element: XmlNode) -> TupletBracketDrawObject {
+    private func _parseTupletBracket(_ element: XmlNode) throws -> TupletBracketDrawObject {
         let obj: TupletBracketDrawObject = TupletBracketDrawObject()
         if element.attributes.has("number") {
-            obj.number = Number.parseInt(element.attributes.get("number")!, 10.0)
+            try obj.number = Number.parseInt(jsNonNull(element.attributes.get("number")), 10.0)
         }
         return obj
     }
@@ -981,15 +981,15 @@ internal final class CapellaParser {
         return obj
     }
 
-    private func _parseText(_ element: XmlNode) -> TextDrawObject {
+    private func _parseText(_ element: XmlNode) throws -> TextDrawObject {
         let obj: TextDrawObject = TextDrawObject()
         if element.attributes.has("x") {
-            obj.x = Number.parseFloat(element.attributes.get("x")!)
+            try obj.x = Number.parseFloat(jsNonNull(element.attributes.get("x")))
         }
         if element.attributes.has("x") {
-            obj.y = Number.parseFloat(element.attributes.get("y")!)
+            try obj.y = Number.parseFloat(jsNonNull(element.attributes.get("y")))
         }
-        switch element.getAttribute("align") {
+        switch try element.getAttribute("align") {
         case "left":
             obj.align = TextAlign.Left
         case "center":
@@ -999,7 +999,7 @@ internal final class CapellaParser {
         default:
             break
         }
-        switch element.getAttribute("frame") {
+        switch try element.getAttribute("frame") {
         case "rectangle":
             obj.frame = FrameType.Rectangle
         case "ellipse":
@@ -1015,12 +1015,12 @@ internal final class CapellaParser {
             for c in element.childElements() {
                 switch c.localName! {
                 case "font":
-                    obj.fontFace = c.getAttribute("face")
+                    try obj.fontFace = c.getAttribute("face")
                     if c.attributes.has("weight") {
-                        obj.weight = Number.parseInt(c.attributes.get("weight")!, 10.0)
+                        try obj.weight = Number.parseInt(jsNonNull(c.attributes.get("weight")), 10.0)
                     }
                     if c.attributes.has("height") {
-                        obj.height = Number.parseInt(c.attributes.get("height")!, 10.0)
+                        try obj.height = Number.parseInt(jsNonNull(c.attributes.get("height")), 10.0)
                     }
                 case "content":
                     obj.text = c.innerText
