@@ -487,7 +487,10 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     protected override writeTypeParameter(p: cs.TypeParameterDeclaration) {
         this.writeIdentifier(p.name);
-        if (p.constraint) {
+        if (p.constraint && cs.isPrimitiveTypeNode(p.constraint) && p.constraint.type === cs.PrimitiveType.Double) {
+            // `T extends number`: alphaTab binds it to enums; Swift cannot constrain to a struct
+            this.write(': IAlphaTabEnum');
+        } else if (p.constraint) {
             this.write(': ');
             this._writeType(p.constraint, { existential: false });
         }
