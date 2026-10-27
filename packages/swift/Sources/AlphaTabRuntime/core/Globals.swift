@@ -172,3 +172,79 @@ public func generator<T>(_ body: (_ yield: (T) -> Void) throws -> Void) rethrows
     try body { items.append($0) }
     return items.makeIterator()
 }
+
+extension Double {
+    /// JS `n.toString(radix)`, V8's `DoubleToRadixCString`: fractions keep the digits the double
+    /// holds (Kotlin truncates to an Int), integer digits past 2^53 print as `0`.
+    public func toInvariantString(_ radix: Double) -> String {
+        let base = radix.toInt()
+        if base == 10 || !self.isFinite {
+            return jsNumberToString(self)
+        }
+        let chars = Swift.Array("0123456789abcdefghijklmnopqrstuvwxyz")
+        let value = Swift.abs(self)
+        var integer = value.rounded(.down)
+        var fraction = value - integer
+        var delta = Swift.max(0.5 * (value.nextUp - value), (0.0).nextUp)
+        var fractionDigits: [Int] = []
+        let r = Double(base)
+        if fraction >= delta {
+            repeat {
+                fraction *= r
+                delta *= r
+                let digit = Int(fraction)
+                fractionDigits.append(digit)
+                fraction -= Double(digit)
+                if fraction > 0.5 || (fraction == 0.5 && (digit & 1) == 1), fraction + delta > 1 {
+                    // round up, carrying back through the digits already written
+                    while true {
+                        guard let last = fractionDigits.popLast() else {
+                            integer += 1
+                            break
+                        }
+                        if last + 1 < base {
+                            fractionDigits.append(last + 1)
+                            break
+                        }
+                    }
+                    break
+                }
+            } while fraction >= delta
+        }
+        var integerDigits: [Character] = []
+        while integer / r >= 9_007_199_254_740_992 {
+            integer /= r
+            integerDigits.append("0")
+        }
+        repeat {
+            let remainder = integer.truncatingRemainder(dividingBy: r)
+            integerDigits.append(chars[Int(remainder)])
+            integer = (integer - remainder) / r
+        } while integer > 0
+        var text = (self < 0 ? "-" : "") + String(integerDigits.reversed())
+        if !fractionDigits.isEmpty {
+            text += "." + String(fractionDigits.map { chars[$0] })
+        }
+        return text
+    }
+}
+
+/// JS `console`, printing as Kotlin's `Console` does.
+public final class Console: Sendable {
+    public init() {}
+
+    private func _print(_ level: String, _ format: String, _ details: [Any?]) {
+        let message = details.isEmpty ? format : format + "," + details.map { jsTemplate($0) }.joined(separator: ",")
+        print("[AlphaTab \(level)] \(message)")
+    }
+
+    public func debug(_ format: String, _ details: [Any?] = []) { _print("Debug", format, details) }
+    public func warn(_ format: String, _ details: [Any?] = []) { _print("Warn", format, details) }
+    public func info(_ format: String, _ details: [Any?] = []) { _print("Info", format, details) }
+    public func error(_ format: String, _ details: [Any?] = []) { _print("Error", format, details) }
+}
+
+/// JS globals the generated code calls (`console`).
+public enum Globals {
+    public static let console = Console()
+}

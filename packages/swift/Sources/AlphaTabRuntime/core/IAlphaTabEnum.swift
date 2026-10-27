@@ -7,9 +7,15 @@
 
 /// Every generated numeric enum: `public enum E: Int, IAlphaTabEnum, CaseIterable`.
 /// Replaces Kotlin's `IAlphaTabEnum` plus `IAlphaTabEnumCompanion` (`CaseIterable` gives `allCases`).
-public protocol IAlphaTabEnum: RawRepresentable, Hashable where RawValue == Int {}
+/// `Comparable` because JS compares enums as numbers (`a > b`, `level >= Logger.logLevel`).
+public protocol IAlphaTabEnum: RawRepresentable, Hashable, Comparable where RawValue == Int {}
 
 extension IAlphaTabEnum {
+    /// By value, not declaration order (Duration declares -4 before 1).
+    public static func < (lhs: Self, rhs: Self) -> Bool {
+        return lhs.rawValue < rhs.rawValue
+    }
+
     /// `n as E`. Traps on a value with no case: a Swift enum cannot hold one (JS and Kotlin flags can).
     public static func fromValue(_ value: Double) -> Self {
         guard let e = Self(rawValue: value.toInt()) else {

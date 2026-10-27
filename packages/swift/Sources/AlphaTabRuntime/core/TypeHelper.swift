@@ -6,8 +6,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 /// Port of the parts of Kotlin's `TypeHelper` the generated code calls so far.
-/// Not yet ported: `createRegex` (needs `RegExp`), `createPromise`, `` `in` ``, set/map initializers.
+/// Not yet ported: `createPromise`, `` `in` ``, set/map initializers.
 public enum TypeHelper {
+    /// `new RegExp(pattern, flags)` and regex literals.
+    public static func createRegex(_ pattern: String, _ flags: String) -> RegExp {
+        return RegExp(pattern, flags)
+    }
+
     /// JS `typeof`. Closures report "object" (Kotlin does the same).
     public static func typeOf(_ value: Any?) -> String {
         guard let v = unwrapAny(value) else {

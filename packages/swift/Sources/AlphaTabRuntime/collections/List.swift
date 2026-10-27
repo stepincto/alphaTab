@@ -24,6 +24,13 @@ public final class List<T>: Sequence {
         _data = Swift.Array(items)
     }
 
+    /// JS `new Array<T>(length)`: JS fills holes with `undefined` (Kotlin: unchecked `null`);
+    /// Swift needs a value, so elements start at `JsArrayHole.hole`. Generated code fills or
+    /// writes every slot before reading it.
+    public init(_ length: Int) where T: JsArrayHole {
+        _data = Swift.Array(repeating: T.hole, count: length)
+    }
+
     public var length: Double {
         return Double(_data.count)
     }
@@ -78,6 +85,10 @@ public final class List<T>: Sequence {
 
     public func findIndex(_ predicate: (T) throws -> Bool) rethrows -> Double {
         return Double(try _data.firstIndex(where: predicate) ?? -1)
+    }
+
+    public func find(_ predicate: (T) throws -> Bool) rethrows -> T? {
+        return try _data.first(where: predicate)
     }
 
     public func some(_ predicate: (T) throws -> Bool) rethrows -> Bool {
@@ -198,4 +209,27 @@ extension List where T: AnyObject {
     public func indexOf(_ value: T) -> Double {
         return Double(_data.firstIndex { $0 === value } ?? -1)
     }
+}
+
+/// The placeholder `new Array<T>(length)` starts with.
+/// shortcut: only the element types generated code sizes this way so far; add a conformance
+/// (or make the slot optional) when another one appears.
+public protocol JsArrayHole {
+    static var hole: Self { get }
+}
+
+extension String: JsArrayHole {
+    public static var hole: String { "" }
+}
+
+extension Double: JsArrayHole {
+    public static var hole: Double { 0 }
+}
+
+extension Bool: JsArrayHole {
+    public static var hole: Bool { false }
+}
+
+extension Optional: JsArrayHole {
+    public static var hole: Wrapped? { nil }
 }
