@@ -30,4 +30,28 @@ import Testing
         #expect(l.length == 1)
         #expect(l[0] == 60)
     }
+
+    @Test func fillReturnsTheSameList() {
+        let l = List<Double>(1, 2).fill(0)
+        #expect(l.join(",") == "0,0")
+    }
+
+    @Test func sortWithoutComparatorComparesStringsAsJs() {
+        let l = List<Double>(10, 9, 1, 2).sort()
+        #expect(l.join(",") == "1,10,2,9")
+    }
+
+    @Test func mathMaxMinOfASpreadList() {
+        let l = List<Double>(3, 7, 5)
+        #expect(Math.max(l) - Math.min(l) == 4)
+        #expect(Math.max(List<Double>()) == -Double.infinity)
+    }
+
+    @Test func expectNotIsACallAsKotlin() {
+        TestGlobals.expect(1.0).not().toBe(2.0)
+    }
+
+    @Test func expectToThrowOnAClosureThatReturnsAValue() {
+        TestGlobals.expect({ () throws -> Double in throw JsError("x") }).toThrow()
+    }
 }
