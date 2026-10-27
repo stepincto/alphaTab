@@ -203,10 +203,12 @@ public final class Tuning {
 
     /// TS module statements and `static {}`: run once, before the first static call or `init`.
     private static func _staticInit() {
-        if Self._staticInitDone {
-            return
+        jsStaticInit {
+            if Self._staticInitDone {
+                return
+            }
+            Self._staticInitDone = true
+            Tuning.initialize()
         }
-        Self._staticInitDone = true
-        Tuning.initialize()
     }
 }

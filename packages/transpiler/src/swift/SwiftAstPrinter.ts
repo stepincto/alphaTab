@@ -710,7 +710,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     /**
      * Swift has no static initializer: its body runs once from `_staticInit()`, which each static
-     * method and `init` call first. The flag is set before the body so a re-entrant call returns.
+     * method and `init` call first. The flag is set before the body so a re-entrant call returns;
+     * the runtime's `jsStaticInit` lock makes other threads wait until the body has run.
      * shortcut: static properties read directly from outside the class do not trigger it; route
      * them through an accessor once a generated class needs that.
      */
@@ -719,6 +720,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeLine();
         this.writeLine('/// TS module statements and `static {}`: run once, before the first static call or `init`.');
         this.write('private static func _staticInit()');
+        this._openBrace();
+        this.write('jsStaticInit');
         this._openBrace();
         this.write('if Self._staticInitDone');
         this._openBrace();
@@ -730,6 +733,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 this.writeStatement(s);
             }
         }
+        this._closeBrace();
         this._closeBrace();
     }
 
