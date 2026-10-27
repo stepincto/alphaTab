@@ -9,7 +9,8 @@ import AlphaTabRuntime
 import Testing
 
 /// Port of Kotlin's `TestGlobals`: generated tests call `TestGlobals.expect(a).toBe(b)`.
-/// Each check reports through Swift Testing's `#expect`, at the generated test's line.
+/// Each failure is recorded as a Swift Testing issue at the generated test's line, with the
+/// matcher, expected and received values, as vitest prints them.
 /// Not ported: snapshots (`toMatchSnapshot`), chai's `assert` class.
 public enum TestGlobals {
     public static func expect<T>(
@@ -54,57 +55,57 @@ public final class Expector<T> {
     /// vitest `toBe` (Object.is), except `-0` equals `0` as in Kotlin's port. Numbers compare by
     /// value across `Int`/`Double` (`toBe(0)` passes `Any?` an `Int`), class instances by identity.
     public func toBe(_ expected: Any?) {
-        _check(jsSame(_actual, expected), "to be \(jsDescribe(expected))")
+        _check(jsSame(_actual, expected), "toBe", jsDescribe(expected))
     }
 
     /// vitest `toEqual`: deep, element-wise for lists and field-wise for records.
     public func toEqual(_ expected: Any?, _ message: String? = nil) {
-        _check(jsDeepEqual(_actual, expected), "to equal \(jsDescribe(expected))", message)
+        _check(jsDeepEqual(_actual, expected), "toEqual", jsDescribe(expected), message)
     }
 
     /// vitest: `|expected - actual| < 10^-numDigits / 2`.
     public func toBeCloseTo(_ expected: Double, _ numDigits: Double = 2) {
         guard let a = _number(_actual) else {
-            return _check(false, "to be a number close to \(jsDescribe(expected))")
+            return _check(false, "toBeCloseTo", "a number close to \(jsDescribe(expected))")
         }
         let pass = a == expected || Swift.abs(expected - a) < Math.pow(10, -numDigits) / 2
-        _check(pass, "to be close to \(jsDescribe(expected)) (\(jsDescribe(numDigits)) digits)")
+        _check(pass, "toBeCloseTo", "\(jsDescribe(expected)) (\(jsDescribe(numDigits)) digits)")
     }
 
     public func toBeGreaterThan(_ expected: Double, _ message: String? = nil) {
-        _compare(expected, "to be greater than", message) { $0 > $1 }
+        _compare(expected, "toBeGreaterThan", "> ", message) { $0 > $1 }
     }
 
     public func toBeGreaterThanOrEqual(_ expected: Double, _ message: String? = nil) {
-        _compare(expected, "to be greater than or equal to", message) { $0 >= $1 }
+        _compare(expected, "toBeGreaterThanOrEqual", ">= ", message) { $0 >= $1 }
     }
 
     public func toBeLessThan(_ expected: Double, _ message: String? = nil) {
-        _compare(expected, "to be less than", message) { $0 < $1 }
+        _compare(expected, "toBeLessThan", "< ", message) { $0 < $1 }
     }
 
     public func toBeLessThanOrEqual(_ expected: Double, _ message: String? = nil) {
-        _compare(expected, "to be less than or equal to", message) { $0 <= $1 }
+        _compare(expected, "toBeLessThanOrEqual", "<= ", message) { $0 <= $1 }
     }
 
     public func toBeTruthy() {
-        _check(TypeHelper.isTruthy(_actual as Any?), "to be truthy")
+        _check(TypeHelper.isTruthy(_actual as Any?), "toBeTruthy", "truthy")
     }
 
     public func toBeFalsy() {
-        _check(!TypeHelper.isTruthy(_actual as Any?), "to be falsy")
+        _check(!TypeHelper.isTruthy(_actual as Any?), "toBeFalsy", "falsy")
     }
 
     public func toBeNull() {
-        _check(unwrapAny(_actual) == nil, "to be null")
+        _check(unwrapAny(_actual) == nil, "toBeNull", "null")
     }
 
     public func toBeUndefined() {
-        _check(unwrapAny(_actual) == nil, "to be undefined")
+        _check(unwrapAny(_actual) == nil, "toBeUndefined", "undefined")
     }
 
     public func toBeInstanceOf<U>(_ type: U.Type) {
-        _check(unwrapAny(_actual) is U, "to be an instance of \(U.self)")
+        _check(unwrapAny(_actual) is U, "toBeInstanceOf", "an instance of \(U.self)")
     }
 
     /// Substring for strings, element (`toBe` equality) for lists and other sequences.
@@ -117,7 +118,7 @@ public final class Expector<T> {
         } else {
             pass = false
         }
-        _check(pass, "to contain \(jsDescribe(value))")
+        _check(pass, "toContain", jsDescribe(value))
     }
 
     public func toHaveLength(_ expected: Double) {
@@ -127,20 +128,20 @@ public final class Expector<T> {
         } else {
             length = jsElements(_actual).map { Double($0.count) }
         }
-        _check(length == expected, "to have length \(jsDescribe(expected)) (has \(length.map(jsDescribe) ?? "none"))")
+        _check(length == expected, "toHaveLength", "length \(jsDescribe(expected))", received: "length \(length.map(jsDescribe) ?? "none")")
     }
 
     /// `actual` must be a closure (`TestGlobals.expect({ ... })`); passes when it throws,
     /// and when `type` is given, throws that type or a subclass.
     public func toThrow(_ type: (any Swift.Error.Type)? = nil) {
         guard let body = _actual as? () throws -> Void else {
-            return _check(false, "to be a function")
+            return _check(false, "toThrow", "a function")
         }
         do {
             try body()
-            _check(false, "to throw")
+            _check(false, "toThrow", "an error", received: "no error")
         } catch {
-            _check(type.map { _isError(error, $0) } ?? true, "to throw \(type.map { "\($0)" } ?? "an error") (threw \(Swift.type(of: error)))")
+            _check(type.map { _isError(error, $0) } ?? true, "toThrow", type.map { "\($0)" } ?? "an error", received: "threw \(Swift.type(of: error))")
         }
     }
 
@@ -148,17 +149,24 @@ public final class Expector<T> {
         return error is E
     }
 
-    private func _compare(_ expected: Double, _ what: String, _ message: String?, _ op: (Double, Double) -> Bool) {
+    private func _compare(_ expected: Double, _ matcher: String, _ op: String, _ message: String?, _ cmp: (Double, Double) -> Bool) {
         guard let a = _number(_actual) else {
-            return _check(false, "to be a number \(what) \(jsDescribe(expected))", message)
+            return _check(false, matcher, "a number \(op)\(jsDescribe(expected))", message)
         }
-        _check(op(a, expected), "\(what) \(jsDescribe(expected))", message)
+        _check(cmp(a, expected), matcher, op + jsDescribe(expected), message)
     }
 
-    private func _check(_ pass: Bool, _ what: String, _ message: String? = nil) {
-        let ok = pass != _negated
-        let text = _message ?? message ?? "Expected \(jsDescribe(_actual)) \(_negated ? "not " : "")\(what)"
-        #expect(ok, Comment(rawValue: text), sourceLocation: _location)
+    /// Records a vitest-style failure: the matcher, then expected and received values.
+    private func _check(_ pass: Bool, _ matcher: String, _ expected: String, _ message: String? = nil, received: String? = nil) {
+        if pass != _negated {
+            return
+        }
+        let not = _negated ? "not." : ""
+        var text = "expect(received).\(not)\(matcher)(expected)\nExpected: \(_negated ? "not " : "")\(expected)\nReceived: \(received ?? jsDescribe(_actual))"
+        if let note = _message ?? message {
+            text = "\(note): " + text
+        }
+        Issue.record(Comment(rawValue: text), sourceLocation: _location)
     }
 }
 
