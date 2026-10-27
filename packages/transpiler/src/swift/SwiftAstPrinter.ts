@@ -436,7 +436,78 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
         this._writeMembers(members);
         this._closeBrace();
+        this._writeProtocolDefaults(d, members);
         this._currentType = previousType;
+    }
+
+    /** Protocol requirements take no defaults: one extension overload per omissible trailing parameter. */
+    private _writeProtocolDefaults(d: cs.InterfaceDeclaration, members: cs.Node[]) {
+        const methods = members.filter(
+            (m): m is cs.MethodDeclaration =>
+                cs.isMethodDeclaration(m) && m.parameters.some(p => p.isOptional || !!p.initializer)
+        );
+        if (methods.length === 0) {
+            return;
+        }
+        this.writeLine();
+        this._writeTypeVisibility(d.visibility);
+        this.write('extension ');
+        this.writeIdentifier(d.name);
+        this._openBrace();
+        let first = true;
+        for (const m of methods) {
+            const params = m.parameters;
+            let required = params.length;
+            while (required > 0 && (params[required - 1].isOptional || !!params[required - 1].initializer)) {
+                required--;
+            }
+            for (let n = required; n < params.length; n++) {
+                if (!first) {
+                    this.writeLine();
+                }
+                first = false;
+                const kept = params.slice(0, n);
+                this.write('func ');
+                this.writeIdentifier(m.name);
+                this.writeTypeParameters(m.typeParameters);
+                this.write('(');
+                this.writeCommaSeparated(kept, p => this.writeParameter(p), false);
+                this.write(')');
+                const isAsync = m.isAsync || this._returnsPromise(m);
+                const throws = this._throws(m);
+                if (isAsync) {
+                    this.write(' async');
+                }
+                if (throws) {
+                    this.write(' throws');
+                }
+                const isVoid = this._isVoid(m.returnType);
+                if (!isVoid) {
+                    this.write(' -> ');
+                    this._writeReturnType(m.returnType, m);
+                }
+                this._openBrace();
+                this.write(`${isVoid ? '' : 'return '}${throws ? 'try ' : ''}${isAsync ? 'await ' : ''}`);
+                this.writeIdentifier(m.name);
+                this.write('(');
+                this.writeCommaSeparated(
+                    params,
+                    p => {
+                        if (params.indexOf(p) < n) {
+                            this.writeIdentifier(p.name);
+                        } else if (p.initializer) {
+                            this.writeExpression(p.initializer);
+                        } else {
+                            this.write('nil');
+                        }
+                    },
+                    false
+                );
+                this.writeLine(')');
+                this._closeBrace();
+            }
+        }
+        this._closeBrace();
     }
 
     protected writeEnumDeclaration(d: cs.EnumDeclaration) {
@@ -747,6 +818,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this._writeType(type, { nullable: optional || undefined, owner: p });
         if (p.params) {
             this.write('...');
+        }
+        if (p.parent && cs.isMethodDeclaration(p.parent) && this._isInProtocol(p.parent)) {
+            return; // no defaults on requirements: see _writeProtocolDefaults
         }
         if (p.initializer) {
             this.write(' = ');
