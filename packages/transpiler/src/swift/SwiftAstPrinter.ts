@@ -887,8 +887,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
         if (d.setAccessor?.body) {
             this.write('set');
-            const valueName = d.setAccessor.valueParameterName;
-            if (valueName && valueName !== 'newValue') {
+            // the shared transformer leaves a TS `value` unnamed (C#'s implicit name); Swift's is `newValue`
+            const valueName = d.setAccessor.valueParameterName ?? 'value';
+            if (valueName !== 'newValue') {
                 this.write(`(${valueName})`);
             }
             this._writeBody(d.setAccessor.body);
