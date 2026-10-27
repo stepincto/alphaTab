@@ -69,6 +69,37 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         } else {
             this.write(this.escapeIdentifier(name));
         }
+        if (typeof expr !== 'string' && this._isNarrowedNullableLocal(expr)) {
+            this.write('!');
+        }
+    }
+
+    /** A `T | null` local that TS narrowed to `T` here: Swift does not smart-cast, so it needs `!`. */
+    private _isNarrowedNullableLocal(expr: cs.Identifier): boolean {
+        const tsNode = expr.tsNode;
+        if (!tsNode || !ts.isIdentifier(tsNode)) {
+            return false;
+        }
+        const parent = tsNode.parent;
+        if (
+            parent &&
+            ts.isBinaryExpression(parent) &&
+            parent.left === tsNode &&
+            parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+            parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment
+        ) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const symbol = checker.getSymbolAtLocation(tsNode);
+        const declaration = symbol?.valueDeclaration;
+        if (!declaration || !ts.isVariableDeclaration(declaration) || !declaration.type) {
+            return false;
+        }
+        const declared = checker.getTypeFromTypeNode(declaration.type);
+        const narrowed = checker.getTypeAtLocation(tsNode);
+        const isNullable = (t: ts.Type) => t.isUnion() && t.types.some(u => !!(u.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined)));
+        return isNullable(declared) && !isNullable(narrowed) && !(narrowed.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined));
     }
 
     // ── file ──────────────────────────────────────────────────────────────
@@ -277,10 +308,6 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
         this.write('public override init');
         this.writeParameters(baseParameters);
-        if (baseParameters.length === 0) {
-            this.writeLine(' {}');
-            return;
-        }
         this._openBrace();
         this.write('super.init(');
         this.writeCommaSeparated(baseParameters, p => this.writeIdentifier(p.name));
@@ -444,8 +471,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeIdentifier(d.name);
         this.writeTypeParameters(d.typeParameters);
         this.writeParameters(d.parameters);
-        if (d.isAsync) {
+        if (d.isAsync || this._returnsPromise(d)) {
             this.write(' async');
+        }
+        if (this._throws(d)) {
+            this.write(' throws');
         }
         if (!this._isVoid(d.returnType)) {
             this.write(' -> ');
@@ -480,8 +510,62 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this._writeBody(d.body);
     }
 
+    /** A TS function that returns a `Promise` without `async`: Swift makes it `async`, its returns `await`. */
+    private _returnsPromise(d: cs.MethodDeclaration): boolean {
+        const tsNode = d.tsNode;
+        if (!tsNode || !ts.isFunctionLike(tsNode)) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const signature = checker.getSignatureFromDeclaration(tsNode as ts.SignatureDeclaration);
+        return !!signature && checker.getReturnTypeOfSignature(signature).symbol?.name === 'Promise';
+    }
+
+    /**
+     * `throws` when the body throws outside a `catch`.
+     * shortcut: calls, overrides and implementations of a throwing function are not followed
+     * (CONVENTIONS.md "Errors"); add the whole-program pass when a fixture needs it.
+     */
+    private _throws(d: cs.MethodDeclaration): boolean {
+        const tsNode = d.tsNode;
+        if (!tsNode || !ts.isFunctionLike(tsNode) || !(tsNode as ts.FunctionLikeDeclaration).body) {
+            return false;
+        }
+        const visit = (n: ts.Node): boolean => {
+            if (ts.isThrowStatement(n)) {
+                return true;
+            }
+            if (ts.isFunctionLike(n) || ts.isClassLike(n)) {
+                return false;
+            }
+            if (ts.isTryStatement(n) && n.catchClause) {
+                return visit(n.catchClause.block) || (!!n.finallyBlock && visit(n.finallyBlock));
+            }
+            return !!ts.forEachChild(n, c => visit(c) || undefined);
+        };
+        return visit((tsNode as ts.FunctionLikeDeclaration).body!);
+    }
+
+    protected override writeReturnStatement(r: cs.ReturnStatement) {
+        let p: cs.Node | null = r.parent;
+        while (p && !cs.isMethodDeclaration(p) && !cs.isLambdaExpression(p) && p.nodeType !== cs.SyntaxKind.LocalFunction) {
+            p = p.parent;
+        }
+        if (r.expression && p && cs.isMethodDeclaration(p) && !p.isAsync && this._returnsPromise(p)) {
+            this.write('return await ');
+            this.writeExpression(r.expression);
+            this.writeSemicolon();
+            return;
+        }
+        super.writeReturnStatement(r);
+    }
+
     private _isVoid(t: cs.TypeNode) {
-        return cs.isPrimitiveTypeNode(t) && t.type === cs.PrimitiveType.Void && !t.isNullable;
+        if (cs.isPrimitiveTypeNode(t)) {
+            return t.type === cs.PrimitiveType.Void && !t.isNullable;
+        }
+        // `Promise<void>` prints as `Void`
+        return this._captureType(t) === 'Void';
     }
 
     /** A return type: `Promise<T>` prints as `T` (the function is `async`). */
@@ -491,10 +575,6 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     /** ` {` + statements + `}` for a block or expression body. */
     private _writeBody(body: cs.Block | cs.Expression) {
-        if (cs.isBlock(body) && body.statements.length === 0) {
-            this.writeLine(' {}');
-            return;
-        }
         this._openBrace();
         if (cs.isBlock(body)) {
             for (const s of body.statements) {
@@ -952,7 +1032,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 const typeReference = type as cs.TypeReference;
                 const targetType = typeReference.reference;
                 if (typeof targetType === 'string') {
-                    this.write(this._unqualify(targetType));
+                    const name = this._unqualify(targetType);
+                    if (existential && SwiftAstPrinter._runtimeProtocols.has(name)) {
+                        this.write('any ');
+                    }
+                    this.write(name);
                 } else {
                     this._writeTypeCore(targetType as cs.TypeNode, forNew, existential);
                 }
@@ -1129,9 +1213,110 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
     }
 
+    /** Runtime types that are Swift protocols, used as existentials (`any Disposable`). */
+    private static readonly _runtimeProtocols = new Set(['Disposable', 'AsyncDisposable']);
+
     private static readonly _bitOperators = new Set(['&', '|', '^', '<<', '>>']);
 
+    /** A bit operation the shared transformer left uncoerced: both operands are enums. */
+    private _isEnumBitOp(expr: cs.BinaryExpression): boolean {
+        const tsNode = expr.tsNode;
+        if (tsNode && ts.isBinaryExpression(tsNode)) {
+            const checker = this._context.typeChecker;
+            const isEnum = (n: ts.Expression) =>
+                !!(checker.getNonNullableType(checker.getTypeAtLocation(n)).flags & ts.TypeFlags.EnumLike);
+            return isEnum(tsNode.left) && isEnum(tsNode.right);
+        }
+        return this._isEnumExpression(expr.left) && this._isEnumExpression(expr.right);
+    }
+
+    private _isBitOp(e: cs.Expression): boolean {
+        return cs.isBinaryExpression(e) && SwiftAstPrinter._bitOperators.has(e.operator) && !this._isEnumBitOp(e);
+    }
+
+    private _unwrapParens(e: cs.Expression): cs.Expression {
+        while (cs.isParenthesizedExpression(e)) {
+            e = e.expression;
+        }
+        return e;
+    }
+
+    /** An operand of a number bit operation, whose casts the shared transformer already made (`makeInt`). */
+    private _writeBitOperand(e: cs.Expression) {
+        const inner = this._unwrapParens(e);
+        if (cs.isCastExpression(inner) && cs.isPrimitiveTypeNode(inner.type) && inner.type.type === cs.PrimitiveType.Int) {
+            this.writeExpression(inner);
+        } else if (this._isIntegerLiteral(inner)) {
+            this.writeExpression(inner);
+        } else if (this._isBitOp(inner)) {
+            this.write('(');
+            this.writeExpression(inner);
+            this.write(')');
+        } else if (this._isEnumExpression(inner)) {
+            this.writeExpression(inner);
+            this.write('.rawValue');
+        } else {
+            this.write('(');
+            this.writeExpression(inner);
+            this.write(').toInt()');
+        }
+    }
+
+    private _isUnsignedShift(expr: cs.BinaryExpression): boolean {
+        const tsNode = expr.tsNode;
+        return (
+            expr.operator === '>>>' ||
+            expr.operator === '>>>=' ||
+            (!!tsNode &&
+                ts.isBinaryExpression(tsNode) &&
+                (tsNode.operatorToken.kind === ts.SyntaxKind.GreaterThanGreaterThanGreaterThanToken ||
+                    tsNode.operatorToken.kind === ts.SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken))
+        );
+    }
+
+    /** `left % right` on numbers: Swift's `Double` has no `%`. */
+    private _writeRemainder(left: cs.Expression, right: cs.Expression) {
+        const simple =
+            cs.isIdentifier(left) ||
+            cs.isNumericLiteral(left) ||
+            cs.isParenthesizedExpression(left) ||
+            cs.isMemberAccessExpression(left) ||
+            cs.isInvocationExpression(left) ||
+            cs.isThisLiteral(left);
+        if (!simple) {
+            this.write('(');
+        }
+        this.writeExpression(left);
+        if (!simple) {
+            this.write(')');
+        }
+        this.write('.truncatingRemainder(dividingBy: ');
+        this.writeExpression(right);
+        this.write(')');
+    }
+
     protected writeBinaryExpression(expr: cs.BinaryExpression) {
+        if (!this._forceInteger && (expr.operator === '%' || expr.operator === '%=')) {
+            if (expr.operator === '%=') {
+                this.writeExpression(expr.left);
+                this.write(' = ');
+            }
+            this._writeRemainder(expr.left, expr.right);
+            return;
+        }
+        if (this._isBitOp(expr)) {
+            const unsigned = this._isUnsignedShift(expr);
+            if (unsigned) {
+                this.write('UInt32(truncatingIfNeeded: ');
+            }
+            this._writeBitOperand(expr.left);
+            if (unsigned) {
+                this.write(')');
+            }
+            this.write(` ${unsigned ? '>>' : expr.operator} `);
+            this._writeBitOperand(expr.right);
+            return;
+        }
         if (SwiftAstPrinter._bitOperators.has(expr.operator)) {
             const enumResult = this._bitResultEnumName(expr);
             if (enumResult) {
@@ -1220,14 +1405,37 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeExpression(expr.whenFalse);
     }
 
+    /** `new Promise<T>(resolve => ...)`: the type of `resolve` is `(T) -> Void` (the IR has Kotlin's `(Any) -> Unit`). */
+    private _promiseValueType(expr: cs.LambdaExpression): cs.TypeNode | undefined {
+        const call = expr.parent;
+        if (
+            call &&
+            cs.isInvocationExpression(call) &&
+            cs.isMemberAccessExpression(call.expression) &&
+            call.expression.member === 'createPromise' &&
+            call.typeArguments?.length === 1
+        ) {
+            return call.typeArguments[0];
+        }
+        return undefined;
+    }
+
     protected writeLambdaExpression(expr: cs.LambdaExpression) {
+        const promiseValueType = this._promiseValueType(expr);
         this.write('{ (');
         this.writeCommaSeparated(
             expr.parameters,
             p => {
                 this.writeIdentifier(p.name);
                 this.write(': ');
-                if (p.type) {
+                if (promiseValueType && p === expr.parameters[0]) {
+                    this.write('@escaping (');
+                    this.writeType(promiseValueType);
+                    this.write(') -> Void');
+                } else if (p.type) {
+                    if (this._isFunctionType(p.type) && !p.type.isNullable) {
+                        this.write('@escaping ');
+                    }
                     this.writeType(p.type);
                 } else {
                     this.write('Any?');
@@ -1235,22 +1443,26 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             },
             false
         );
-        this.write(') -> ');
-        this._writeReturnType(expr.returnType);
-        this.write(' in');
+        this.write(')');
+        if (!this._isVoid(expr.returnType)) {
+            this.write(' -> ');
+            this._writeReturnType(expr.returnType);
+        }
+        this.writeLine(' in');
+        this._indent++;
         if (cs.isBlock(expr.body)) {
-            this.writeLine();
-            this._indent++;
             for (const s of expr.body.statements) {
                 this.writeStatement(s);
             }
-            this._indent--;
-            this.write('}');
         } else {
-            this.write(this._isVoid(expr.returnType) ? ' ' : ' return ');
+            if (!this._isVoid(expr.returnType)) {
+                this.write('return ');
+            }
             this.writeExpression(expr.body);
-            this.write(' }');
+            this.writeLine();
         }
+        this._indent--;
+        this.write('}');
     }
 
     protected writeArrayCreationExpression(expr: cs.ArrayCreationExpression) {
@@ -1347,7 +1559,14 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     protected writeCastExpression(expr: cs.CastExpression) {
         if (cs.isPrimitiveTypeNode(expr.type)) {
             switch (expr.type.type) {
-                case cs.PrimitiveType.Double:
+                case cs.PrimitiveType.Double: {
+                    const inner = this._unwrapParens(expr.expression);
+                    if (!this._forceInteger && this._isBitOp(inner)) {
+                        this.write('Double(');
+                        this.writeExpression(inner);
+                        this.write(')');
+                        return;
+                    }
                     if (this._forceInteger || this._isNumericExpression(expr.expression)) {
                         this.writeExpression(this._unwrapLiteral(expr.expression));
                         return;
@@ -1362,6 +1581,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                     this.writeExpression(expr.expression);
                     this.write(')');
                     return;
+                }
                 case cs.PrimitiveType.Int: {
                     const inner = this._unwrapLiteral(expr.expression);
                     if (this._isIntegerLiteral(inner)) {
@@ -1392,16 +1612,76 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return;
         }
 
+        if (cs.isPrimitiveTypeNode(expr.type) && expr.type.type === cs.PrimitiveType.String && this._isStringExpression(expr.expression)) {
+            this.writeExpression(expr.expression);
+            return;
+        }
+
+        if (this._isNoOpNullableCast(expr)) {
+            this.writeExpression(expr.expression);
+            return;
+        }
+
         const parens = !expr.parent || !cs.isParenthesizedExpression(expr.parent);
         if (parens) {
             this.write('(');
         }
         this.writeExpression(expr.expression);
-        this.write(expr.type.isNullable ? ' as? ' : ' as! ');
-        this._writeType(expr.type, { nullable: false });
+        if (cs.isPrimitiveTypeNode(expr.type) && expr.type.type === cs.PrimitiveType.Object) {
+            // to `any`/`unknown` is an upcast
+            this.write(' as ');
+            this._writeType(expr.type, { owner: expr });
+        } else if (this._isUpcast(expr)) {
+            this.write(' as ');
+            this._writeType(expr.type, { nullable: false });
+        } else {
+            this.write(expr.type.isNullable ? ' as? ' : ' as! ');
+            this._writeType(expr.type, { nullable: false });
+        }
         if (parens) {
             this.write(')');
         }
+    }
+
+    /** Declared (not narrowed) as a string: a narrowed `Any?` still needs its cast in Swift. */
+    private _isStringExpression(expr: cs.Expression): boolean {
+        const tsNode = this._unwrapParens(expr).tsNode;
+        if (!tsNode) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const symbol = ts.isIdentifier(tsNode) ? checker.getSymbolAtLocation(tsNode) : undefined;
+        const t = symbol?.valueDeclaration
+            ? checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration)
+            : checker.getTypeAtLocation(tsNode);
+        return !!(t.flags & ts.TypeFlags.StringLike);
+    }
+
+    /** `x as T` where TS already knows `x` is a `T`: Swift's `as` (cannot fail). */
+    private _isUpcast(expr: cs.CastExpression): boolean {
+        const tsNode = expr.tsNode;
+        if (!tsNode || !ts.isAsExpression(tsNode)) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const source = checker.getTypeAtLocation(tsNode.expression);
+        const target = checker.getTypeAtLocation(tsNode.type);
+        return source !== target && !!(target.flags & ts.TypeFlags.Object) && checker.isTypeAssignableTo(source, target);
+    }
+
+    /** Kotlin's smart-cast lowering `(mode as Mode?)` on a `Mode | null` local: nothing to cast in Swift. */
+    private _isNoOpNullableCast(expr: cs.CastExpression): boolean {
+        if (!expr.type.isNullable) {
+            return false;
+        }
+        const source = this._tsTypeOf(this._unwrapParens(expr.expression));
+        const target = this._resolveTypeNode(expr.type);
+        if (!source || !source.isUnion() || !target.tsNode) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const nonNull = checker.getBaseTypeOfLiteralType(checker.getNonNullableType(source));
+        return !!nonNull.symbol && nonNull.symbol === checker.getTypeAtLocation(target.tsNode).symbol;
     }
 
     /** `T & {}` to `T` is an unwrap, not a cast: `value!`. */
@@ -1460,6 +1740,49 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.write('.rawValue)');
             return;
         }
+        // Kotlin's tuple assignment `rhs.let { a = it.v0 ... }` -> `(a, b) = rhs`
+        if (
+            expr.arguments.length === 1 &&
+            cs.isBlock(expr.arguments[0] as cs.Node) &&
+            cs.isMemberAccessExpression(expr.expression) &&
+            expr.expression.member === 'let'
+        ) {
+            const block = expr.arguments[0] as unknown as cs.Block;
+            this.write('(');
+            this.writeCommaSeparated(
+                block.statements,
+                st => this.writeExpression(((st as cs.ExpressionStatement).expression as cs.BinaryExpression).left),
+                false
+            );
+            this.write(') = ');
+            this.writeExpression(expr.expression.expression);
+            return;
+        }
+        // Kotlin's enum-to-name lowering: `d.toString()` -> `String(describing: d)`
+        if (
+            expr.arguments.length === 0 &&
+            cs.isMemberAccessExpression(expr.expression) &&
+            expr.expression.member === 'toString' &&
+            this._isEnumExpression(expr.expression.expression)
+        ) {
+            this.write('String(describing: ');
+            this.writeExpression(expr.expression.expression);
+            this.write(')');
+            return;
+        }
+        // `Number(s)`: the shared transformer builds C#'s `Double.Parse(s, InvariantCulture)`
+        if (
+            expr.arguments.length === 2 &&
+            cs.isMemberAccessExpression(expr.expression) &&
+            expr.expression.member === 'Parse' &&
+            cs.isIdentifier(expr.arguments[1]) &&
+            expr.arguments[1].text === 'System.Globalization.CultureInfo.InvariantCulture'
+        ) {
+            this.write('Double(');
+            this.writeExpression(expr.arguments[0]);
+            this.write(') ?? Double.nan');
+            return;
+        }
         this.writeExpression(expr.expression);
         if (expr.nullSafe) {
             this.write('?');
@@ -1495,8 +1818,25 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.write('nil');
     }
 
+    protected override writeIsExpression(expr: cs.IsExpression) {
+        // `<T>x` is a type assertion the shared transformer leaves as an `is`; Kotlin prints it wrong too
+        if (expr.tsNode && ts.isTypeAssertionExpression(expr.tsNode)) {
+            const inner = this._unwrapParens(expr.expression);
+            this.write('(');
+            this.writeExpression(cs.isCastExpression(inner) ? inner.expression : expr.expression);
+            this.write(' as! ');
+            this._writeType(expr.type, { nullable: false });
+            this.write(')');
+            return;
+        }
+        super.writeIsExpression(expr);
+    }
+
     protected override writeParenthesizedExpression(expr: cs.ParenthesizedExpression) {
-        if (cs.isCastExpression(expr.expression) && this._isNonNullCast(expr.expression)) {
+        if (
+            cs.isCastExpression(expr.expression) &&
+            (this._isNonNullCast(expr.expression) || this._isNoOpNullableCast(expr.expression))
+        ) {
             this.writeExpression(expr.expression);
             return;
         }
@@ -1541,12 +1881,12 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeExpression(s.expression);
         this._writeEmbeddedStatement(s.thenStatement);
         if (s.elseStatement) {
-            this.write(' else ');
+            this.write(' else');
             if (cs.isIfStatement(s.elseStatement)) {
+                this.write(' ');
                 this.writeIfStatement(s.elseStatement);
                 return;
             }
-            this.write('');
             this._writeEmbeddedStatement(s.elseStatement);
         }
         this.writeLine();
@@ -1767,9 +2107,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeVariableDeclarationList(s.declarationList, s.variableStatementKind);
         if (s.variableStatementKind === cs.VariableStatementKind.Using) {
             for (const d of s.declarationList.declarations) {
-                this.write('defer { ');
+                this.write('defer');
+                this._openBrace();
                 this.writeIdentifier(d.name);
-                this.writeLine('.dispose() }');
+                this.writeLine('.dispose()');
+                this._closeBrace();
             }
         }
     }
@@ -1781,8 +2123,22 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         const isLet = declarationList.isConst || kind !== cs.VariableStatementKind.Normal;
         for (const d of declarationList.declarations) {
             this.write(isLet ? 'let ' : 'var ');
+            let initializer = d.initializer;
             if (d.deconstructNames) {
-                this.write(`(${d.deconstructNames.map(n => this.escapeIdentifier(n)).join(', ')})`);
+                const names = d.deconstructNames.map(n => this.escapeIdentifier(n));
+                // Kotlin's cast to its tuple interface: a TS tuple is already a Swift tuple
+                if (initializer && cs.isCastExpression(this._unwrapParens(initializer))) {
+                    const inner = (this._unwrapParens(initializer) as cs.CastExpression).expression;
+                    const tupleType = this._tsTypeOf(inner);
+                    if (tupleType && this._context.typeChecker.isTupleType(tupleType)) {
+                        initializer = inner;
+                        const arity = this._context.typeChecker.getTypeArguments(tupleType as ts.TypeReference).length;
+                        while (names.length < arity) {
+                            names.push('_');
+                        }
+                    }
+                }
+                this.write(`(${names.join(', ')})`);
             } else {
                 this.writeIdentifier(d.name);
             }
@@ -1790,9 +2146,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 this.write(': ');
                 this._writeType(d.type, { owner: d });
             }
-            if (d.initializer) {
+            if (initializer) {
                 this.write(' = ');
-                this.writeExpression(d.initializer);
+                this.writeExpression(initializer);
             }
             this.writeLine();
         }
