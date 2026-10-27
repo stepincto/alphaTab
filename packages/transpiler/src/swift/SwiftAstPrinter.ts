@@ -336,11 +336,17 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     }
 
     private _writeConformance(t: cs.TypeNode, isBaseClass: boolean) {
-        if (!isBaseClass && cs.isTypeReference(t) && t.typeArguments) {
-            this._writeType({ ...t, typeArguments: undefined } as cs.TypeReference, { existential: false });
-            return;
+        const type = !isBaseClass && cs.isTypeReference(t) && t.typeArguments ? ({ ...t, typeArguments: undefined } as cs.TypeReference) : t;
+        // a protocol in an inheritance clause is never an existential: `Iterable<T>` -> `Sequence`
+        this.write(this._capture(() => this._writeType(type, { existential: false })).replace(/^any /, ''));
+    }
+
+    /** `[Symbol.iterator]()` of a class that implements Iterable: Sequence needs a concrete iterator type. */
+    private _isSequenceIterator(m: cs.Node | null): boolean {
+        if (!m || !cs.isMethodDeclaration(m) || (m as cs.MethodDeclaration).name !== 'makeIterator' || !m.parent || !cs.isClassDeclaration(m.parent)) {
+            return false;
         }
-        this._writeType(t, { existential: false });
+        return !!m.parent.interfaces?.some(i => this._captureType(i).startsWith('any Sequence'));
     }
 
     /** The superclass's `init` this class inherits from, or [] for its implicit `init()`; undefined without a superclass. */
@@ -633,7 +639,10 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         if (!d.isTestMethod && this._throws(d)) {
             this.write(' throws');
         }
-        if (!this._isVoid(d.returnType)) {
+        if (this._isSequenceIterator(d)) {
+            // `any IteratorProtocol<T>` does not conform to IteratorProtocol: type-erase it
+            this.write(` -> ${this._captureType(d.returnType).replace(/^any IteratorProtocol/, 'AnyIterator')}`);
+        } else if (!this._isVoid(d.returnType)) {
             this.write(' -> ');
             this._writeReturnType(d.returnType, d);
         }
@@ -775,6 +784,12 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.write('return await ');
             this.writeExpression(r.expression);
             this.writeSemicolon();
+            return;
+        }
+        if (r.expression && this._isSequenceIterator(p)) {
+            this.write('return AnyIterator(');
+            this.writeExpression(r.expression);
+            this.writeLine(')');
             return;
         }
         super.writeReturnStatement(r);
