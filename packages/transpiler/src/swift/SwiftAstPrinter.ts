@@ -1412,11 +1412,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     private _escapeString(text: string): string {
         const json = JSON.stringify(text);
-        return json
-            .substring(1, json.length - 1)
-            .replace(/\\u([0-9a-fA-F]{4})/g, (_m, h: string) => `\\u{${h.replace(/^0+(?=.)/, '')}}`)
-            .replace(/\\b/g, '\\u{8}')
-            .replace(/\\f/g, '\\u{c}');
+        // one pass over the escape pairs, so an escaped backslash before `b` (`\\\\b`) stays one
+        return json.substring(1, json.length - 1).replace(/\\(u([0-9a-fA-F]{4})|[^u])/g, (m, e: string, h?: string) => {
+            if (h) {
+                return `\\u{${h.replace(/^0+(?=.)/, '')}}`;
+            }
+            return e === 'b' ? '\\u{8}' : e === 'f' ? '\\u{c}' : m;
+        });
     }
 
     protected override writeStringLiteral(expr: cs.StringLiteral): void {
