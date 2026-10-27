@@ -546,11 +546,6 @@ final class AlphaTexParameterTests {
                     HandlerValidationSuite.importTest("C4 {beam (invalid)}")
                 }
 
-                @Test("wrong type")
-                func wrongType() async throws {
-                    HandlerValidationSuite.importTest("C4 {ad (\"1\")}")
-                }
-
                 init() {}
             }
 

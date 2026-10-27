@@ -132,7 +132,16 @@ export function runFixture(target: Target, dir: string): FixtureRunResult {
     const emitDiagnostics: ts.Diagnostic[] = [];
 
     const factory = { csharp: csharpCreateEmit, kotlin: kotlinCreateEmit, swift: swiftCreateEmit }[target];
-    factory(srcOut, testOut)(program, emitDiagnostics);
+    // `excluded-tests.txt` (Swift only): one `<path suffix>#<test name>` per line, as `scripts/transpile.ts` passes them
+    const excludedFile = path.join(dir, 'excluded-tests.txt');
+    const excludedTests = fs.existsSync(excludedFile)
+        ? fs.readFileSync(excludedFile, 'utf-8').split('\n').map(l => l.trim()).filter(l => l)
+        : [];
+    if (target === 'swift') {
+        swiftCreateEmit(srcOut, testOut, excludedTests)(program, emitDiagnostics);
+    } else {
+        factory(srcOut, testOut)(program, emitDiagnostics);
+    }
 
     const files = readAllFiles(tempRoot);
     return { tempRoot, tsDiagnostics, emitDiagnostics, files };

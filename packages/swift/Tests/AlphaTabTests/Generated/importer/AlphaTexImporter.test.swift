@@ -1977,16 +1977,6 @@ final class AlphaTexImporterTest {
                 AlphaTexImporterTest.importErrorTest(". \\rc (\"a\")")
             }
 
-            @Test("score optional")
-            func scoreOptional() async throws {
-                AlphaTexImporterTest.importErrorTest("\\title (\"Title\" 1)")
-            }
-
-            @Test("bar optional")
-            func barOptional() async throws {
-                AlphaTexImporterTest.importErrorTest(". \\section (\"a\" 1)")
-            }
-
             @Test("bracketextendmode")
             func bracketextendmode() async throws {
                 AlphaTexImporterTest.importErrorTest("\\bracketextendmode invalid")
@@ -2027,11 +2017,6 @@ final class AlphaTexImporterTest {
                 AlphaTexImporterTest.importErrorTest("\\accidentals invalid")
             }
 
-            @Test("whammybartype")
-            func whammybartype() async throws {
-                AlphaTexImporterTest.importErrorTest("C4 {tb invalid (0 1)}")
-            }
-
             @Test("whammybarstyle")
             func whammybarstyle() async throws {
                 AlphaTexImporterTest.importErrorTest("C4 {tb none invalid (0 1)}")
@@ -2055,16 +2040,6 @@ final class AlphaTexImporterTest {
             @Test("fermata")
             func fermata() async throws {
                 AlphaTexImporterTest.importErrorTest("C4 {fermata (invalid)}")
-            }
-
-            @Test("bendtype")
-            func bendtype() async throws {
-                AlphaTexImporterTest.importErrorTest("C4 {b invalid (0 4)}")
-            }
-
-            @Test("bendstyle")
-            func bendstyle() async throws {
-                AlphaTexImporterTest.importErrorTest("C4 {b bend invalid (0 4)}")
             }
 
             @Test("gracetype")

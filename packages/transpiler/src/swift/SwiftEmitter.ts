@@ -35,12 +35,34 @@ const SWIFT_PASSES: readonly IrPass[] = [
 /**
  * Leaves out single `it(...)` cases, named `<path suffix>#<test name>` (`/test/importer/AlphaTexImporter.test.ts#grace`):
  * a test that needs a module the Swift target has not ported yet, in a file whose other tests run.
+ * The name may carry its `describe` path, as vitest prints it (`parser > props > wrong type`), when the
+ * bare name is not unique in the file; a bare name or a path suffix matches every test it ends.
  */
+function testPath(call: ts.CallExpression): string {
+    const names: string[] = [];
+    for (let n: ts.Node | undefined = call; n; n = n.parent) {
+        if (ts.isCallExpression(n) && n.arguments.length > 0 && ts.isStringLiteralLike(n.arguments[0])) {
+            const callee = n.expression.getText();
+            if (n === call || callee === 'describe') {
+                names.unshift(n.arguments[0].text);
+            }
+        }
+    }
+    return names.join(' > ');
+}
+
 function excludeTests(context: SwiftEmitterContext, excludedTests: string[]) {
     const visit = (node: cs.Node, fileName: string) => {
         if (cs.isMethodDeclaration(node) && node.isTestMethod && node.tsNode && ts.isCallExpression(node.tsNode)) {
             const name = node.tsNode.arguments[0];
-            if (ts.isStringLiteralLike(name) && excludedTests.some(t => fileName.endsWith(t.split('#')[0]) && t.split('#')[1] === name.text)) {
+            const fullName = ts.isStringLiteralLike(name) ? testPath(node.tsNode) : '';
+            if (
+                fullName &&
+                excludedTests.some(t => {
+                    const [file, test] = t.split('#');
+                    return fileName.endsWith(file) && (fullName === test || fullName.endsWith(` > ${test}`));
+                })
+            ) {
                 node.skipEmit = true;
             }
         }
