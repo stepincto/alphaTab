@@ -16,7 +16,33 @@ const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 const sources = [
     '/alphatab/src/rendering/skyline/',
     '/alphatab/src/rendering/utils/ObjectPool.ts',
-    '/alphatab/test/rendering/skyline/'
+    '/alphatab/test/rendering/skyline/',
+    // tier "model": the model and its tests, plus the small modules they import (closure stays inside
+    // this list). Left out on purpose because their import closure is the whole library: Settings,
+    // generated/SettingsSerializer, RenderingResources, platform/ICanvas, rendering/utils/AccidentalHelper,
+    // importer/* (ScoreLoader, GpxImporter), test/TestPlatform, rendering/TabBarRendererFactory.
+    '/alphatab/src/model/',
+    '/alphatab/src/generated/model/',
+    '/alphatab/test/model/',
+    '/alphatab/src/AlphaTabError.ts',
+    '/alphatab/src/FormatError.ts',
+    '/alphatab/src/LogLevel.ts',
+    '/alphatab/src/Logger.ts',
+    '/alphatab/src/LayoutMode.ts',
+    '/alphatab/src/NotationSettings.ts',
+    '/alphatab/src/io/ByteBuffer.ts',
+    '/alphatab/src/io/IOHelper.ts',
+    '/alphatab/src/io/IReadable.ts',
+    '/alphatab/src/io/IWriteable.ts',
+    '/alphatab/src/io/JsonHelper.ts',
+    '/alphatab/src/io/TypeConversions.ts',
+    '/alphatab/src/midi/ControllerType.ts',
+    '/alphatab/src/midi/MidiEvent.ts',
+    '/alphatab/src/midi/MidiFile.ts',
+    '/alphatab/src/midi/MidiUtils.ts',
+    '/alphatab/src/rendering/utils/BeamDirection.ts',
+    '/alphatab/src/synth/SynthConstants.ts',
+    '/alphatab/src/util/Lazy.ts'
 ];
 const fileFilter = (fileName: string) => sources.some(s => fileName.replaceAll('\\', '/').includes(s));
 
