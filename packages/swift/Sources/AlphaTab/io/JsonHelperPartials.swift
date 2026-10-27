@@ -11,6 +11,8 @@ import AlphaTabRuntime
 /// `alphaTab/io/JsonHelperPartials.kt`. JSON objects arrive as `Map<String, Any?>`.
 /// Follows JS where Kotlin differs: numeric strings go through `parseInt` ("1px" -> 1).
 internal enum JsonHelperPartials {
+    // disfavoured: a closure with no return type is TS's `=> void` callback and must pick the Void overload
+    @_disfavoredOverload
     static func forEach(_ o: Any?, _ fn: (Any?, String) -> Bool) {
         guard let m = unwrapAny(o) as? Map<String, Any?> else {
             return
