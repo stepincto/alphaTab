@@ -33,37 +33,6 @@ enum ScoreSerializerPluginPartials {
     }
 }
 
-/// The members of test/TestPlatform.ts that PrettyFormat uses.
-/// shortcut: TestPlatform.ts is outside the transpile filter (its file IO); delete this stand-in when the
-/// tier that generates TestPlatform lands.
-enum TestPlatform {
-    static func loadFileAsStringSync(_ path: String) -> String {
-        // a missing .snap is reported before loading (Snapshot.match), so this only fails on unreadable files
-        return (try? String(contentsOfFile: path, encoding: .utf8)) ?? ""
-    }
-
-    static func typedArrayAsUnknownArray(_ array: Any?) -> List<Any?> {
-        return List<Any?>(contentsOf: jsElements(array) ?? [])
-    }
-
-    static func typedArrayAsUnknownIterable(_ array: Any?) -> any Sequence<Any?> {
-        return jsElements(array) ?? []
-    }
-
-    static func setAsUnknownIterable(_ set: Any?) -> any Sequence<Any?> {
-        return jsElements(set) ?? []
-    }
-
-    static func mapAsUnknownIterable(_ map: Any?) -> any Sequence<(Any?, Any?)> {
-        return (unwrapAny(map) as? any _AnyMapEntries)?._anyEntries ?? []
-    }
-
-    /// JS `val.constructor.name`.
-    static func getConstructorName(_ val: Any?) -> String {
-        return unwrapAny(val).map { String(describing: type(of: $0)) } ?? "Object"
-    }
-}
-
 /// Lets an untyped value be iterated as a `Map` of any key and value type.
 protocol _AnyMapEntries {
     var _anyEntries: [(Any?, Any?)] { get }

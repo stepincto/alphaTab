@@ -116,8 +116,8 @@ internal final class ComparisonHelpers {
                 if Array.isArray(actual) != Array.isArray(expected) {
                     throw JsError("IsArray mismatch on hierarchy: \((path).toTemplate())")
                 } else if Array.isArray(actual) && Array.isArray(expected) {
-                    let actualArray: List<Any?> = TestPlatform.typedArrayAsUnknownArray(actual)
-                    let expectedArray: List<Any?> = TestPlatform.typedArrayAsUnknownArray(expected)
+                    let actualArray: List<Any?> = TestPlatformPartials.typedArrayAsUnknownArray(actual)
+                    let expectedArray: List<Any?> = TestPlatformPartials.typedArrayAsUnknownArray(expected)
                     if actualArray.length != expectedArray.length {
                         throw JsError("Array Length mismatch on hierarchy: \((path).toTemplate()), actual<\((actualArray.length).toTemplate())> != expected<\((expectedArray.length).toTemplate())>")
                     } else {

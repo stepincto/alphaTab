@@ -118,15 +118,15 @@ internal final class PrettyFormat {
         let min: Bool = config.min
         let arrayTypeName: String = PrettyFormat.tryGetIterableType(val)
         if TypeHelper.isTruthy(arrayTypeName) {
-            return try hitMaxDepth ? "[\((arrayTypeName).toTemplate())]" : "\((min || arrayTypeName.startsWith("_") ? "" : "\((arrayTypeName).toTemplate()) ").toTemplate())[\((PrettyFormat.printIterableValues(TestPlatform.typedArrayAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer)).toTemplate())]"
+            return try hitMaxDepth ? "[\((arrayTypeName).toTemplate())]" : "\((min || arrayTypeName.startsWith("_") ? "" : "\((arrayTypeName).toTemplate()) ").toTemplate())[\((PrettyFormat.printIterableValues(TestPlatformPartials.typedArrayAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer)).toTemplate())]"
         }
         if val is any _AnyMap {
-            return try hitMaxDepth ? "[Map]" : "Map {\((PrettyFormat.printIteratorEntries(TestPlatform.mapAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer, " => ")).toTemplate())}"
+            return try hitMaxDepth ? "[Map]" : "Map {\((PrettyFormat.printIteratorEntries(TestPlatformPartials.mapAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer, " => ")).toTemplate())}"
         }
         if val is any _AnySet {
-            return try hitMaxDepth ? "[Set]" : "Set {\((PrettyFormat.printIterableValues(TestPlatform.setAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer)).toTemplate())}"
+            return try hitMaxDepth ? "[Set]" : "Set {\((PrettyFormat.printIterableValues(TestPlatformPartials.setAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer)).toTemplate())}"
         }
-        let constructorName: String = TestPlatform.getConstructorName(val)
+        let constructorName: String = TestPlatformPartials.getConstructorName(val)
         return try hitMaxDepth ? "[\((constructorName).toTemplate())]" : "\((min ? "" : !config.printBasicPrototype && constructorName == "Object" ? "" : "\((constructorName).toTemplate()) ").toTemplate()){\((PrettyFormat._printObjectProperties((val as Any?), config, indentation, paramdepth, paramrefs)).toTemplate())}"
     }
 
@@ -641,7 +641,7 @@ internal final class ScoreSerializerPlugin: PrettyFormatNewPlugin {
                         } else if dv is Uint32Array && v is Uint32Array {
                             isEqual = (dv as! Uint32Array).length == 0.0 && (v as! Uint32Array).length == 0.0
                         } else if Array.isArray(dv) && Array.isArray(v) {
-                            isEqual = TestPlatform.typedArrayAsUnknownArray(dv).length == 0.0 && TestPlatform.typedArrayAsUnknownArray(v).length == 0.0
+                            isEqual = TestPlatformPartials.typedArrayAsUnknownArray(dv).length == 0.0 && TestPlatformPartials.typedArrayAsUnknownArray(v).length == 0.0
                         } else if dv is any _AnyMap && v is any _AnyMap {
                             try ScoreSerializerPlugin._sanitizeJson((v as! Map<String, Any?>), (dv as! Map<String, Any?>))
                             if (v as! Map<String, Any?>).size == 0.0 {

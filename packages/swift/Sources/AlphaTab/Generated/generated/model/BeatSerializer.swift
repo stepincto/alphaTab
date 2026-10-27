@@ -131,7 +131,7 @@ internal final class BeatSerializer {
             try obj.fade = JsonHelperPartials.parseEnum(v, FadeType.self)!
             return true
         case "lyrics":
-            obj.lyrics = TypeHelper.unknownToList(v, String.self)
+            obj.lyrics = TypeHelper.unknownToNullableList(v, String.self)
             return true
         case "pop":
             obj.pop = (v! as! Bool)

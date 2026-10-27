@@ -20,13 +20,7 @@ const sources = [
     '/alphatab/src/rendering/utils/ObjectPool.ts',
     '/alphatab/test/rendering/skyline/',
     // tier "model": the model and its tests, plus the small modules they import (closure stays inside
-    // this list). Left out on purpose because their import closure is the whole library: Settings,
-    // generated/SettingsSerializer, RenderingResources, rendering/utils/AccidentalHelper,
-    // importer/* (ScoreLoader, GpxImporter), test/TestPlatform, rendering/TabBarRendererFactory.
-    // Settings reaches everything through CoreSettings -> Environment (importers, renderers, workers),
-    // so it waits for the tier that drops this filter. Until then Sources/AlphaTab/Settings.swift and
-    // SettingsSerializer.swift are hand-written stand-ins with only the members the model names.
-    // platform/ICanvas is in: it brings TextAlign for the model and adds no missing type beyond Settings.
+    // this list). platform/ICanvas is in: it brings TextAlign for the model.
     '/alphatab/src/model/',
     '/alphatab/src/generated/model/',
     '/alphatab/test/model/',
@@ -50,8 +44,8 @@ const sources = [
     '/alphatab/src/rendering/utils/BeamDirection.ts',
     '/alphatab/src/synth/SynthConstants.ts',
     '/alphatab/src/util/Lazy.ts',
-    // tier "io-alphatex": all of io/, the alphaTex importer and its tests. ScoreLoader is left out: it
-    // pulls Environment (the whole library). GeneralMidi and UnsupportedFormatError are in the closure.
+    // tier "io-alphatex": all of io/, the alphaTex importer and its tests. GeneralMidi and
+    // UnsupportedFormatError are in the closure.
     '/alphatab/src/io/',
     '/alphatab/src/importer/AlphaTexImporter.ts',
     '/alphatab/src/importer/alphaTex/',
@@ -59,26 +53,45 @@ const sources = [
     '/alphatab/src/importer/UnsupportedFormatError.ts',
     '/alphatab/src/midi/GeneralMidi.ts',
     '/alphatab/test/importer/AlphaTex',
-    // runtime:snapshot: the vitest snapshot printer behind toMatchSnapshot (TestPlatform is hand-written in Tests/Runtime)
+    // runtime:snapshot: the vitest snapshot printer behind toMatchSnapshot
     '/alphatab/test/PrettyFormat.ts',
     // tier "io-alphatex": the export roundtrip in AlphaTexImporter.test.ts (113 tests) needs the exporter
-    // and ComparisonHelpers (which calls TestPlatform.typedArrayAsUnknownArray). Environment and ScoreLoader
-    // stay out (whole library); Settings.swift holds stand-ins for the members named here.
+    // and ComparisonHelpers (which calls TestPlatform.typedArrayAsUnknownArray).
     '/alphatab/src/exporter/AlphaTexExporter.ts',
-    '/alphatab/src/exporter/ScoreExporter.ts'
+    '/alphatab/src/exporter/ScoreExporter.ts',
+    // tier "settings-importers": the real Settings (all groups and their generated serializers), every
+    // importer, ScoreLoader, xml/, zip/ and test/TestPlatform, for the model tests that load files. Cut at
+    // Environment (its import closure is the whole library: renderers, synth, workers), which stays a
+    // hand-written stand-in in Sources/AlphaTab/Environment.swift. MusicXmlImporter names one static of
+    // rendering/utils/AccidentalHelper (a renderer class); Sources/AlphaTab/AccidentalHelper.swift stands in.
+    '/alphatab/src/Settings.ts',
+    '/alphatab/src/CoreSettings.ts',
+    '/alphatab/src/DisplaySettings.ts',
+    '/alphatab/src/EngravingSettings.ts',
+    '/alphatab/src/ExporterSettings.ts',
+    '/alphatab/src/ImporterSettings.ts',
+    '/alphatab/src/PlayerSettings.ts',
+    '/alphatab/src/RenderingResources.ts',
+    '/alphatab/src/SmuflMetadata.ts',
+    '/alphatab/src/StaveProfile.ts',
+    '/alphatab/src/FileLoadError.ts',
+    '/alphatab/src/generated/',
+    '/alphatab/src/importer/',
+    '/alphatab/src/xml/',
+    '/alphatab/src/zip/',
+    '/alphatab/src/rendering/utils/Bounds.ts',
+    '/alphatab/src/rendering/utils/BarBounds.ts',
+    '/alphatab/src/rendering/utils/BeatBounds.ts',
+    '/alphatab/src/rendering/utils/BoundsLookup.ts',
+    '/alphatab/src/rendering/utils/MasterBarBounds.ts',
+    '/alphatab/src/rendering/utils/NoteBounds.ts',
+    '/alphatab/src/rendering/utils/StaffSystemBounds.ts',
+    '/alphatab/test/TestPlatform.ts'
 ];
-// tier "model": tests whose bodies need modules left out above (importers via ScoreLoader/GpxImporter,
-// test/TestPlatform file IO, Settings/SettingsSerializer, AccidentalHelper, TabBarRendererFactory).
-// They come back with the tier that brings those modules.
-const excluded = [
-    '/alphatab/test/model/Bar.test.ts',
-    '/alphatab/test/model/JsonConverter.test.ts',
-    '/alphatab/test/model/Lyrics.test.ts',
-    '/alphatab/test/model/ModelUtils.test.ts',
-    '/alphatab/test/model/NoteSteps.test.ts',
-    '/alphatab/test/model/NoteStepsAdditional.test.ts',
-    '/alphatab/test/model/PercussionTablature.test.ts'
-];
+// files inside the source list left out: whole test files (each reason is in Tests/AlphaTabTests/SKIPPED.md),
+// and VersionInfo, which only Environment reads and whose build date and commit would change the
+// generated output on every fresh clone
+const excluded: string[] = ['/alphatab/src/generated/VersionInfo.ts'];
 // single test cases left out of files whose other tests run; each reason is in Tests/AlphaTabTests/SKIPPED.md
 const excludedTests = [
     '/alphatab/test/importer/AlphaTexImporter.test.ts#hamonics-rendering-text-issue79',
@@ -88,7 +101,12 @@ const excludedTests = [
     '/alphatab/test/importer/AlphaTexImporter.test.ts#at219 > whammybartype',
     '/alphatab/test/importer/AlphaTexImporter.test.ts#at219 > bendtype',
     '/alphatab/test/importer/AlphaTexImporter.test.ts#at219 > bendstyle',
-    '/alphatab/test/importer/AlphaTexParameter.test.ts#handler-validation > props > optional overload > wrong type'
+    '/alphatab/test/importer/AlphaTexParameter.test.ts#handler-validation > props > optional overload > wrong type',
+    // TabBarRendererFactory is a renderer (BarRendererFactory, TabBarRenderer, ScoreRenderer)
+    '/alphatab/test/model/PercussionTablature.test.ts#TabBarRendererFactory.canCreate > allows creation for percussion staff with virtual tuning and showTablature',
+    '/alphatab/test/model/PercussionTablature.test.ts#TabBarRendererFactory.canCreate > rejects percussion staff when showTablature is false',
+    '/alphatab/test/model/PercussionTablature.test.ts#TabBarRendererFactory.canCreate > rejects percussion staff without tuning',
+    '/alphatab/test/model/PercussionTablature.test.ts#TabBarRendererFactory.canCreate > allows creation for regular guitar staff'
 ];
 const fileFilter = (fileName: string) => {
     const f = fileName.replaceAll('\\', '/');

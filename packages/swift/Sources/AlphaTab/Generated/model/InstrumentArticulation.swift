@@ -9,7 +9,7 @@ import AlphaTabRuntime
 /**
  * Describes an instrument articulation which is used for percussions.
  */
-public final class InstrumentArticulation {
+open class InstrumentArticulation {
     /**
      * An internal ID to identify this articulation for purposes like
      * mapping during exports.The exact meaning of the ID is not defined and dependes on the
