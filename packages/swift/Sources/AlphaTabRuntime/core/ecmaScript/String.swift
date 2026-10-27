@@ -119,6 +119,14 @@ extension String {
         return String._fromU16((0..<fill).map { p[$0 % p.count] }[...]) + self
     }
 
+    /// JS `repeat`: count truncated toward zero (NaN -> 0); a negative or infinite count is a
+    /// RangeError, which traps here like the typed arrays' range errors.
+    public func `repeat`(_ count: Double) -> String {
+        let n = count.isNaN ? 0 : count.rounded(.towardZero)
+        precondition(n >= 0 && n.isFinite, "RangeError: Invalid count value: \(count)")
+        return String(repeating: self, count: Int(n))
+    }
+
     public func splitBy(_ separator: String) -> List<String> {
         let u = self._u16
         let sep = separator._u16

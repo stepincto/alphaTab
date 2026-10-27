@@ -96,4 +96,21 @@ import Testing
         #expect("abc".padStart(Double.nan, "0") == "abc")
         #expect("5".padStart(3) == "  5")
     }
+
+    @Test func repeatTruncatesCount() {
+        #expect(" ".`repeat`(3) == "   ")
+        #expect("ab".`repeat`(2.9) == "abab")
+        #expect("ab".`repeat`(0) == "")
+        #expect("ab".`repeat`(-0.5) == "")
+        #expect("ab".`repeat`(Double.nan) == "")
+        #expect("".`repeat`(5) == "")
+    }
+
+    @Test func repeatNegativeCountIsRangeError() async {
+        await #expect(processExitsWith: .failure) { _ = "a".`repeat`(-1) }
+    }
+
+    @Test func repeatInfiniteCountIsRangeError() async {
+        await #expect(processExitsWith: .failure) { _ = "a".`repeat`(Double.infinity) }
+    }
 }

@@ -146,4 +146,14 @@ public enum Math {
     public static func min(_ values: List<Double>) -> Double {
         return values._data.reduce(Double.infinity) { min($0, $1) }
     }
+
+    /// `Math.max(...set)`: as for `List`, the emitter passes the set as is.
+    public static func max(_ values: Set<Double>) -> Double {
+        return values.reduce(-Double.infinity) { max($0, $1) }
+    }
+
+    /// `Math.min(...set)`.
+    public static func min(_ values: Set<Double>) -> Double {
+        return values.reduce(Double.infinity) { min($0, $1) }
+    }
 }
