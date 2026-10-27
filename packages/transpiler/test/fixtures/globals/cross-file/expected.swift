@@ -8,9 +8,9 @@
 import AlphaTabRuntime
 
 internal final class Info: IRecord {
-    public var id: String!
+    public var id: String
 
-    public var check: ((Double) -> Bool)!
+    public var check: (Double) -> Bool
 
     public init(id: String, check: @escaping (Double) -> Bool) {
         self.id = id
