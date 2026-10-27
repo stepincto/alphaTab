@@ -645,7 +645,41 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return;
         }
 
-        this._writeBody(d.body);
+        this._writeBody(d.body, d.isStatic && this._hasStaticInitializer(d.parent as cs.ClassDeclaration));
+    }
+
+    /** The class has a static constructor (TS module statements or `static {}`). */
+    private _hasStaticInitializer(cls: cs.Node | undefined): boolean {
+        return (
+            !!cls &&
+            cs.isClassDeclaration(cls) &&
+            cls.members.some(m => cs.isConstructorDeclaration(m) && m.isStatic && !m.skipEmit)
+        );
+    }
+
+    /**
+     * Swift has no static initializer: its body runs once from `_staticInit()`, which each static
+     * method and `init` call first. The flag is set before the body so a re-entrant call returns.
+     * shortcut: static properties read directly from outside the class do not trigger it; route
+     * them through an accessor once a generated class needs that.
+     */
+    private _writeStaticInitializer(d: cs.ConstructorDeclaration) {
+        this.writeLine('nonisolated(unsafe) private static var _staticInitDone: Bool = false');
+        this.writeLine();
+        this.writeLine('/// TS module statements and `static {}`: run once, before the first static call or `init`.');
+        this.write('private static func _staticInit()');
+        this._openBrace();
+        this.write('if Self._staticInitDone');
+        this._openBrace();
+        this.writeLine('return');
+        this._closeBrace();
+        this.writeLine('Self._staticInitDone = true');
+        if (d.body && cs.isBlock(d.body)) {
+            for (const s of d.body.statements) {
+                this.writeStatement(s);
+            }
+        }
+        this._closeBrace();
     }
 
     /** A TS function that returns a `Promise` without `async`: Swift makes it `async`, its returns `await`. */
@@ -749,8 +783,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     }
 
     /** ` {` + statements + `}` for a block or expression body. */
-    private _writeBody(body: cs.Block | cs.Expression) {
+    private _writeBody(body: cs.Block | cs.Expression, staticInit = false) {
         this._openBrace();
+        if (staticInit) {
+            this.writeLine('Self._staticInit()');
+        }
         if (cs.isBlock(body)) {
             for (const s of body.statements) {
                 this.writeStatement(s);
@@ -765,7 +802,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     protected writeConstructorDeclaration(d: cs.ConstructorDeclaration) {
         if (d.isStatic) {
-            // shortcut: static initializer blocks have no Swift twin yet; none in the fixtures
+            this._writeStaticInitializer(d);
             return;
         }
         this.writeDocumentation(d);
@@ -785,11 +822,15 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
 
         const statements = d.body && cs.isBlock(d.body) ? d.body.statements : [];
-        if (!d.baseConstructorArguments && statements.length === 0 && (!d.body || cs.isBlock(d.body))) {
+        const staticInit = this._hasStaticInitializer(cls);
+        if (!staticInit && !d.baseConstructorArguments && statements.length === 0 && (!d.body || cs.isBlock(d.body))) {
             this.writeLine(' {}');
             return;
         }
         this._openBrace();
+        if (staticInit) {
+            this.writeLine('Self._staticInit()');
+        }
         if (d.baseConstructorArguments) {
             this.write('super.init(');
             this.writeCommaSeparated(d.baseConstructorArguments, e => this.writeExpression(e));

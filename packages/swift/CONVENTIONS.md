@@ -59,6 +59,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - `override init` when the superclass has an `init` with the same parameter types: `Dog(name)` over `Animal(name)` -> `public override init(_ name: String) { super.init(name) }`.
 - Parameter properties -> a field (rule above) plus `self.x = x` first in `init`; the default stays on the parameter.
 - Static fields -> `static`; Kotlin's `companion object` disappears and members keep source order.
+- Static constructor (TS module statements beside the default class, `static {}`) -> `private static func _staticInit()`, run once behind `nonisolated(unsafe) private static var _staticInitDone` (set before the body, so a re-entrant call returns) and called first in every static method and `init` (shortcut: a static field read from outside the class or an implicit `init()` does not trigger it).
 - Mutable static field -> `nonisolated(unsafe) static var` (Swift 6 rejects unannotated global mutable state; alphaTab touches statics from one thread). `static readonly` of `Double`/`Int`/`Bool`/`String` -> `static let`; of any other type -> `nonisolated(unsafe) static let`.
 
 ## Methods, parameters, accessors
