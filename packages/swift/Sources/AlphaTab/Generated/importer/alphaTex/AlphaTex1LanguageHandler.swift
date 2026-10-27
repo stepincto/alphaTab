@@ -704,7 +704,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         let parseFull: Bool = importer.parseMode == AlphaTexParseMode.Full
         let trackValue: (any IAlphaTexAstNode, Double) -> Void = parseFull ? { (value: any IAlphaTexAstNode, overloadIndex: Double) in
             let overload: SignatureResolutionInfo = candidates.get(overloadIndex)!
-            let valueNode: any IAlphaTexArgumentValue = (value as any IAlphaTexArgumentValue)
+            let valueNode: any IAlphaTexArgumentValue = (value as! any IAlphaTexArgumentValue)
             if !TypeHelper.isTruthy(valueNode.parameterIndices) {
                 valueNode.parameterIndices = Map<Double, Double>()
             }
@@ -1904,7 +1904,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             args = (args[(paramargStartIndex).toInt()] as! AlphaTexArgumentList).arguments
             paramargStartIndex = 0.0
             remainingArgs = args.length
-            errorNode = (args[(paramargStartIndex).toInt()] as AlphaTexAstNode)
+            errorNode = (args[(paramargStartIndex).toInt()] as! AlphaTexAstNode)
         }
         let argsPerItem: Double = exact ? 2.0 : 1.0
         if remainingArgs.truncatingRemainder(dividingBy: argsPerItem) != 0.0 {

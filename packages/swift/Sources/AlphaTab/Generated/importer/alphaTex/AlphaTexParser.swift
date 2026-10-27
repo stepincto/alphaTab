@@ -290,7 +290,7 @@ Unexpected '\((String(describing: actual!.nodeType)).toTemplate())' token. Expec
             }
             let separator: AlphaTexAstNode? = self.lexer.peekToken()
             if (canHaveStringDot && separator?.nodeType == AlphaTexNodeType.Dot) || separator?.nodeType == AlphaTexNodeType.At {
-                let noteStringSeparator: any IAlphaTexStringSeparatorNode = (separator as any IAlphaTexStringSeparatorNode)
+                let noteStringSeparator: any IAlphaTexStringSeparatorNode = (separator as! any IAlphaTexStringSeparatorNode)
                 self.lexer.advance()
                 let noteString: AlphaTexAstNode? = self.lexer.peekToken()
                 if !TypeHelper.isTruthy(noteString) {

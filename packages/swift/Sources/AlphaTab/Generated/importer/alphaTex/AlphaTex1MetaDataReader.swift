@@ -160,7 +160,7 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
                     }
                 }
             } else {
-                let valueNode: any IAlphaTexArgumentValue = (value as any IAlphaTexArgumentValue)
+                let valueNode: any IAlphaTexArgumentValue = (value as! any IAlphaTexArgumentValue)
                 if parseFull {
                     if !TypeHelper.isTruthy(valueNode.parameterIndices) {
                         valueNode.parameterIndices = Map<Double, Double>()

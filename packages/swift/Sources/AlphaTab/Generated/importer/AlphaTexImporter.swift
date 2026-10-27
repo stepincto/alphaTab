@@ -319,7 +319,7 @@ public final class AlphaTexImporter: ScoreImporter, IAlphaTexImporter {
         var octave: Double = Number.NaN
         var tone: Double = Number.NaN
         var accidentalMode: NoteAccidentalMode = NoteAccidentalMode.Default
-        let noteValue: AlphaTexAstNode = (node.noteValue as AlphaTexAstNode)
+        let noteValue: AlphaTexAstNode = (node.noteValue as! AlphaTexAstNode)
         var detectedNoteKind: AlphaTexStaffNoteKind? = nil
         var staffNoteKind: AlphaTexStaffNoteKind? = self._state.staffNoteKind.has(self._state.currentStaff!) ? self._state.staffNoteKind.get(self._state.currentStaff!)! : nil
         switch noteValue.nodeType {
@@ -854,7 +854,16 @@ public final class AlphaTexErrorWithDiagnostics: AlphaTabError {
 internal final class AlphaTexImportState: IAlphaTexImporterState {
     public var trackChannel: Double = 0.0
 
-    public var score: Score!
+    private var __score: Score!
+
+    public var score: Score {
+        get {
+            return self.__score
+        }
+        set {
+            self.__score = newValue
+        }
+    }
 
     public var currentTrack: Track? = nil
 
