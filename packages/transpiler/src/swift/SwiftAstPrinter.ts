@@ -1184,6 +1184,17 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         for (const c of expr.chunks) {
             if (cs.isStringLiteral(c)) {
                 this.write(this._escapeString(c.text));
+            } else if (this._isReference(c)) {
+                // `${obj}` is `obj.toString()`; a class without one has no toTemplate()
+                if (this._hasOwnToString(c)) {
+                    this.write('\\((');
+                    this.writeExpression(c);
+                    this.write(').toString())');
+                } else {
+                    this.write('\\(jsTemplate(');
+                    this.writeExpression(c);
+                    this.write('))');
+                }
             } else {
                 this.write('\\((');
                 this.writeExpression(c);
@@ -1933,6 +1944,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         if (!this._isUnwrapped(expr.expression) && !this._isDeclaredNonNullable(expr.expression)) {
             this.write('!');
         }
+    }
+
+    /** The value's class declares `toString()` itself (not only `Object`'s). */
+    private _hasOwnToString(e: cs.Expression): boolean {
+        const t = this._tsTypeOf(this._unwrapParens(e));
+        const declarations = t && this._context.typeChecker.getNonNullableType(t).getProperty('toString')?.declarations;
+        return !!declarations?.some(d => !d.getSourceFile().isDeclarationFile);
     }
 
     /** A class or interface instance (a Swift reference type); not `null`, a tuple or a primitive. */
