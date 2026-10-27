@@ -8,6 +8,7 @@ import * as ts from 'typescript';
 import AstPrinterBase from '../AstPrinterBase';
 import type EmitterContextBase from '../EmitterContextBase';
 import * as cs from '../ir/Ir';
+import { hasTag, JsDocTag } from '../jsDocTags';
 
 /**
  * Prints the IR as Swift, following `packages/swift/CONVENTIONS.md`.
@@ -67,10 +68,31 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         if (name.startsWith('alphaTab.') || name.startsWith('kotlin.')) {
             this.write(this._unqualify(name));
         } else {
+            if (typeof expr !== 'string') {
+                this._writeTestClassQualifier(expr);
+            }
             this.write(this.escapeIdentifier(name));
         }
         if (typeof expr !== 'string' && this._isNarrowedNullableLocal(expr)) {
             this.write('!');
+        }
+    }
+
+    /** A `describe` callback's local became a static of its test class: Swift needs `Helpers.helper`. */
+    private _writeTestClassQualifier(expr: cs.Identifier) {
+        if (!expr.tsNode || !ts.isIdentifier(expr.tsNode)) {
+            return;
+        }
+        const declaration = this._context.typeChecker.getSymbolAtLocation(expr.tsNode)?.valueDeclaration;
+        if (!declaration || !(ts.isVariableDeclaration(declaration) || ts.isFunctionDeclaration(declaration))) {
+            return;
+        }
+        for (let t: cs.Node | null | undefined = this._currentType; t && this._isTestClass(t); t = t.parent) {
+            const owner = t as cs.ClassDeclaration;
+            if (owner.members.some(m => (m as { isStatic?: boolean }).isStatic && m.tsNode === declaration)) {
+                this.write(`${owner.name}.`);
+                return;
+            }
         }
     }
 
@@ -111,6 +133,10 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeLine('// the code is regenerated.');
         this.writeLine('// </auto-generated>');
         this.writeLine();
+        if (sourceFile.namespace.declarations.some(d => this._isTestClass(d))) {
+            this.writeLine('import Testing');
+            this.writeLine('@testable import AlphaTab');
+        }
         this.writeLine('import AlphaTabRuntime');
 
         for (const d of sourceFile.namespace.declarations) {
@@ -191,8 +217,37 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
     }
 
-    protected writeAttribute(_a: cs.Attribute): void {
-        // shortcut: no attribute is mapped to Swift yet; add when a fixture needs one
+    /** The transform's attribute names (Kotlin's) map onto Swift attributes; any other is dropped. */
+    protected writeAttribute(a: cs.Attribute): void {
+        const name = cs.isTypeReference(a.type) && typeof a.type.reference === 'string' ? a.type.reference : '';
+        const arg = a.arguments?.[0];
+        const writeArg = () => this.writeExpression(arg!);
+        // toTypeNameCase capitalises the transform's names (`available` -> `Available`)
+        switch (name.substring(name.lastIndexOf('.') + 1).toLowerCase()) {
+            case 'available':
+                this.write('@available(*, deprecated');
+                if (arg && cs.isStringLiteral(arg) && arg.text.length > 0) {
+                    this.write(', message: ');
+                    writeArg();
+                }
+                this.writeLine(')');
+                break;
+            case 'testclass':
+                this.write('@Suite(');
+                writeArg();
+                this.writeLine(')');
+                break;
+            case 'testname':
+                this.write('@Test(');
+                writeArg();
+                this.writeLine(')');
+                break;
+        }
+    }
+
+    /** A `describe(...)` class: Swift Testing wants it internal, its tests `async throws`. */
+    private _isTestClass(d: cs.Node | null | undefined): boolean {
+        return !!d && cs.isClassDeclaration(d) && !!d.tsNode && ts.isCallExpression(d.tsNode);
     }
 
     // ── declarations ──────────────────────────────────────────────────────
@@ -226,7 +281,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeDocumentation(d);
         this.writeAttributes(d);
 
-        if (this._isOpen(d) && !d.isStatic) {
+        if (this._isTestClass(d)) {
+            this.write('final class ');
+        } else if (d.isStatic) {
+            // a static-only wrapper (`<File>Globals`) is a caseless enum: no instances
+            this._writeTypeVisibility(d.visibility);
+            this.write('enum ');
+        } else if (this._isOpen(d)) {
             if (d.visibility === cs.Visibility.Public) {
                 this.write('open ');
             } else {
@@ -303,7 +364,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     private _writeDefaultConstructor(d: cs.ClassDeclaration) {
         const baseParameters = this._baseConstructorParameters(d);
         if (baseParameters === undefined) {
-            this.writeLine('public init() {}');
+            this.writeLine(this._isTestClass(d) ? 'init() {}' : 'public init() {}');
             return;
         }
         this.write('public override init');
@@ -463,7 +524,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeDocumentation(d);
         this.writeAttributes(d);
         const inProtocol = this._isInProtocol(d);
-        if (!inProtocol) {
+        if (!inProtocol && !d.isTestMethod) {
             this._writeMemberModifiers(d);
         }
 
@@ -471,10 +532,12 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeIdentifier(d.name);
         this.writeTypeParameters(d.typeParameters);
         this.writeParameters(d.parameters);
-        if (d.isAsync || this._returnsPromise(d)) {
+        if (d.isTestMethod) {
+            this.write(' async throws');
+        } else if (d.isAsync || this._returnsPromise(d)) {
             this.write(' async');
         }
-        if (this._throws(d)) {
+        if (!d.isTestMethod && this._throws(d)) {
             this.write(' throws');
         }
         if (!this._isVoid(d.returnType)) {
@@ -513,7 +576,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     /** A TS function that returns a `Promise` without `async`: Swift makes it `async`, its returns `await`. */
     private _returnsPromise(d: cs.MethodDeclaration): boolean {
         const tsNode = d.tsNode;
-        if (!tsNode || !ts.isFunctionLike(tsNode)) {
+        // `@async` marks a Promise-returning method alphaTab keeps as a Promise object (Kotlin's `Deferred`)
+        if (!tsNode || !ts.isFunctionLike(tsNode) || hasTag(tsNode as ts.MethodDeclaration, JsDocTag.async)) {
             return false;
         }
         const checker = this._context.typeChecker;
@@ -570,6 +634,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     /** A return type: `Promise<T>` prints as `T` (the function is `async`). */
     private _writeReturnType(t: cs.TypeNode, owner?: cs.Node) {
+        // an `@async` method returns the runtime `Promise<T>` itself (see _returnsPromise)
+        if (cs.isTypeReference(t) && t.isAsync && owner?.tsNode && hasTag(owner.tsNode as ts.MethodDeclaration, JsDocTag.async)) {
+            this.write('Promise<');
+            this._writeType(t, { owner });
+            this.write('>');
+            return;
+        }
         this._writeType(t, { owner });
     }
 
@@ -843,9 +914,14 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this._writeType(type, { nullable: true, owner: d });
             this.write(' = nil');
         } else {
-            this.writeType(type);
-            this.write('!');
+            this._writeImplicitlyUnwrapped(type, d);
         }
+    }
+
+    /** `T!`; a function or existential type needs parentheses: `((Double) -> Bool)!`. */
+    private _writeImplicitlyUnwrapped(type: cs.TypeNode, owner?: cs.Node) {
+        const text = this._capture(() => this._writeType(type, { owner }));
+        this.write(text.startsWith('any ') || text.includes('->') ? `(${text})!` : `${text}!`);
     }
 
     protected writeFieldDeclarat1on(d: cs.FieldDeclaration) {
@@ -868,11 +944,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.writeExpression(d.initializer);
         } else {
             const zero = this._zeroValue(d.type);
-            this._writeType(d.type, { owner: d });
             if (zero !== undefined) {
+                this._writeType(d.type, { owner: d });
                 this.write(` = ${zero}`);
             } else {
-                this.write('!');
+                this._writeImplicitlyUnwrapped(d.type, d);
             }
         }
         this.writeLine();
