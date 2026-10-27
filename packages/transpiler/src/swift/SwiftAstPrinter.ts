@@ -1721,6 +1721,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                         this.writeExpression(this._unwrapLiteral(expr.expression));
                         return;
                     }
+                    if (cs.isCastExpression(inner) && cs.isPrimitiveTypeNode(inner.type) && inner.type.type === cs.PrimitiveType.Double) {
+                        // already converted (the transformer casts an enum operand, then the sum)
+                        this.writeExpression(expr.expression);
+                        return;
+                    }
                     if (this._isEnumExpression(expr.expression)) {
                         this.write('Double(');
                         this.writeExpression(expr.expression);
@@ -1913,6 +1918,26 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
     }
 
+    /** Optional in Swift: declared with `null`/`undefined` and not unwrapped where it is used. */
+    private _isOptionalValue(e: cs.Expression): boolean {
+        if (this._isUnwrapped(e)) {
+            return false;
+        }
+        const tsNode = this._unwrapParens(e).tsNode;
+        if (!tsNode) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const symbol =
+            ts.isPropertyAccessExpression(tsNode) || ts.isIdentifier(tsNode)
+                ? checker.getSymbolAtLocation(ts.isPropertyAccessExpression(tsNode) ? tsNode.name : tsNode)
+                : undefined;
+        const t = symbol && symbol.flags & (ts.SymbolFlags.Property | ts.SymbolFlags.Variable)
+            ? checker.getTypeOfSymbol(symbol)
+            : checker.getTypeAtLocation(tsNode);
+        return t.isUnion() && t.types.some(u => !!(u.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined)));
+    }
+
     /** Already prints its own `!`: a nested non-null, or a narrowed nullable local. */
     private _isUnwrapped(e: cs.Expression): boolean {
         const inner = this._unwrapParens(e);
@@ -1955,6 +1980,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             expr.expression.member === 'toDouble' &&
             this._isEnumExpression(expr.expression.expression)
         ) {
+            if (this._isOptionalValue(expr.expression.expression)) {
+                this.writeExpression(expr.expression.expression);
+                this.write('.map { Double($0.rawValue) }');
+                return;
+            }
             this.write('Double(');
             this.writeExpression(expr.expression.expression);
             this.write('.rawValue)');
