@@ -92,7 +92,7 @@ internal final class BeatSerializer {
             return true
         case "notes":
             obj.notes = List<Note>()
-            for o in (v as! List<Map<String, Any?>?>) {
+            for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                 let i: Note = Note()
                 try NoteSerializer.fromJson(i, o)
                 obj.addNote(i)
@@ -115,7 +115,7 @@ internal final class BeatSerializer {
             return true
         case "automations":
             obj.automations = List<Automation>()
-            for o in (v as! List<Map<String, Any?>?>) {
+            for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                 let i: Automation = Automation()
                 try AutomationSerializer.fromJson(i, o)
                 obj.automations.push(i)
@@ -131,7 +131,7 @@ internal final class BeatSerializer {
             try obj.fade = JsonHelperPartials.parseEnum(v, FadeType.self)!
             return true
         case "lyrics":
-            obj.lyrics = (v as? List<String>)
+            obj.lyrics = TypeHelper.unknownToList(v, String.self)
             return true
         case "pop":
             obj.pop = (v! as! Bool)
@@ -178,9 +178,9 @@ internal final class BeatSerializer {
         case "whammybarpoints":
             if TypeHelper.isTruthy(v) {
                 obj.whammyBarPoints = List<BendPoint>()
-                for o in (v as! List<Map<String, Any?>?>) {
+                for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                     let i: BendPoint = BendPoint()
-                    BendPointSerializer.fromJson(i, o)
+                    try BendPointSerializer.fromJson(i, o)
                     obj.addWhammyBarPoint(i)
                 }
             }

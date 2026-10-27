@@ -7,11 +7,11 @@
 import AlphaTabRuntime
 
 internal final class BackingTrackSerializer {
-    public static func fromJson(_ obj: BackingTrack, _ m: Any?) {
+    public static func fromJson(_ obj: BackingTrack, _ m: Any?) throws {
         if !TypeHelper.isTruthy(m) {
             return
         }
-        JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
+        try JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
             return BackingTrackSerializer.setProperty(obj, k, v)
         })
     }

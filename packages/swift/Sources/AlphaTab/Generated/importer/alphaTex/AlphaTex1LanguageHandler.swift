@@ -2073,7 +2073,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
         } else if value != nil && value!.length == 0.0 && args.length == 1.0 {
             return
         }
-        nodes.push(Atnf.meta(tag, Atnf.args((args as! List<(any IAlphaTexArgumentValue)?>))))
+        nodes.push(Atnf.meta(tag, Atnf.args((List<(any IAlphaTexArgumentValue)?>(widening: args)))))
     }
 
     public func buildSyncPointNodes(_ score: Score) -> List<AlphaTexMetaDataNode> {
@@ -2651,7 +2651,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             if beat.tremoloPicking!.style != TremoloPickingStyle.Default {
                 values.push(Atnf.ident(String(describing: beat.tremoloPicking!.style)))
             }
-            Atnf.prop(properties, "tp", Atnf.args((values as! List<(any IAlphaTexArgumentValue)?>)))
+            Atnf.prop(properties, "tp", Atnf.args((List<(any IAlphaTexArgumentValue)?>(widening: values))))
         }
         switch beat.crescendo {
         case CrescendoType.Crescendo:

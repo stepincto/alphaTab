@@ -69,7 +69,7 @@ internal final class BarSerializer {
             return true
         case "voices":
             obj.voices = List<Voice>()
-            for o in (v as! List<Map<String, Any?>?>) {
+            for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                 let i: Voice = Voice()
                 try VoiceSerializer.fromJson(i, o)
                 obj.addVoice(i)
@@ -86,7 +86,7 @@ internal final class BarSerializer {
             return true
         case "sustainpedals":
             obj.sustainPedals = List<SustainPedalMarker>()
-            for o in (v as! List<Map<String, Any?>?>) {
+            for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                 let i: SustainPedalMarker = SustainPedalMarker()
                 try SustainPedalMarkerSerializer.fromJson(i, o)
                 obj.sustainPedals.push(i)

@@ -7,11 +7,11 @@
 import AlphaTabRuntime
 
 internal final class SectionSerializer {
-    public static func fromJson(_ obj: Section, _ m: Any?) {
+    public static func fromJson(_ obj: Section, _ m: Any?) throws {
         if !TypeHelper.isTruthy(m) {
             return
         }
-        JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
+        try JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
             return SectionSerializer.setProperty(obj, k, v)
         })
     }

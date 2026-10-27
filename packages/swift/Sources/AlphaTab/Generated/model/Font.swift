@@ -135,7 +135,7 @@ public final class Font {
             return nil
         case "object":
             let m: Map<String, Any?> = (v as! Map<String, Any?>)
-            let families: List<String> = (m.get("families") as! List<String>)
+            let families: List<String> = TypeHelper.unknownToList(m.get("families"), String.self)
             let size: Double = TypeHelper.unknownToNumber(m.get("size"))
             let style: FontStyle = try JsonHelperPartials.parseEnum(m.get("style"), FontStyle.self)!
             let weight: FontWeight = try JsonHelperPartials.parseEnum(m.get("weight"), FontWeight.self)!

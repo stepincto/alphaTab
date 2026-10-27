@@ -4,6 +4,7 @@
 // the code is regenerated.
 // </auto-generated>
 
+@testable import AlphaTab
 import AlphaTabRuntime
 
 internal final class ComparisonHelpers {
@@ -128,12 +129,12 @@ internal final class ComparisonHelpers {
                             }
                         }
                     }
-                } else if expected is Map<Any, Any?> {
-                    if !(actual is Map<Any, Any?>) {
+                } else if expected is any _AnyMap {
+                    if !(actual is any _AnyMap) {
                         throw JsError("Map mismatch on hierarchy: \((path).toTemplate()), actual<'\((actual).toTemplate())'> != expected<'\(jsTemplate((expected as! Map<Any, Any>)))'>")
                     } else {
-                        let expectedMap: Map<String, Any?> = (expected as Map<String, Any?>)
-                        let actualMap: Map<String, Any?> = (actual as Map<String, Any?>)
+                        let expectedMap: Map<String, Any?> = (expected as! Map<String, Any?>)
+                        let actualMap: Map<String, Any?> = (actual as! Map<String, Any?>)
                         let ignoredKeyLookup: Set<String> = Set<String>(["id", "hammerpulloriginnoteid", "hammerpulldestinationnoteid", "tieoriginnoteid", "tiedestinationnoteid", "sluroriginnoteid", "slurdestinationnoteid", "slidetargetnoteid", "slideoriginnoteid", "systemslayout", "defaultsystemslayout", "displayscale", "pertrackdisplaytuning", "pertrackchorddiagramsontop"])
                         if TypeHelper.isTruthy(ignoreKeys) {
                             for k in ignoreKeys! {
@@ -167,7 +168,7 @@ internal final class ComparisonHelpers {
                 throw JsError("String mismatch on hierarchy: \((path).toTemplate()), actual<'\((actual).toTemplate())'> != expected<'\((expected).toTemplate())'>")
             }
         case "undefined":
-            if actual != expected {
+            if !TypeHelper.strictEquals(actual, expected) {
                 throw JsError("null mismatch on hierarchy: \((path).toTemplate()), actual<'\((actual).toTemplate())'> != expected<'\((expected).toTemplate())'>")
             }
         default:

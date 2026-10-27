@@ -56,7 +56,7 @@ public final class JsonConverter {
             case "division":
                 midi2.division = TypeHelper.unknownToNumber(v)
             case "tracks":
-                for midiTrack in (v as! List<Any?>) {
+                for midiTrack in TypeHelper.unknownToList(v, Any?.self) {
                     let midiTrack2: MidiTrack = try JsonConverter._jsObjectToMidiTrack(midiTrack)
                     midi2.tracks.push(midiTrack2)
                 }
@@ -72,7 +72,7 @@ public final class JsonConverter {
         try JsonHelperPartials.forEach(jsObject, { (v: Any?, k: String) in
             switch k {
             case "events":
-                for midiEvent in (v as! List<Any?>) {
+                for midiEvent in TypeHelper.unknownToList(v, Any?.self) {
                     let midiEvent2: MidiEvent = try JsonConverter.jsObjectToMidiEvent(midiEvent)
                     midi2.events.push(midiEvent2)
                 }

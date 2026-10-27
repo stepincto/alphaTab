@@ -7,11 +7,11 @@
 import AlphaTabRuntime
 
 internal final class ChordSerializer {
-    public static func fromJson(_ obj: Chord, _ m: Any?) {
+    public static func fromJson(_ obj: Chord, _ m: Any?) throws {
         if !TypeHelper.isTruthy(m) {
             return
         }
-        JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
+        try JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
             return ChordSerializer.setProperty(obj, k, v)
         })
     }
@@ -40,10 +40,10 @@ internal final class ChordSerializer {
             obj.firstFret = TypeHelper.unknownToNumber(v)
             return true
         case "strings":
-            obj.strings = (v! as! List<Double>)
+            obj.strings = TypeHelper.unknownToList(v!, Double.self)
             return true
         case "barrefrets":
-            obj.barreFrets = (v! as! List<Double>)
+            obj.barreFrets = TypeHelper.unknownToList(v!, Double.self)
             return true
         case "showname":
             obj.showName = (v! as! Bool)

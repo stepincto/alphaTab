@@ -47,7 +47,7 @@ internal final class AutomationSerializer {
         case "syncpointvalue":
             if TypeHelper.isTruthy(v) {
                 obj.syncPointValue = SyncPointData()
-                SyncPointDataSerializer.fromJson(obj.syncPointValue!, v)
+                try SyncPointDataSerializer.fromJson(obj.syncPointValue!, v)
             } else {
                 obj.syncPointValue = nil
             }

@@ -127,7 +127,7 @@ internal final class AlphaTex1MetaDataReader: IAlphaTexMetaDataReader {
         if argValues.length == 0.0 {
             return nil
         }
-        let valueList: AlphaTexArgumentList = Atnf.args((argValues as! List<(any IAlphaTexArgumentValue)?>), false)!
+        let valueList: AlphaTexArgumentList = Atnf.args((List<(any IAlphaTexArgumentValue)?>(widening: argValues)), false)!
         valueList.start = start
         valueList.end = end
         valueList.validated = !error

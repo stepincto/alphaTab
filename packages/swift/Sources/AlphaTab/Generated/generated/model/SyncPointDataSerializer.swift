@@ -7,11 +7,11 @@
 import AlphaTabRuntime
 
 internal final class SyncPointDataSerializer {
-    public static func fromJson(_ obj: SyncPointData, _ m: Any?) {
+    public static func fromJson(_ obj: SyncPointData, _ m: Any?) throws {
         if !TypeHelper.isTruthy(m) {
             return
         }
-        JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
+        try JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
             return SyncPointDataSerializer.setProperty(obj, k, v)
         })
     }

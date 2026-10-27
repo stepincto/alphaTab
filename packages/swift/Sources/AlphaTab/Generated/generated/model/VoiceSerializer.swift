@@ -38,7 +38,7 @@ internal final class VoiceSerializer {
             return true
         case "beats":
             obj.beats = List<Beat>()
-            for o in (v as! List<Map<String, Any?>?>) {
+            for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                 let i: Beat = Beat()
                 try BeatSerializer.fromJson(i, o)
                 obj.addBeat(i)

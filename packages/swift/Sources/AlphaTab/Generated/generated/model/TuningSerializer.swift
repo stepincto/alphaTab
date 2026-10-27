@@ -7,11 +7,11 @@
 import AlphaTabRuntime
 
 internal final class TuningSerializer {
-    public static func fromJson(_ obj: Tuning, _ m: Any?) {
+    public static func fromJson(_ obj: Tuning, _ m: Any?) throws {
         if !TypeHelper.isTruthy(m) {
             return
         }
-        JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
+        try JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
             return TuningSerializer.setProperty(obj, k, v)
         })
     }
@@ -36,7 +36,7 @@ internal final class TuningSerializer {
             obj.name = (v! as! String)
             return true
         case "tunings":
-            obj.tunings = (v! as! List<Double>)
+            obj.tunings = TypeHelper.unknownToList(v!, Double.self)
             return true
         default:
             break

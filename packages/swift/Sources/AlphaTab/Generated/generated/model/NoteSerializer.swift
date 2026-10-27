@@ -87,9 +87,9 @@ internal final class NoteSerializer {
         case "bendpoints":
             if TypeHelper.isTruthy(v) {
                 obj.bendPoints = List<BendPoint>()
-                for o in (v as! List<Map<String, Any?>?>) {
+                for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                     let i: BendPoint = BendPoint()
-                    BendPointSerializer.fromJson(i, o)
+                    try BendPointSerializer.fromJson(i, o)
                     obj.addBendPoint(i)
                 }
             }

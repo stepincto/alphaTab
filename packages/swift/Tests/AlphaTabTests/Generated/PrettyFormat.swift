@@ -4,6 +4,7 @@
 // the code is regenerated.
 // </auto-generated>
 
+@testable import AlphaTab
 import AlphaTabRuntime
 
 internal final class PrettyFormat {
@@ -58,7 +59,7 @@ internal final class PrettyFormat {
         case "number":
             return PrettyFormat.printNumber(TypeHelper.unknownToNumber(val))
         case "bigint":
-            return PrettyFormat.printBigInt(Int64(val))
+            return PrettyFormat.printBigInt(TypeHelper.unknownToInt64(val))
         case "boolean":
             return "\((val).toTemplate())"
         case "undefined":
@@ -95,7 +96,7 @@ internal final class PrettyFormat {
         if Array.isArray(val) {
             return "_Array"
         }
-        if val is Set {
+        if val is any _AnySet {
             return "Set"
         }
         return ""
@@ -117,13 +118,13 @@ internal final class PrettyFormat {
         let min: Bool = config.min
         let arrayTypeName: String = PrettyFormat.tryGetIterableType(val)
         if TypeHelper.isTruthy(arrayTypeName) {
-            return hitMaxDepth ? "[\((arrayTypeName).toTemplate())]" : "\((min || arrayTypeName.startsWith("_") ? "" : "\((arrayTypeName).toTemplate()) ").toTemplate())[\((PrettyFormat.printIterableValues(TestPlatform.typedArrayAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer)).toTemplate())]"
+            return try hitMaxDepth ? "[\((arrayTypeName).toTemplate())]" : "\((min || arrayTypeName.startsWith("_") ? "" : "\((arrayTypeName).toTemplate()) ").toTemplate())[\((PrettyFormat.printIterableValues(TestPlatform.typedArrayAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer)).toTemplate())]"
         }
-        if val is Map<Any, Any?> {
-            return hitMaxDepth ? "[Map]" : "Map {\((PrettyFormat.printIteratorEntries(TestPlatform.mapAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer, " => ")).toTemplate())}"
+        if val is any _AnyMap {
+            return try hitMaxDepth ? "[Map]" : "Map {\((PrettyFormat.printIteratorEntries(TestPlatform.mapAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer, " => ")).toTemplate())}"
         }
-        if val is Set {
-            return hitMaxDepth ? "[Set]" : "Set {\((PrettyFormat.printIterableValues(TestPlatform.setAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer)).toTemplate())}"
+        if val is any _AnySet {
+            return try hitMaxDepth ? "[Set]" : "Set {\((PrettyFormat.printIterableValues(TestPlatform.setAsUnknownIterable(val), config, indentation, paramdepth, paramrefs, PrettyFormat.printer)).toTemplate())}"
         }
         let constructorName: String = TestPlatform.getConstructorName(val)
         return try hitMaxDepth ? "[\((constructorName).toTemplate())]" : "\((min ? "" : !config.printBasicPrototype && constructorName == "Object" ? "" : "\((constructorName).toTemplate()) ").toTemplate()){\((PrettyFormat._printObjectProperties((val as Any?), config, indentation, paramdepth, paramrefs)).toTemplate())}"
@@ -159,7 +160,7 @@ internal final class PrettyFormat {
      * with spacing, indentation, and comma
      * without surrounding punctuation (for example, braces)
      */
-    public static func printIteratorEntries(_ iterator: any Sequence<(Any?, Any?)>, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter, _ separator: String = ": ") -> String {
+    public static func printIteratorEntries(_ iterator: any Sequence<(Any?, Any?)>, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter, _ separator: String = ": ") throws -> String {
         var result: String = ""
         var width: Double = 0.0
         let indentationNext: String = indentation + config.indent
@@ -174,8 +175,8 @@ internal final class PrettyFormat {
                 result += "…"
                 break
             }
-            let name: String = printer(current.0, config, indentationNext, depth, refs)
-            let value: String = printer(current.1, config, indentationNext, depth, refs)
+            let name: String = try printer(current.0, config, indentationNext, depth, refs)
+            let value: String = try printer(current.1, config, indentationNext, depth, refs)
             result += name + separator + value
         }
         if result.length > 0 {
@@ -190,7 +191,7 @@ internal final class PrettyFormat {
      * with spacing, indentation, and comma
      * without surrounding punctuation (braces or brackets)
      */
-    public static func printIterableValues(_ iterator: any Sequence<Any?>, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter) -> String {
+    public static func printIterableValues(_ iterator: any Sequence<Any?>, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter) throws -> String {
         var result: String = ""
         var width: Double = 0.0
         let indentationNext: String = indentation + config.indent
@@ -206,7 +207,7 @@ internal final class PrettyFormat {
                 result += "…"
                 break
             }
-            result += printer(current, config, indentationNext, depth, refs)
+            try result += printer(current, config, indentationNext, depth, refs)
         }
         if result.length > 0 {
             result += ","
@@ -249,12 +250,12 @@ internal final class PrettyFormatConfig {
     public init() {}
 }
 
-internal typealias PrettyFormatPrinter = (Any?, PrettyFormatConfig, String, Double, List<Any?>) -> String
+internal typealias PrettyFormatPrinter = (Any?, PrettyFormatConfig, String, Double, List<Any?>) throws -> String
 
 internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
     nonisolated(unsafe) public static let instance: AlphaTexAstNodePlugin = AlphaTexAstNodePlugin()
 
-    public func serialize(_ val: Any?, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter) -> String {
+    public func serialize(_ val: Any?, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter) throws -> String {
         let node: AlphaTexAstNode = (val as! AlphaTexAstNode)
         var value: String? = nil
         switch node.nodeType {
@@ -443,7 +444,7 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
                 var i: Double = 0.0
                 while i < children.length {
                     let name: String = children[(i).toInt()].0
-                    let childValue: String = printer(children[(i).toInt()].1, config, indentationNext, depth, refs)
+                    let childValue: String = try printer(children[(i).toInt()].1, config, indentationNext, depth, refs)
                     str += "\((indentationNext + name).toTemplate()): \((childValue).toTemplate())"
                     if i < children.length - 1.0 {
                         str += ",\((config.spacingInner).toTemplate())"
@@ -464,7 +465,7 @@ internal final class AlphaTexAstNodePlugin: PrettyFormatNewPlugin {
 internal final class AlphaTexDiagnosticPlugin: PrettyFormatNewPlugin {
     nonisolated(unsafe) public static let instance: AlphaTexDiagnosticPlugin = AlphaTexDiagnosticPlugin()
 
-    public func serialize(_ val: Any?, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter) -> String {
+    public func serialize(_ val: Any?, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter) throws -> String {
         let v: AlphaTexDiagnostic = (val as! AlphaTexDiagnostic)
         let map: Map<String, Any?> = Map<String, Any?>()
         map.set("code", v.code)
@@ -484,7 +485,7 @@ internal final class AlphaTexDiagnosticPlugin: PrettyFormatNewPlugin {
             end.set("line", v.end!.line)
             end.set("offset", v.end!.offset)
         }
-        return printer(map, config, indentation, depth, refs)
+        return try printer(map, config, indentation, depth, refs)
     }
 
     public init() {}
@@ -496,9 +497,9 @@ internal final class AlphaTexDiagnosticPlugin: PrettyFormatNewPlugin {
 internal final class MidiEventSerializerPlugin: PrettyFormatNewPlugin {
     nonisolated(unsafe) public static let instance: MidiEventSerializerPlugin = MidiEventSerializerPlugin()
 
-    public func serialize(_ val: Any?, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter) -> String {
+    public func serialize(_ val: Any?, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter) throws -> String {
         let json: Map<String, Any?> = JsonConverter.midiEventToJsObject((val as! MidiEvent))
-        return printer(json, config, indentation, depth, refs)
+        return try printer(json, config, indentation, depth, refs)
     }
 
     public func test(_ arg0: Any?) -> Bool {
@@ -563,7 +564,7 @@ internal final class ScoreSerializerPlugin: PrettyFormatNewPlugin {
     public func serialize(_ val: Any?, _ config: PrettyFormatConfig, _ indentation: String, _ depth: Double, _ refs: List<Any?>, _ printer: @escaping PrettyFormatPrinter) throws -> String {
         let json: Map<String, Any?>? = JsonConverter.scoreToJsObject((val as! Score))
         try self._filterOutDefaultValues((json as! Map<String, Any?>))
-        return printer(json, config, indentation, depth, refs)
+        return try printer(json, config, indentation, depth, refs)
     }
 
     public func test(_ arg0: Any?) -> Bool {
@@ -571,21 +572,21 @@ internal final class ScoreSerializerPlugin: PrettyFormatNewPlugin {
     }
 
     private func _filterOutDefaultValues(_ scoreJson: Map<String, Any?>) throws {
-        let masterBars: List<Map<String, Any?>> = (scoreJson.get("masterbars") as! List<Map<String, Any?>>)
+        let masterBars: List<Map<String, Any?>> = TypeHelper.unknownToList(scoreJson.get("masterbars"), Map<String, Any?>.self)
         for masterBar in masterBars {
             try ScoreSerializerPlugin._sanitizeJson(masterBar, self._defaultMasterBarJson, "MasterBar")
         }
-        let tracks: List<Map<String, Any?>> = (scoreJson.get("tracks") as! List<Map<String, Any?>>)
+        let tracks: List<Map<String, Any?>> = TypeHelper.unknownToList(scoreJson.get("tracks"), Map<String, Any?>.self)
         for track in tracks {
-            let staves: List<Map<String, Any?>> = (track.get("staves") as! List<Map<String, Any?>>)
+            let staves: List<Map<String, Any?>> = TypeHelper.unknownToList(track.get("staves"), Map<String, Any?>.self)
             for staff in staves {
-                let bars: List<Map<String, Any?>> = (staff.get("bars") as! List<Map<String, Any?>>)
+                let bars: List<Map<String, Any?>> = TypeHelper.unknownToList(staff.get("bars"), Map<String, Any?>.self)
                 for bar in bars {
-                    let voices: List<Map<String, Any?>> = (bar.get("voices") as! List<Map<String, Any?>>)
+                    let voices: List<Map<String, Any?>> = TypeHelper.unknownToList(bar.get("voices"), Map<String, Any?>.self)
                     for voice in voices {
-                        let beats: List<Map<String, Any?>> = (voice.get("beats") as! List<Map<String, Any?>>)
+                        let beats: List<Map<String, Any?>> = TypeHelper.unknownToList(voice.get("beats"), Map<String, Any?>.self)
                         for beat in beats {
-                            let notes: List<Map<String, Any?>> = (beat.get("notes") as! List<Map<String, Any?>>)
+                            let notes: List<Map<String, Any?>> = TypeHelper.unknownToList(beat.get("notes"), Map<String, Any?>.self)
                             for note in notes {
                                 try ScoreSerializerPlugin._sanitizeJson(note, self._defaultNoteJson, "Note")
                             }
@@ -619,11 +620,11 @@ internal final class ScoreSerializerPlugin: PrettyFormatNewPlugin {
                     case "number":
                         isEqual = (TypeHelper.unknownToNumber(v)) == (TypeHelper.unknownToNumber(dv)) || (Number.isNaN(TypeHelper.unknownToNumber(v)) && Number.isNaN(TypeHelper.unknownToNumber(dv)))
                     case "bigint":
-                        isEqual = (Int64(v)) == (Int64(dv))
+                        isEqual = (TypeHelper.unknownToInt64(v)) == (TypeHelper.unknownToInt64(dv))
                     case "boolean":
                         isEqual = (v as! Bool) == (dv as! Bool)
                     case "undefined":
-                        isEqual = (v as Any?) == (dv as Any?)
+                        isEqual = TypeHelper.strictEquals((v as Any?), (dv as Any?))
                     case "object":
                         if dv == nil && v == nil {
                             isEqual = true
@@ -641,9 +642,9 @@ internal final class ScoreSerializerPlugin: PrettyFormatNewPlugin {
                             isEqual = (dv as! Uint32Array).length == 0.0 && (v as! Uint32Array).length == 0.0
                         } else if Array.isArray(dv) && Array.isArray(v) {
                             isEqual = TestPlatform.typedArrayAsUnknownArray(dv).length == 0.0 && TestPlatform.typedArrayAsUnknownArray(v).length == 0.0
-                        } else if dv is Map<Any, Any?> && v is Map<Any, Any?> {
-                            try ScoreSerializerPlugin._sanitizeJson((v as Map<String, Any?>), (dv as Map<String, Any?>))
-                            if (v as Map<String, Any?>).size == 0.0 {
+                        } else if dv is any _AnyMap && v is any _AnyMap {
+                            try ScoreSerializerPlugin._sanitizeJson((v as! Map<String, Any?>), (dv as! Map<String, Any?>))
+                            if (v as! Map<String, Any?>).size == 0.0 {
                                 isEqual = true
                             }
                         } else {

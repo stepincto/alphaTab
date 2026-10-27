@@ -51,14 +51,14 @@ internal final class TrackSerializer {
         switch property {
         case "staves":
             obj.staves = List<Staff>()
-            for o in (v as! List<Map<String, Any?>?>) {
+            for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                 let i: Staff = Staff()
                 try StaffSerializer.fromJson(i, o)
                 obj.addStaff(i)
             }
             return true
         case "playbackinfo":
-            PlaybackInformationSerializer.fromJson(obj.playbackInfo, v)
+            try PlaybackInformationSerializer.fromJson(obj.playbackInfo, v)
             return true
         case "color":
             try obj.color = Color.fromJson(v)!
@@ -76,16 +76,16 @@ internal final class TrackSerializer {
             obj.defaultSystemsLayout = TypeHelper.unknownToNumber(v)
             return true
         case "systemslayout":
-            obj.systemsLayout = (v! as! List<Double>)
+            obj.systemsLayout = TypeHelper.unknownToList(v!, Double.self)
             return true
         case "linebreaks":
-            for i in (v as! List<Double>) {
+            for i in (TypeHelper.unknownToList(v, Double.self)) {
                 obj.addLineBreaks(i)
             }
             return true
         case "percussionarticulations":
             obj.percussionArticulations = List<InstrumentArticulation>()
-            for o in (v as! List<Map<String, Any?>?>) {
+            for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                 let i: InstrumentArticulation = InstrumentArticulation()
                 try InstrumentArticulationSerializer.fromJson(i, o)
                 obj.percussionArticulations.push(i)

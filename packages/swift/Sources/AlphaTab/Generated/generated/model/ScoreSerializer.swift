@@ -83,7 +83,7 @@ internal final class ScoreSerializer {
             return true
         case "masterbars":
             obj.masterBars = List<MasterBar>()
-            for o in (v as! List<Map<String, Any?>?>) {
+            for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                 let i: MasterBar = MasterBar()
                 try MasterBarSerializer.fromJson(i, o)
                 obj.addMasterBar(i)
@@ -91,7 +91,7 @@ internal final class ScoreSerializer {
             return true
         case "tracks":
             obj.tracks = List<Track>()
-            for o in (v as! List<Map<String, Any?>?>) {
+            for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                 let i: Track = Track()
                 try TrackSerializer.fromJson(i, o)
                 obj.addTrack(i)
@@ -101,7 +101,7 @@ internal final class ScoreSerializer {
             obj.defaultSystemsLayout = TypeHelper.unknownToNumber(v)
             return true
         case "systemslayout":
-            obj.systemsLayout = (v! as! List<Double>)
+            obj.systemsLayout = TypeHelper.unknownToList(v!, Double.self)
             return true
         case "stylesheet":
             try RenderStylesheetSerializer.fromJson(obj.stylesheet, v)
@@ -109,7 +109,7 @@ internal final class ScoreSerializer {
         case "backingtrack":
             if TypeHelper.isTruthy(v) {
                 obj.backingTrack = BackingTrack()
-                BackingTrackSerializer.fromJson(obj.backingTrack!, v)
+                try BackingTrackSerializer.fromJson(obj.backingTrack!, v)
             } else {
                 obj.backingTrack = nil
             }

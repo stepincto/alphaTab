@@ -119,14 +119,14 @@ internal final class MasterBarSerializer {
         case "section":
             if TypeHelper.isTruthy(v) {
                 obj.section = Section()
-                SectionSerializer.fromJson(obj.section!, v)
+                try SectionSerializer.fromJson(obj.section!, v)
             } else {
                 obj.section = nil
             }
             return true
         case "tempoautomations":
             obj.tempoAutomations = List<Automation>()
-            for o in (v as! List<Map<String, Any?>?>) {
+            for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                 let i: Automation = Automation()
                 try AutomationSerializer.fromJson(i, o)
                 obj.tempoAutomations.push(i)
@@ -135,7 +135,7 @@ internal final class MasterBarSerializer {
         case "syncpoints":
             if TypeHelper.isTruthy(v) {
                 obj.syncPoints = List<Automation>()
-                for o in (v as! List<Map<String, Any?>?>) {
+                for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                     let i: Automation = Automation()
                     try AutomationSerializer.fromJson(i, o)
                     obj.addSyncPoint(i)
@@ -163,7 +163,7 @@ internal final class MasterBarSerializer {
             obj.displayWidth = TypeHelper.unknownToNumber(v)
             return true
         case "directions":
-            for i in (v as! List<Double>) {
+            for i in (TypeHelper.unknownToList(v, Double.self)) {
                 try obj.addDirection(JsonHelperPartials.parseEnum(i, Direction.self)!)
             }
             return true

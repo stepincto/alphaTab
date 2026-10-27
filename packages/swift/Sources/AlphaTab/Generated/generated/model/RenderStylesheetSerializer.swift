@@ -87,7 +87,7 @@ internal final class RenderStylesheetSerializer {
             return true
         case "pertrackdisplaytuning":
             obj.perTrackDisplayTuning = Map<Double, Bool>()
-            JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
+            try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
                 obj.perTrackDisplayTuning!.set(Number.parseInt(k), (v as! Bool))
             })
             return true
@@ -96,7 +96,7 @@ internal final class RenderStylesheetSerializer {
             return true
         case "pertrackchorddiagramsontop":
             obj.perTrackChordDiagramsOnTop = Map<Double, Bool>()
-            JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
+            try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
                 obj.perTrackChordDiagramsOnTop!.set(Number.parseInt(k), (v as! Bool))
             })
             return true
@@ -125,7 +125,7 @@ internal final class RenderStylesheetSerializer {
             obj.multiTrackMultiBarRest = (v! as! Bool)
             return true
         case "pertrackmultibarrest":
-            obj.perTrackMultiBarRest = Set<Double>((v as! List<Double>))
+            obj.perTrackMultiBarRest = Set<Double>(TypeHelper.unknownToList(v, Double.self))
             return true
         case "extendbarlines":
             obj.extendBarLines = (v! as! Bool)

@@ -60,7 +60,7 @@ internal final class StaffSerializer {
         switch property {
         case "bars":
             obj.bars = List<Bar>()
-            for o in (v as! List<Map<String, Any?>?>) {
+            for o in (TypeHelper.unknownToList(v, Map<String, Any?>?.self)) {
                 let i: Bar = Bar()
                 try BarSerializer.fromJson(i, o)
                 obj.addBar(i)
@@ -68,9 +68,9 @@ internal final class StaffSerializer {
             return true
         case "chords":
             obj.chords = Map<String, Chord>()
-            JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
+            try JsonHelperPartials.forEach(v, { (v: Any?, k: String) in
                 let i: Chord = Chord()
-                ChordSerializer.fromJson(i, (v as! Map<String, Any?>))
+                try ChordSerializer.fromJson(i, (v as! Map<String, Any?>))
                 obj.addChord(k, i)
             })
             return true
@@ -84,7 +84,7 @@ internal final class StaffSerializer {
             obj.displayTranspositionPitch = TypeHelper.unknownToNumber(v)
             return true
         case "stringtuning":
-            TuningSerializer.fromJson(obj.stringTuning, v)
+            try TuningSerializer.fromJson(obj.stringTuning, v)
             return true
         case "showslash":
             obj.showSlash = (v! as! Bool)

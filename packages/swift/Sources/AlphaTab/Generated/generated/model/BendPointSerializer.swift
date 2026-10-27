@@ -7,11 +7,11 @@
 import AlphaTabRuntime
 
 internal final class BendPointSerializer {
-    public static func fromJson(_ obj: BendPoint, _ m: Any?) {
+    public static func fromJson(_ obj: BendPoint, _ m: Any?) throws {
         if !TypeHelper.isTruthy(m) {
             return
         }
-        JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
+        try JsonHelperPartials.forEach(m, { (v: Any?, k: String) -> Bool in
             return BendPointSerializer.setProperty(obj, k, v)
         })
     }
