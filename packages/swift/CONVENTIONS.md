@@ -64,7 +64,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 ## Methods, parameters, accessors
 
 - Parameters have no argument label: `area(w: number)` -> `func area(_ w: Double)`, called `area(w)`. TS calls are positional.
-- Exception: a record's (`IRecord`) memberwise `init` keeps labels so object literals name fields, like Kotlin's named arguments: `{ x: 1, y: 2 }` -> `Point(x: 1.0, y: 2.0)`.
+- Exception: a record's (`IRecord`) memberwise `init` keeps labels so object literals name fields, like Kotlin's named arguments: `{ x: 1, y: 2 }` -> `Point(x: 1.0, y: 2.0)`. The arguments follow the init's parameter order (declaration order, optional ones last), whatever order the literal uses: Swift requires it.
 - Optional parameter -> `T? = nil`: `maybe(x?: number)` -> `func maybe(_ x: Double? = nil)` (Kotlin prints `= 0.0` for numbers; `nil` keeps TS's `undefined`).
 - Default value -> Swift default: `x: number = 10` -> `_ x: Double = 10.0`.
 - Rest -> variadic: `...xs: number[]` -> `_ xs: Double...`.
