@@ -1696,6 +1696,28 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.write(expr.nullSafe && !this._isUnwrapped(expr.expression) ? '?.' : '.');
         }
         this.writeIdentifier(this._swiftMemberName(name));
+        if (this._isNarrowedNullableGetter(expr)) {
+            this.write('!');
+        }
+    }
+
+    /** `o.value` of a `T | null` getter that TS narrowed to `T` here (smart-cast lowering covers only fields). */
+    private _isNarrowedNullableGetter(expr: cs.MemberAccessExpression): boolean {
+        const tsNode = expr.tsNode;
+        if (!tsNode || !ts.isPropertyAccessExpression(tsNode) || (expr.parent && cs.isNonNullExpression(expr.parent))) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const symbol = checker.getSymbolAtLocation(tsNode.name);
+        if (!symbol || !(symbol.flags & ts.SymbolFlags.GetAccessor)) {
+            return false;
+        }
+        const declared = checker.getTypeOfPropertyOfType(checker.getTypeAtLocation(tsNode.expression), symbol.name);
+        const narrowed = checker.getTypeAtLocation(tsNode);
+        const isNullable = (t: ts.Type) =>
+            !!(t.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined)) ||
+            (t.isUnion() && t.types.some(u => !!(u.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined))));
+        return !!declared && isNullable(declared) && !isNullable(narrowed);
     }
 
     /** Kotlin-only member spellings the shared transformer produces. */
