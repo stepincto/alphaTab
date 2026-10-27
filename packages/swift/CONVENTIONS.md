@@ -69,7 +69,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - Default value -> Swift default: `x: number = 10` -> `_ x: Double = 10.0`.
 - Rest -> variadic: `...xs: number[]` -> `_ xs: Double...`.
 - Function-typed parameters -> `@escaping` always (the emitter does not prove a closure does not escape): `_ pred: @escaping Predicate<T>`. Optional function parameters are already escaping and get no attribute.
-- Generic method -> `func identity<T>(_ value: T) -> T`; constraint inline: `class MinBox<T extends Base>` -> `final class MinBox<T: Base>`.
+- Generic method -> `func identity<T>(_ value: T) -> T`; constraint inline: `class MinBox<T extends Base>` -> `final class MinBox<T: Base>`. `T extends number` -> `T: IAlphaTabEnum` (alphaTab binds it only to enums; Swift cannot constrain to `Double`).
 - Getter/setter pair -> computed property; the setter keeps the TS parameter name: `set value(v)` -> `set(v) { ... }`.
 - Getter only -> `var x: T { get { ... } }`.
 - Setter only -> getter that traps (Swift has no set-only properties): `get { fatalError("value has no getter") }`.
