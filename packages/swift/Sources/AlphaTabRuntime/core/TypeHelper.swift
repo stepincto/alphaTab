@@ -31,6 +31,33 @@ public enum TypeHelper {
         }
     }
 
+    /// JS `===` on two `unknown` values: primitives by value (NaN never equal), objects by reference.
+    public static func strictEquals(_ a: Any?, _ b: Any?) -> Bool {
+        let x = unwrapAny(a)
+        let y = unwrapAny(b)
+        switch (x, y) {
+        case (nil, nil):
+            return true
+        case (nil, _), (_, nil):
+            return false
+        case let (l as String, r as String):
+            return l == r
+        case let (l as Bool, r as Bool):
+            return l == r
+        case let (l as Double, r as Double):
+            return l == r
+        default:
+            if typeOf(x) == "number" && typeOf(y) == "number" {
+                return unknownToNumber(x) == unknownToNumber(y)
+            }
+            // only class instances have an identity; other value types are never `===` (as JS objects by value)
+            guard let l = x, let r = y, type(of: l) is AnyClass, type(of: r) is AnyClass else {
+                return false
+            }
+            return (l as AnyObject) === (r as AnyObject)
+        }
+    }
+
     public static func isTruthy(_ s: String?) -> Bool {
         return s != nil && !s!.isEmpty
     }
