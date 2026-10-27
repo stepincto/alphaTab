@@ -1793,6 +1793,24 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
     }
 
+    /** A field the printer declares `T!`: no initializer and a type with no Swift zero value. */
+    private _isImplicitlyUnwrappedField(expr: cs.Expression): boolean {
+        const tsNode = this._unwrapParens(expr).tsNode;
+        if (!tsNode || !ts.isPropertyAccessExpression(tsNode)) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const declaration = checker.getSymbolAtLocation(tsNode.name)?.valueDeclaration;
+        if (!declaration || !ts.isPropertyDeclaration(declaration) || declaration.initializer || declaration.questionToken) {
+            return false;
+        }
+        const t = checker.getTypeAtLocation(declaration);
+        const parts = t.isUnion() ? t.types : [t];
+        const zeroOrOptional =
+            ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.Any | ts.TypeFlags.Unknown;
+        return !parts.some(u => !!(u.flags & zeroOrOptional) && !(u.flags & ts.TypeFlags.EnumLike));
+    }
+
     /** Declared (not narrowed) as `unknown` or `any`. */
     private _isDeclaredUnknown(expr: cs.Expression): boolean {
         let e = this._unwrapParens(expr);
@@ -2212,6 +2230,10 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     protected writeSwitchStatement(s: cs.SwitchStatement) {
         this.write('switch ');
         this.writeExpression(s.expression);
+        if (this._isImplicitlyUnwrappedField(s.expression)) {
+            // a `T!` field is an optional to a pattern: `case E.A` cannot match `E?`
+            this.write('!');
+        }
         this.writeLine(' {');
 
         let hasDefault = false;
