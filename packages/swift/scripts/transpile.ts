@@ -6,6 +6,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 import createEmit from '@coderline/alphatab-transpiler/src/swift/SwiftEmitter';
 import transpiler from '@coderline/alphatab-transpiler/src/TranspilerBase';
+import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 
@@ -22,8 +23,9 @@ const sources = [
     // generated/SettingsSerializer, RenderingResources, rendering/utils/AccidentalHelper,
     // importer/* (ScoreLoader, GpxImporter), test/TestPlatform, rendering/TabBarRendererFactory.
     // Settings reaches everything through CoreSettings -> Environment (importers, renderers, workers),
-    // so it waits for the tier that drops this filter. platform/ICanvas is in: it brings TextAlign for
-    // the model and adds no missing type beyond Settings.
+    // so it waits for the tier that drops this filter. Until then Sources/AlphaTab/Settings.swift and
+    // SettingsSerializer.swift are hand-written stand-ins with only the members the model names.
+    // platform/ICanvas is in: it brings TextAlign for the model and adds no missing type beyond Settings.
     '/alphatab/src/model/',
     '/alphatab/src/generated/model/',
     '/alphatab/test/model/',
@@ -48,16 +50,36 @@ const sources = [
     '/alphatab/src/synth/SynthConstants.ts',
     '/alphatab/src/util/Lazy.ts'
 ];
-const fileFilter = (fileName: string) => sources.some(s => fileName.replaceAll('\\', '/').includes(s));
+// tier "model": tests whose bodies need modules left out above (importers via ScoreLoader/GpxImporter,
+// test/TestPlatform file IO, Settings/SettingsSerializer, AccidentalHelper, TabBarRendererFactory).
+// They come back with the tier that brings those modules; ComparisonHelpers is used only by JsonConverter.
+const excluded = [
+    '/alphatab/test/model/Bar.test.ts',
+    '/alphatab/test/model/ComparisonHelpers.ts',
+    '/alphatab/test/model/JsonConverter.test.ts',
+    '/alphatab/test/model/Lyrics.test.ts',
+    '/alphatab/test/model/ModelUtils.test.ts',
+    '/alphatab/test/model/NoteSteps.test.ts',
+    '/alphatab/test/model/NoteStepsAdditional.test.ts',
+    '/alphatab/test/model/PercussionTablature.test.ts'
+];
+const fileFilter = (fileName: string) => {
+    const f = fileName.replaceAll('\\', '/');
+    return sources.some(s => f.includes(s)) && !excluded.some(s => f.endsWith(s));
+};
+
+const srcOut = path.resolve(__dirname, '../Sources/AlphaTab/Generated');
+const testOut = path.resolve(__dirname, '../Tests/AlphaTabTests/Generated');
+// the emitter only writes files, so output of a source that left the filter would linger and still compile
+for (const dir of [srcOut, testOut]) {
+    fs.rmSync(dir, { recursive: true, force: true });
+}
 
 transpiler(
     [
         {
             name: 'Swift',
-            emit: createEmit(
-                path.resolve(__dirname, '../Sources/AlphaTab/Generated'),
-                path.resolve(__dirname, '../Tests/AlphaTabTests/Generated')
-            )
+            emit: createEmit(srcOut, testOut)
         }
     ],
     true,
