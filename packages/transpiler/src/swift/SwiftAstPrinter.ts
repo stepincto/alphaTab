@@ -1499,10 +1499,16 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 return;
             case '===':
             case '!==':
+            case '==':
+            case '!=': {
+                const negated = expr.operator.startsWith('!');
+                const identity = this._isReference(expr.left) && this._isReference(expr.right);
                 this.writeExpression(expr.left);
-                this.write(expr.operator === '===' ? ' == ' : ' != ');
+                // class instances are not Equatable: TS compares them by reference
+                this.write(identity ? (negated ? ' !== ' : ' === ') : negated ? ' != ' : ' == ');
                 this.writeExpression(expr.right);
                 return;
+            }
         }
 
         this.writeExpression(expr.left);
@@ -1927,6 +1933,21 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         if (!this._isUnwrapped(expr.expression) && !this._isDeclaredNonNullable(expr.expression)) {
             this.write('!');
         }
+    }
+
+    /** A class or interface instance (a Swift reference type); not `null`, a tuple or a primitive. */
+    private _isReference(e: cs.Expression): boolean {
+        const t = this._tsTypeOf(this._unwrapParens(e));
+        if (!t) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        let nonNull = checker.getNonNullableType(t);
+        if (nonNull.flags & ts.TypeFlags.TypeParameter) {
+            // `this` is a type parameter: its apparent type is the class
+            nonNull = checker.getApparentType(nonNull);
+        }
+        return !!(nonNull.flags & ts.TypeFlags.Object) && !checker.isTupleType(nonNull) && !!nonNull.symbol && !!(nonNull.symbol.flags & (ts.SymbolFlags.Class | ts.SymbolFlags.Interface));
     }
 
     /** Optional in Swift: declared with `null`/`undefined` and not unwrapped where it is used. */
