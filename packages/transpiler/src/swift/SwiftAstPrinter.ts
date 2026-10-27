@@ -1030,8 +1030,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return;
         }
 
-        if (isAuto && this._isRealOverride(d)) {
-            // Swift cannot override a property with a stored one: private store + computed override
+        if (isAuto && (this._isRealOverride(d) || this._isInterfaceRequiredImplicitlyUnwrapped(d))) {
+            // Swift cannot override a property with a stored one, and `T!` does not satisfy a protocol's `T`:
+            // private store + computed property
             const store = `__${d.name}`;
             this.write('private var ');
             this.write(store);
@@ -1095,6 +1096,14 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this._writeBody(d.setAccessor.body);
         }
         this._closeBrace();
+    }
+
+    private _isInterfaceRequiredImplicitlyUnwrapped(d: cs.PropertyDeclaration): boolean {
+        return (
+            !!d.tsNode &&
+            this._capture(() => this._writeStoredPropertyTypeAndValue(d)).endsWith('!') &&
+            this._implementsRequiredInterfaceMember(d.tsNode as ts.Declaration)
+        );
     }
 
     /** `Type = initializer`, `Type = <zero>` or `Type!` for a stored property. */
@@ -2131,7 +2140,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
         const checker = this._context.typeChecker;
         const declaration = checker.getSymbolAtLocation(tsNode.name)?.valueDeclaration;
-        if (!declaration || !ts.isPropertyDeclaration(declaration) || declaration.initializer || declaration.questionToken) {
+        if (
+            !declaration ||
+            !ts.isPropertyDeclaration(declaration) ||
+            declaration.initializer ||
+            declaration.questionToken ||
+            this._implementsRequiredInterfaceMember(declaration)
+        ) {
             return false;
         }
         const t = checker.getTypeAtLocation(declaration);
@@ -2182,7 +2197,75 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         const checker = this._context.typeChecker;
         const source = checker.getTypeAtLocation(tsNode.expression);
         const target = checker.getTypeAtLocation(tsNode.type);
-        return source !== target && !!(target.flags & ts.TypeFlags.Object) && checker.isTypeAssignableTo(source, target);
+        if (source === target || !(target.flags & ts.TypeFlags.Object) || !checker.isTypeAssignableTo(source, target)) {
+            return false;
+        }
+        // TS is structural, Swift nominal: a declared class or interface target must be a declared supertype
+        if (!this._isDeclaredInSource(target.symbol)) {
+            return true;
+        }
+        const parts = source.isUnion() ? checker.getNonNullableType(source) : source;
+        return (parts.isUnion() ? parts.types : [parts]).every(
+            p => !this._isDeclaredInSource(p.symbol) || this._nominalSupertypes(p.symbol).has(target.symbol)
+        );
+    }
+
+    /** A class or interface declared in the transpiled sources (not a lib .d.ts). */
+    private _isDeclaredInSource(symbol: ts.Symbol | undefined): boolean {
+        return !!symbol?.declarations?.some(
+            d => (ts.isClassDeclaration(d) || ts.isInterfaceDeclaration(d)) && !d.getSourceFile().isDeclarationFile
+        );
+    }
+
+    /** The symbol and every class or interface it extends or implements, transitively. */
+    private _nominalSupertypes(symbol: ts.Symbol, out: Set<ts.Symbol> = new Set()): Set<ts.Symbol> {
+        if (out.has(symbol)) {
+            return out;
+        }
+        out.add(symbol);
+        const checker = this._context.typeChecker;
+        for (const d of symbol.declarations ?? []) {
+            if (!ts.isClassDeclaration(d) && !ts.isInterfaceDeclaration(d)) {
+                continue;
+            }
+            for (const clause of d.heritageClauses ?? []) {
+                for (const t of clause.types) {
+                    const s = checker.getTypeAtLocation(t).symbol;
+                    if (s) {
+                        this._nominalSupertypes(s, out);
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    /** A class field that implements a non-optional property of an interface the class implements. */
+    private _implementsRequiredInterfaceMember(declaration: ts.Declaration): boolean {
+        const cls = declaration.parent;
+        const name = ts.getNameOfDeclaration(declaration);
+        if (!ts.isClassDeclaration(cls) || !cls.name || !name || !ts.isIdentifier(name)) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const classSymbol = checker.getSymbolAtLocation(cls.name);
+        if (!classSymbol) {
+            return false;
+        }
+        for (const s of this._nominalSupertypes(classSymbol)) {
+            if (s === classSymbol || !s.declarations?.some(ts.isInterfaceDeclaration)) {
+                continue;
+            }
+            const member = s.members?.get(name.escapedText);
+            const decl = member?.valueDeclaration;
+            if (decl && ts.isPropertySignature(decl) && !decl.questionToken) {
+                const t = checker.getTypeOfSymbolAtLocation(member!, decl);
+                if (!(t.isUnion() && t.types.some(u => !!(u.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined))))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** Kotlin's smart-cast lowering `(mode as Mode?)` on a `Mode | null` local: nothing to cast in Swift. */
