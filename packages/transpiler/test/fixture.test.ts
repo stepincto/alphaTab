@@ -16,7 +16,8 @@ import {
 /**
  * Fixture-based regression tests. Each directory under test/fixtures
  * with an `input.ts` produces one test per target. The emitted .cs/.kt
- * is compared against `expected.cs`/`expected.kt` in the same dir.
+ * is compared against `expected.cs`/`expected.kt` in the same dir; a
+ * fixture with an `expected.swift` is also checked against the Swift emitter.
  *
  * Conventions:
  *  - input.ts is a self-contained TypeScript module that type-checks.
@@ -123,7 +124,12 @@ describe('transpiler fixtures', () => {
             continue;
         }
 
-        for (const target of ['csharp', 'kotlin'] as Target[]) {
+        // Swift is checked only where a fixture opts in with an expected.swift (spec 027).
+        const targets: Target[] = ['csharp', 'kotlin'];
+        if (fs.existsSync(goldenPath(fixture.dir, 'swift'))) {
+            targets.push('swift');
+        }
+        for (const target of targets) {
             it(`[${target}] ${fixture.name}`, () => {
                 const result = runFixture(target, fixture.dir);
                 try {

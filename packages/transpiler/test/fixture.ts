@@ -6,10 +6,11 @@ import ts from 'typescript';
 
 import csharpCreateEmit from '../src/csharp/CSharpEmitter';
 import kotlinCreateEmit from '../src/kotlin/KotlinEmitter';
+import swiftCreateEmit from '../src/swift/SwiftEmitter';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-export type Target = 'csharp' | 'kotlin';
+export type Target = 'csharp' | 'kotlin' | 'swift';
 
 const FIXTURES_DIR = path.resolve(__dirname, 'fixtures');
 
@@ -130,7 +131,7 @@ export function runFixture(target: Target, dir: string): FixtureRunResult {
     const testOut = path.join(tempRoot, 'test');
     const emitDiagnostics: ts.Diagnostic[] = [];
 
-    const factory = target === 'csharp' ? csharpCreateEmit : kotlinCreateEmit;
+    const factory = { csharp: csharpCreateEmit, kotlin: kotlinCreateEmit, swift: swiftCreateEmit }[target];
     factory(srcOut, testOut)(program, emitDiagnostics);
 
     const files = readAllFiles(tempRoot);
@@ -173,7 +174,7 @@ function readAllFiles(root: string): Map<string, string> {
 
 /** Where the golden file for a target lives. */
 export function goldenPath(dir: string, target: Target): string {
-    return path.join(dir, target === 'csharp' ? 'expected.cs' : 'expected.kt');
+    return path.join(dir, { csharp: 'expected.cs', kotlin: 'expected.kt', swift: 'expected.swift' }[target]);
 }
 
 /** Where the negative-fixture error listing lives. */
