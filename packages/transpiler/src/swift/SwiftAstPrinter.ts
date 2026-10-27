@@ -1608,6 +1608,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.write(')');
             return;
         }
+        if (expr.type && expr.values && this._capture(() => this._writeType(expr.type!, { forNew: true })).startsWith('any Sequence<')) {
+            // an array literal passed as an `Iterable` (`new Set([0])`, `new Map([[k, v]])`): a Swift array literal
+            this.write('[');
+            this.writeCommaSeparated(expr.values, v => this.writeExpression(v), false);
+            this.write(']');
+            return;
+        }
         if (expr.type) {
             this._writeType(expr.type, { forNew: true });
             this.write('(');
