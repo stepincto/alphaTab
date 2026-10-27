@@ -25,8 +25,8 @@ public final class Casts {
         return (item as BaseItem)
     }
 
-    public func downcast(_ item: BaseItem) -> SpecialItem {
-        return (item as! SpecialItem)
+    public func downcast(_ item: BaseItem) throws -> SpecialItem {
+        return try jsCast(item, SpecialItem.self)
     }
 
     public func isString(_ value: Any?) -> Bool {

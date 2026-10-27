@@ -26,8 +26,8 @@ public final class Lookups {
         return v
     }
 
-    public func first(_ m: Map<String, List<Double>?>) -> List<Double> {
-        return (m.get("a") ?? nil)!
+    public func first(_ m: Map<String, List<Double>?>) throws -> List<Double> {
+        return try jsNonNull((m.get("a") ?? nil))
     }
 
     public func clef(_ s: Sheet?) -> Double? {

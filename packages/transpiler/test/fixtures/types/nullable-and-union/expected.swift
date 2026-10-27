@@ -43,8 +43,8 @@ public final class NullableAndUnion {
         return s ?? "fallback"
     }
 
-    public func bang(_ s: String?) -> Double {
-        return s!.length
+    public func bang(_ s: String?) throws -> Double {
+        return try jsNonNull(s).length
     }
 
     public func chain(_ o: Wrapper?) -> Double {

@@ -14,8 +14,8 @@ public enum Mode: Int, IAlphaTabEnum, CaseIterable {
 public final class ValueNonNull {
     public var mode: Mode? = nil
 
-    public func read() -> Mode {
-        return self.mode!
+    public func read() throws -> Mode {
+        return try jsNonNull(self.mode)
     }
 
     public func readNarrowed(_ on: List<Bool>) -> Mode {

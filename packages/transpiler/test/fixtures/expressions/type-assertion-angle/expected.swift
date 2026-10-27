@@ -21,8 +21,8 @@ public final class SpecialAngle: BaseAngle {
 }
 
 public final class AngleCast {
-    public func downcast(_ item: BaseAngle) -> SpecialAngle {
-        return (item as! SpecialAngle)
+    public func downcast(_ item: BaseAngle) throws -> SpecialAngle {
+        return try jsCast(item, SpecialAngle.self)
     }
 
     public init() {}

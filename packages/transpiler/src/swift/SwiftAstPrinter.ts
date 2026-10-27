@@ -733,13 +733,21 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this._closeBrace();
         this.writeLine('Self._staticInitDone = true');
         if (d.body && cs.isBlock(d.body)) {
-            for (const s of d.body.statements) {
-                this.writeStatement(s);
+            // the body runs inside the runtime's non-throwing lock closure: a throwing call traps (`try!`)
+            this._inStaticInit = true;
+            try {
+                for (const s of d.body.statements) {
+                    this.writeStatement(s);
+                }
+            } finally {
+                this._inStaticInit = false;
             }
         }
         this._closeBrace();
         this._closeBrace();
     }
+
+    private _inStaticInit = false;
 
     /** A TS function that returns a `Promise` without `async`: Swift makes it `async`, its returns `await`. */
     private _returnsPromise(d: cs.MethodDeclaration): boolean {
@@ -755,6 +763,16 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     /** A function type some throwing function value is passed into (`SwiftThrows`). */
     private _functionTypeThrows(tsNode: ts.Node | undefined): boolean {
+        const analysis = (this._context as SwiftEmitterContext).throwsAnalysis;
+        // a local typed by its closure initializer: `const f = () => ...`
+        const closure = tsNode && ts.isVariableDeclaration(tsNode) && !tsNode.type ? tsNode.initializer : tsNode;
+        if (closure && (ts.isArrowFunction(closure) || ts.isFunctionExpression(closure))) {
+            return analysis.throws(closure);
+        }
+        if (tsNode && ts.isVariableDeclaration(tsNode) && !tsNode.type) {
+            // `const f = this.f`: the type of what it copies
+            return analysis.throws(analysis.functionTypeOf(this._context.typeChecker.getTypeAtLocation(tsNode)));
+        }
         let t: ts.Node | undefined = tsNode;
         if (t && !ts.isFunctionTypeNode(t) && 'type' in t) {
             t = (t as { type?: ts.Node }).type;
@@ -806,16 +824,22 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         super.writeExpression(expr);
     }
 
+    /** Swift cannot make this body `throws`: an accessor, an initializer, a static initializer, or an untracked closure. */
     private _inAccessor(n: cs.Node): boolean {
         for (let p = n.parent; p; p = p.parent) {
             if (cs.isPropertyAccessorDeclaration(p) || cs.isPropertyDeclaration(p)) {
                 return true;
             }
-            if (cs.isMethodDeclaration(p) || cs.isConstructorDeclaration(p) || cs.isLambdaExpression(p) || p.nodeType === cs.SyntaxKind.LocalFunction) {
-                return false;
+            if (cs.isLambdaExpression(p)) {
+                // a closure whose `throws` cannot reach its Swift type (`SwiftThrows.isTrackedClosure`)
+                const c = p.tsNode;
+                return !!c && (ts.isArrowFunction(c) || ts.isFunctionExpression(c)) && !(this._context as SwiftEmitterContext).throwsAnalysis.isTrackedClosure(c);
+            }
+            if (cs.isMethodDeclaration(p) || cs.isConstructorDeclaration(p) || p.nodeType === cs.SyntaxKind.LocalFunction) {
+                return this._inStaticInit;
             }
         }
-        return false;
+        return this._inStaticInit;
     }
 
     protected override writeReturnStatement(r: cs.ReturnStatement) {
@@ -2035,6 +2059,16 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 return;
             }
         }
+        if (!expr.nullSafe && tsNode && (this._context as SwiftEmitterContext).throwsAnalysis.isThrowingElementRead(tsNode)) {
+            this.write('.jsElement(');
+            if (cs.isNumericLiteral(index) && /^\d+$/.test(index.value)) {
+                this.write(index.value);
+            } else {
+                this.writeExpression(expr.argumentExpression);
+            }
+            this.write(')');
+            return;
+        }
         this.write(expr.nullSafe ? '?[' : '[');
         if (cs.isNumericLiteral(index) && /^\d+$/.test(index.value)) {
             // a literal index is an `Int` (the runtime subscripts take `Int`), whatever suffix the operand got
@@ -2201,6 +2235,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return;
         }
 
+        if (!expr.type.isNullable && this._isThrowingAssertion(expr)) {
+            this._writeJsCast(expr.expression, expr.type);
+            return;
+        }
+
         const parens = !expr.parent || !cs.isParenthesizedExpression(expr.parent);
         if (parens) {
             this.write('(');
@@ -2220,6 +2259,19 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         if (parens) {
             this.write(')');
         }
+    }
+
+    /** A TS `x!` or `x as T` that can fail: the runtime's throwing helpers (`SwiftThrows.isThrowingAssertion`). */
+    private _isThrowingAssertion(expr: cs.Node): boolean {
+        return !!expr.tsNode && (this._context as SwiftEmitterContext).throwsAnalysis.isThrowingAssertion(expr.tsNode);
+    }
+
+    /** `jsCast(x, T.self)`: throws where Kotlin's `as` and C#'s cast throw (Swift's `as!` traps). */
+    private _writeJsCast(value: cs.Expression, type: cs.TypeNode) {
+        this.write('jsCast(');
+        this.writeExpression(value);
+        const t = this._capture(() => this._writeType(type, { nullable: false }));
+        this.write(`, ${t.startsWith('any ') ? `(${t})` : t}.self)`);
     }
 
     /** A field the printer declares `T!`: no initializer and a type with no Swift zero value. */
@@ -2463,6 +2515,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     }
 
     protected writeNonNullExpression(expr: cs.NonNullExpression) {
+        if (this._isThrowingAssertion(expr)) {
+            // throws where Kotlin's `!!` throws (Swift's `!` traps)
+            this.write('jsNonNull(');
+            this.writeExpression(expr.expression);
+            this.write(')');
+            return;
+        }
         this.writeExpression(expr.expression);
         if (!this._isUnwrapped(expr.expression) && !this._isDeclaredNonNullable(expr.expression)) {
             this.write('!');
@@ -2706,6 +2765,10 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         // `<T>x` is a type assertion the shared transformer leaves as an `is`; Kotlin prints it wrong too
         if (expr.tsNode && ts.isTypeAssertionExpression(expr.tsNode)) {
             const inner = this._unwrapParens(expr.expression);
+            if (this._isThrowingAssertion(expr)) {
+                this._writeJsCast(cs.isCastExpression(inner) ? inner.expression : expr.expression, expr.type);
+                return;
+            }
             this.write('(');
             this.writeExpression(cs.isCastExpression(inner) ? inner.expression : expr.expression);
             this.write(' as! ');
