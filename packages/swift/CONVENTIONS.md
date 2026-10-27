@@ -123,9 +123,9 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 ## Errors
 
 - `throw new Error(m)` -> `throw JsError(m)` (runtime `open class JsError: Swift.Error`; Kotlin uses `kotlin.Throwable`). Classes extending `Error` extend `JsError`.
-- A function or `init` is `throws` when its body throws outside a `catch`, or calls a `throws` function outside a `catch`; the emitter computes this over the whole program (`SwiftThrows.ts`; TS has no checked exceptions, Swift needs them marked). Calls to it get `try`, also inside a `do`/`catch`: one `try` in front of the statement-level expression (`return try a() + b()`, `try x = f()`), because Swift rejects `try` right of a binary operator. Closures, getters and setters never make anything `throws` (shortcut).
+- A function or `init` is `throws` when its body throws outside a `catch`, or calls a `throws` function outside a `catch`; the emitter computes this over the whole program (`SwiftThrows.ts`; TS has no checked exceptions, Swift needs them marked). Calls to it get `try`, also inside a `do`/`catch`: one `try` in front of the statement-level expression (`return try a() + b()`, `try x = f()`), because Swift rejects `try` right of a binary operator. A closure that throws makes the call it is passed to throw (the callee must be `rethrows`, as the runtime's callback helpers such as `JsonHelperPartials.forEach` are; a generated callee is not yet, shortcut). In a getter, setter or property initializer, which Swift cannot make `throws`, the call gets `try!`: it traps where JS throws.
 - A protocol requirement or overridable method is `throws` when any implementation is. A function type is `throws` when any closure assigned to it throws.
-- Setters cannot throw in Swift: a setter that would throw is an emitter error.
+- Setters cannot throw in Swift: a setter whose body would throw uses `try!` (above).
 - `try/catch (e)` -> `do { } catch { let e = error }`; `finally` -> `defer` at the top of a `do` scope.
 - `async` -> `async`, `await x` -> `await x`; with throws, `async throws` and `try await`.
 

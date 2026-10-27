@@ -58,6 +58,16 @@ import Testing
         #expect(count == 12)
     }
 
+    @Test func forEachRethrowsTheCallbackError() {
+        let m = Map<String, Any?>()
+        m.set("a", 1.0)
+        #expect(throws: JsError.self) {
+            try JsonHelperPartials.forEach(m, { (_: Any?, _: String) in
+                throw JsError("bad")
+            })
+        }
+    }
+
     @Test func getValueReadsMapKeys() {
         let m = Map<String, Any?>()
         m.set("tick", 5.0)
