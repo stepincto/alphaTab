@@ -15,8 +15,8 @@ internal enum JsonHelperPartials {
         guard let m = unwrapAny(o) as? Map<String, Any?> else {
             return
         }
-        for e in m {
-            _ = fn(e.value, e.key)
+        for (k, v) in m {
+            _ = fn(v, k)
         }
     }
 

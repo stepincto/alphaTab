@@ -32,9 +32,16 @@ open class Map<TKey: Hashable, TValue>: Sequence {
         }
     }
 
+    /// `new Map([[k, v], ...])`: the generated code passes the array literal as an array of tuples.
+    public init<S: Sequence>(_ entries: S) where S.Element == (TKey, TValue) {
+        for (k, v) in entries {
+            set(k, v)
+        }
+    }
+
     public init(_ other: Map<TKey, TValue>) {
-        for e in other {
-            set(e.key, e.value)
+        for (k, v) in other {
+            set(k, v)
         }
     }
 
@@ -89,8 +96,9 @@ open class Map<TKey: Hashable, TValue>: Sequence {
         return List(contentsOf: _entries.lazy.compactMap { $0?.value })
     }
 
-    public func makeIterator() -> some IteratorProtocol<MapEntry<TKey, TValue>> {
-        return _entries.lazy.compactMap { $0 }.makeIterator()
+    /// Yields `(key, value)` tuples, as JS yields `[key, value]` arrays, so `for (k, v) in m` destructures.
+    public func makeIterator() -> some IteratorProtocol<(TKey, TValue)> {
+        return _entries.lazy.compactMap { $0.map { ($0.key, $0.value) } }.makeIterator()
     }
 
     private func _compact() {

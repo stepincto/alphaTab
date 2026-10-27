@@ -38,8 +38,8 @@ public final class Set<T: Hashable>: Sequence {
     }
 
     public func forEach(_ action: (T) -> Void) {
-        for e in _storage {
-            action(e.key)
+        for (k, _) in _storage {
+            action(k)
         }
     }
 
@@ -48,6 +48,6 @@ public final class Set<T: Hashable>: Sequence {
     }
 
     public func makeIterator() -> some IteratorProtocol<T> {
-        return _storage.lazy.map { $0.key }.makeIterator()
+        return _storage.lazy.map { $0.0 }.makeIterator()
     }
 }
