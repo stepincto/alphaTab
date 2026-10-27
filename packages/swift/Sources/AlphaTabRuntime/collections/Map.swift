@@ -17,10 +17,11 @@ public final class MapEntry<TKey, TValue> {
 }
 
 /// JS `Map<K, V>`: iterates in insertion order; `set` on an existing key keeps its place.
-/// Kotlin's `ObjectDoubleMap` and friends collapse into this. Keys must be `Hashable`.
+/// Kotlin's `ObjectDoubleMap` and friends collapse into this. `Hashable` keys compare by value;
+/// other class instances (model types such as `Staff`) compare by identity, as JS does for objects.
 /// shortcut: mutating a Map while iterating it is undefined here (JS defines it); handle it if a caller does it.
-open class Map<TKey: Hashable, TValue>: Sequence {
-    private var _index: [TKey: Int] = [:]
+open class Map<TKey, TValue>: Sequence {
+    private var _index: [AnyHashable: Int] = [:]
     private var _entries: [MapEntry<TKey, TValue>?] = []
     private var _holes: Int = 0
 
@@ -45,33 +46,42 @@ open class Map<TKey: Hashable, TValue>: Sequence {
         }
     }
 
+    private static func key(_ key: TKey) -> AnyHashable {
+        if let h = key as? AnyHashable {
+            return h
+        }
+        precondition(TKey.self is AnyClass, "Map key must be Hashable or a class: \(TKey.self)")
+        return ObjectIdentifier(key as AnyObject)
+    }
+
     public var size: Double {
         return Double(_index.count)
     }
 
     public func has(_ key: TKey) -> Bool {
-        return _index[key] != nil
+        return _index[Self.key(key)] != nil
     }
 
     public func get(_ key: TKey) -> TValue? {
-        guard let i = _index[key] else {
+        guard let i = _index[Self.key(key)] else {
             return nil
         }
         return _entries[i]!.value
     }
 
     public func set(_ key: TKey, _ value: TValue) {
-        if let i = _index[key] {
+        let k = Self.key(key)
+        if let i = _index[k] {
             _entries[i]!.value = value
         } else {
-            _index[key] = _entries.count
+            _index[k] = _entries.count
             _entries.append(MapEntry(key, value))
         }
     }
 
     @discardableResult
     public func delete(_ key: TKey) -> Bool {
-        guard let i = _index.removeValue(forKey: key) else {
+        guard let i = _index.removeValue(forKey: Self.key(key)) else {
             return false
         }
         _entries[i] = nil
@@ -109,7 +119,7 @@ open class Map<TKey: Hashable, TValue>: Sequence {
     private func _compact() {
         _entries = _entries.filter { $0 != nil }
         for (i, e) in _entries.enumerated() {
-            _index[e!.key] = i
+            _index[Self.key(e!.key)] = i
         }
         _holes = 0
     }

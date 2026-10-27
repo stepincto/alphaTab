@@ -22,7 +22,7 @@ open class JsError: Swift.Error, @unchecked Sendable, CustomStringConvertible {
     }
 
     /// JS `Error.prototype.toString`: same text as `description`.
-    public func toString() -> String {
+    open func toString() -> String {
         return description
     }
 }

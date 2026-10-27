@@ -7,4 +7,4 @@
 
 /// TS `Record<K, V>`, a `Map` as in Kotlin: `Record<String, Double>(("alice", 95.0), ("bob", 80.0))`.
 /// Inherits `Map`'s initializers.
-public final class Record<TKey: Hashable, TValue>: Map<TKey, TValue> {}
+public final class Record<TKey, TValue>: Map<TKey, TValue> {}

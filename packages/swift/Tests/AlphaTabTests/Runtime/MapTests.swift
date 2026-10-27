@@ -38,4 +38,28 @@ import Testing
         #expect(e[0].0 == 2 && e[0].1 == "b")
         #expect(e[1].0 == 1 && e[1].1 == "a")
     }
+
+    private final class Obj {
+        let n: Double
+        init(_ n: Double) { self.n = n }
+    }
+
+    /// JS Map keys objects by identity: two distinct instances are two keys, the same instance is one.
+    @Test func keysClassInstancesByIdentity() {
+        let a = Obj(1)
+        let b = Obj(1)
+        let m = Map<Obj, String>()
+        m.set(a, "a")
+        m.set(b, "b")
+        m.set(a, "a2")
+        #expect(m.size == 2)
+        #expect(m.get(a) == "a2")
+        #expect(m.get(b) == "b")
+        #expect(m.has(Obj(1)) == false)
+        #expect(m.delete(b))
+        #expect(m.keys().length == 1 && m.keys()[0] === a)
+        let r = Record<Obj, Double>()
+        r.set(a, 1)
+        #expect(r.get(a) == 1)
+    }
 }

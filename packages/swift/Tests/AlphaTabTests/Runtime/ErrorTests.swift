@@ -18,4 +18,17 @@ import Testing
     @Test func toStringWithoutMessage() {
         #expect(JsError().toString() == "Error")
     }
+
+    /// A TS subclass overriding `toString` (AlphaTexErrorWithDiagnostics) is generated in another module,
+    /// so the override must work across the module boundary and dispatch dynamically.
+    @Test func subclassOverridesToStringAcrossModules() {
+        let error: JsError = CustomToStringError("x")
+        #expect(error.toString() == "custom: x")
+    }
+}
+
+private final class CustomToStringError: JsError {
+    override func toString() -> String {
+        return "custom: \(message)"
+    }
 }
