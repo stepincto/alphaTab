@@ -147,3 +147,33 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - None of the 21 is legal in Kotlin, so none needs a Swift-specific message. The `Int8Array` message names the C# runtime; Swift keeps it unchanged (its runtime has no `Int8Array` either).
 - A Swift-only diagnostic goes where Kotlin accepts a construct Swift cannot express, in a new `errors/swift-<case>/` fixture checked by the Swift target alone. The known one: a setter that would be `throws` (see Errors).
 - The negative branch of `fixture.test.ts` runs `csharp` and `kotlin` only; `swift` joins its target list once the emitter reports diagnostics.
+
+## Expression and statement details
+
+Choices the `expressions/` and `statements/` fixtures pin that the sections above leave open.
+
+- Number bit ops -> `Int` ops wrapped in `Double(...)`, Kotlin's parentheses kept: `(a & 0xff) | (b << 8)` -> `Double(((a).toInt() & 255) | ((b).toInt() << 8))`. A compound bit assignment spells the operation out: `x &= m` -> `x = Double((x).toInt() & (m).toInt())`; an integer literal operand stays bare (`x |= 0x10` -> `x = Double((x).toInt() | 16)`).
+- `>>>` -> `Double(UInt32(truncatingIfNeeded: (a).toInt()) >> 1)`, JS's unsigned result (Kotlin prints `shr`, wrong for negatives).
+- `%`, `%=` on numbers -> `truncatingRemainder(dividingBy:)` (Swift has no `%` on `Double`; it has JS's sign rule): `x %= 5` -> `x = x.truncatingRemainder(dividingBy: 5.0)`.
+- `x ??= y` -> `x = x ?? y`; `f ||= b` -> `f = f || b`; `f &&= b` -> `f = f && b`.
+- String concatenation with a number and `String(n)` -> runtime `(n).toInvariantString()`, as Kotlin; templates keep `toTemplate()`.
+- `Number(s)` -> `Double(s) ?? Double.nan`. Shortcut: misses JS's whitespace trimming and `Number("") == 0`; move to a runtime helper when a caller depends on them.
+- `k in o` -> ``TypeHelper.`in`(k, o)``; `e instanceof Error` -> `e is JsError`.
+- A narrowing cast to a non-optional type -> `as!` (Kotlin's `as` also throws): `item as SpecialItem` and `<SpecialItem>item` -> `(item as! SpecialItem)`; an upcast -> `(item as BaseItem)`. `as?` only where the target is optional.
+- A nullable local narrowed by a `=== null` check -> `!` at the use (Swift does not smart-cast): `return mode` -> `return mode!`.
+- `this.m.bind(this)` -> `self.m`.
+- Array literal -> runtime variadic init: `[1, 2, 3]` -> `List<Double>(1.0, 2.0, 3.0)`; `[]` -> `List<Double>()`. `arr?.[i]` -> `arr?[(i).toInt()]`.
+- `Record<K, V>` -> runtime `Record<K, V>`; an object literal of it -> `Record<String, Double>(("alice", 95.0), ("bob", 80.0))`.
+- Regex literal -> `TypeHelper.createRegex("\\d+", "")`, typed `RegExp`, as Kotlin.
+- `E[e]` (enum to name) -> `String(describing: e)`; `E[s as keyof typeof E]` -> `TypeHelper.parseEnum(s, E.self)` (Swift cannot write `parseEnum<E>(...)`).
+- `value as number` from `unknown` -> `TypeHelper.unknownToNumber(value)`.
+- `new Promise<T>(resolve => ...)` -> `await TypeHelper.createPromise({ (resolve: @escaping (T) -> Void) in ... })` inside an `async` function.
+- Arrow functions and `function` expressions -> closures with typed parameters and return: `x => x * 2` -> `{ (x: Double) -> Double in return x * 2.0 }`, closed with `})` when an argument.
+- Local `function` -> nested `func`, parameters unlabelled.
+- Destructuring of a tuple -> tuple patterns: `const [a, b] = pair` -> `let (a, b) = pair`; `const [first] = items` -> `let (first, _) = items`; `[a, b] = [b, a]` -> `(a, b) = (b, a)`.
+- `do { } while (c)` -> `repeat { } while c`.
+- In a lowered C-style `for`, the step goes before every `continue` that targets that loop, including one inside a `switch` (as Kotlin); a `switch` case body needs no trailing `break`.
+- `switch` on a number -> `case 0.0:` patterns.
+- `try { } finally { f }` -> `do { defer { f } ... }`; with a `catch`, the `do`/`catch` nests inside that scope after the `defer`. A bare `catch` -> `catch { }` with no `let e`.
+- `using r = x` -> `let r` plus `defer { r.dispose() }` right after it. `await using` -> only the binding, as Kotlin: Swift's `defer` cannot `await`. Shortcut: the async dispose never runs; give it a `do`/`catch` lowering when alphaTab uses `await using` outside tests.
+- No `expressions/` or `statements/` case needs a Swift-only diagnostic: each construct Kotlin accepts there has a Swift form above.
