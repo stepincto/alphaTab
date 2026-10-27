@@ -11,7 +11,7 @@ import Testing
 /// Port of Kotlin's `TestGlobals`: generated tests call `TestGlobals.expect(a).toBe(b)`.
 /// Each failure is recorded as a Swift Testing issue at the generated test's line, with the
 /// matcher, expected and received values, as vitest prints them.
-/// Not ported: snapshots (`toMatchSnapshot`), chai's `assert` class.
+/// Snapshots (`toMatchSnapshot`) live in Snapshot.swift. Not ported: chai's `assert` class.
 public enum TestGlobals {
     public static func expect<T>(
         _ actual: T,
@@ -94,6 +94,13 @@ public final class Expector<T> {
 
     public func toBeLessThanOrEqual(_ expected: Double, _ message: String? = nil) {
         _compare(expected, "toBeLessThanOrEqual", "<= ", message) { $0 <= $1 }
+    }
+
+    /// vitest `toMatchSnapshot`: the value printed by test/PrettyFormat.ts must equal the stored snapshot.
+    public func toMatchSnapshot(_ hint: String = "") {
+        if let error = Snapshot.match(_actual, hint) {
+            Issue.record(Comment(rawValue: error), sourceLocation: _location)
+        }
     }
 
     public func toBeTruthy() {

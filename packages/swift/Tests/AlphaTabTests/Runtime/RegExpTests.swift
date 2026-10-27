@@ -48,4 +48,13 @@ import Testing
         #expect("a\u{1F3B5}b".replace(TypeHelper.createRegex("b", "g"), "c") == "a\u{1F3B5}c")
         #expect("ab".replace(TypeHelper.createRegex("x*", "g"), "-") == "-a-b-")
     }
+
+    @Test func execReturnsMatchAndGroupsOrNull() {
+        let m = RegExp("(b+)(x)?c").exec("abbcd")
+        #expect(m?.length == 3.0)
+        #expect(m?[0] == "bbc")
+        #expect(m?[1] == "bb")
+        #expect(m?[2] == "")
+        #expect(RegExp("z").exec("abc") == nil)
+    }
 }

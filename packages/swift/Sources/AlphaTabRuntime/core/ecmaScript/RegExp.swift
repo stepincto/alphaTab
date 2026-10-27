@@ -10,7 +10,7 @@ import Foundation
 /// JS `RegExp` over `NSRegularExpression` (ICU), which reads the patterns alphaTab uses the same
 /// way JS does and counts in UTF-16 units like JS. Flags: g, i, m, s; others are ignored.
 /// shortcut: no `lastIndex`, so `test` on a global regex does not advance between calls as in JS;
-/// alphaTab never reuses a global regex for `test`. No `exec`/`split`: nothing generated calls them.
+/// alphaTab never reuses a global regex for `test` or `exec`. No `split`: nothing generated calls it.
 public final class RegExp: @unchecked Sendable {
     // Immutable after init; NSRegularExpression is thread safe for matching.
     let regex: NSRegularExpression
@@ -37,6 +37,16 @@ public final class RegExp: @unchecked Sendable {
 
     public func test(_ s: String) -> Bool {
         return regex.firstMatch(in: s, range: NSRange(location: 0, length: (s as NSString).length)) != nil
+    }
+
+    /// JS `exec`: the match then each capture group, or nil when nothing matches. A group that did not
+    /// take part is "" (JS: `undefined`), as in `replace` callbacks.
+    public func exec(_ s: String) -> List<String>? {
+        let ns = s as NSString
+        guard let m = regex.firstMatch(in: s, range: NSRange(location: 0, length: ns.length)) else {
+            return nil
+        }
+        return List(contentsOf: (0..<m.numberOfRanges).map { RegExp.group(m, ns, $0) })
     }
 
     /// Calls `replacement` per match (the first only without `g`) and splices the results in.
