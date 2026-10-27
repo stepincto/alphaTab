@@ -8,7 +8,7 @@
 import AlphaTabRuntime
 
 // shortcut: until the filter drops. Hand-written stand-in for src/generated/SettingsSerializer.ts and
-// the Core/Display/RenderingResources/NotationSettings serializers, covering only the members in
+// the Core/Display/RenderingResources/Notation/ImporterSettings serializers, covering only the members in
 // Settings.swift. Same key rules as JS: keys are lower-cased, and a group's members also match with
 // the group name as prefix ("displayLayoutMode") or, for core and display, with no prefix.
 internal final class SettingsSerializer {
@@ -45,6 +45,13 @@ internal final class SettingsSerializer {
         notation.set("transpositionpitches", obj.notation.transpositionPitches)
         notation.set("displaytranspositionpitches", obj.notation.displayTranspositionPitches)
         o.set("notation", notation)
+        let importer: Map<String, Any?> = Map<String, Any?>()
+        importer.set("encoding", obj.importer.encoding)
+        importer.set("gp3to5encoding", obj.importer.gp3To5encoding)
+        importer.set("mergepartgroupsinmusicxml", obj.importer.mergePartGroupsInMusicXml)
+        importer.set("beattextaslyrics", obj.importer.beatTextAsLyrics)
+        importer.set("maxdecodingbuffersize", obj.importer.maxDecodingBufferSize)
+        o.set("importer", importer)
         return o
     }
 
@@ -55,7 +62,10 @@ internal final class SettingsSerializer {
         if try group(property, v, ["display", ""], { try setDisplay(obj.display, $0, $1) }) {
             return true
         }
-        return try group(property, v, ["notation"], { try setNotation(obj.notation, $0, $1) })
+        if try group(property, v, ["notation"], { try setNotation(obj.notation, $0, $1) }) {
+            return true
+        }
+        return try group(property, v, ["importer"], { try setImporter(obj.importer, $0, $1) })
     }
 
     /// One JS group block: the bare group key fills the whole group, otherwise each prefix is stripped
@@ -121,6 +131,28 @@ internal final class SettingsSerializer {
         switch property {
         case "mainglyphcolor":
             obj.mainGlyphColor = try Color.fromJson(v)!
+            return true
+        default:
+            return false
+        }
+    }
+
+    private static func setImporter(_ obj: ImporterSettings, _ property: String, _ v: Any?) throws -> Bool {
+        switch property {
+        case "encoding":
+            obj.encoding = v as! String
+            return true
+        case "gp3to5encoding":
+            obj.gp3To5encoding = v as! String
+            return true
+        case "mergepartgroupsinmusicxml":
+            obj.mergePartGroupsInMusicXml = v as! Bool
+            return true
+        case "beattextaslyrics":
+            obj.beatTextAsLyrics = v as! Bool
+            return true
+        case "maxdecodingbuffersize":
+            obj.maxDecodingBufferSize = v as! Double
             return true
         default:
             return false

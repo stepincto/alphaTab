@@ -16,6 +16,18 @@ public final class Settings {
     public var core: CoreSettings = CoreSettings()
     public var display: DisplaySettings = DisplaySettings()
     public var notation: NotationSettings = NotationSettings()
+    public var importer: ImporterSettings = ImporterSettings()
+
+    public init() {}
+}
+
+/// Stand-in for `ImporterSettings` (src/ImporterSettings.ts).
+public final class ImporterSettings {
+    public var encoding: String = "utf-8"
+    public var gp3To5encoding: String = "windows-1252"
+    public var mergePartGroupsInMusicXml: Bool = false
+    public var beatTextAsLyrics: Bool = false
+    public var maxDecodingBufferSize: Double = 128000000.0
 
     public init() {}
 }

@@ -12,11 +12,11 @@ import AlphaTabRuntime
  * start-stop pair nested inside the surrounding `<slur>` element.
  */
 internal final class SlurSegment: IRecord {
-    public var fromNote: Note!
+    public var fromNote: Note
 
-    public var toNote: Note!
+    public var toNote: Note
 
-    public var kind: SlurSegmentKind!
+    public var kind: SlurSegmentKind
 
     /**
      * Optional explicit label preserved from an external source (e.g. a
