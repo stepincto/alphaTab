@@ -1665,6 +1665,19 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
     }
 
+    /** A record literal's labelled arguments in the memberwise init's order (Swift requires it), not the literal's. */
+    private _inParameterOrder(type: cs.TypeNode, args: cs.Expression[]): cs.Expression[] {
+        const ctor = cs.isClassDeclaration(type)
+            ? (type.members.find(m => cs.isConstructorDeclaration(m)) as cs.ConstructorDeclaration | undefined)
+            : undefined;
+        if (!ctor || !args.every(a => cs.isLabeledExpression(a))) {
+            return args;
+        }
+        const order = ctor.parameters.map(p => p.name);
+        const rank = (a: cs.Expression) => order.indexOf((a as cs.LabeledExpression).label);
+        return [...args].sort((a, b) => rank(a) - rank(b));
+    }
+
     private _resolveTypeNode(t: cs.TypeNode): cs.TypeNode {
         let ref: cs.TypeReferenceType = t;
         while (typeof ref !== 'string' && cs.isTypeReference(ref)) {
@@ -1715,7 +1728,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
         this._writeType(expr.type, { forNew: true });
         this.write('(');
-        this.writeCommaSeparated(expr.arguments, a => this.writeExpression(a), false);
+        this.writeCommaSeparated(this._inParameterOrder(resolved, expr.arguments), a => this.writeExpression(a), false);
         this.write(')');
 
         if (expr.objectInitializers?.length) {
