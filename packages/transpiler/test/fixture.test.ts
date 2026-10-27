@@ -56,17 +56,17 @@ describe('transpiler fixtures', () => {
             // separate `it` so failures point at the offending target.
             const listings = new Map<Target, string>();
 
-            for (const target of ['csharp', 'kotlin'] as Target[]) {
+            for (const target of ['csharp', 'kotlin', 'swift'] as Target[]) {
                 it(`[${target}] ${fixture.name}`, () => {
                     const result = runFixture(target, fixture.dir);
                     try {
                         // Sanity: refuse to share errors.txt with positive goldens.
-                        for (const t of ['csharp', 'kotlin'] as Target[]) {
+                        for (const t of ['csharp', 'kotlin', 'swift'] as Target[]) {
                             const g = goldenPath(fixture.dir, t);
                             if (fs.existsSync(g)) {
                                 throw new Error(
                                     `Fixture ${fixture.name} has both errors.txt and ${g}. ` +
-                                        'Negative fixtures must not carry expected.cs/expected.kt goldens.'
+                                        'Negative fixtures must not carry expected.cs/expected.kt/expected.swift goldens.'
                                 );
                             }
                         }
@@ -94,16 +94,16 @@ describe('transpiler fixtures', () => {
 
                         const errsFile = errorsPath(fixture.dir);
                         if (UPDATE_FIXTURES) {
-                            // Both targets write the same file. They had better agree —
-                            // the second write would silently overwrite a divergent
-                            // first one otherwise, so cross-check via `listings`.
-                            const other = target === 'csharp' ? 'kotlin' : 'csharp';
-                            const prev = listings.get(other);
-                            if (prev !== undefined && prev !== listing) {
-                                throw new Error(
-                                    `Negative fixture ${fixture.name} produced different ` +
-                                        `diagnostics across targets:\n--- ${other} ---\n${prev}\n--- ${target} ---\n${listing}`
-                                );
+                            // All targets write the same file. They had better agree —
+                            // a later write would silently overwrite a divergent
+                            // earlier one otherwise, so cross-check via `listings`.
+                            for (const [other, prev] of listings) {
+                                if (other !== target && prev !== listing) {
+                                    throw new Error(
+                                        `Negative fixture ${fixture.name} produced different ` +
+                                            `diagnostics across targets:\n--- ${other} ---\n${prev}\n--- ${target} ---\n${listing}`
+                                    );
+                                }
                             }
                             fs.writeFileSync(errsFile, `${listing}\n`);
                             return;

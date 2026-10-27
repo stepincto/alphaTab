@@ -146,7 +146,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - Negative fixtures (`test/fixtures/errors/`) keep one shared `errors.txt` and no `expected.swift`, as they carry no `expected.kt`: the emitter must refuse the input, so there is no Swift to compare. The Swift target reports the same listing as Kotlin and C#, because all 21 come from the shared transformer (`CSharpEmitterContext`, `transforms/`), not from a printer.
 - None of the 21 is legal in Kotlin, so none needs a Swift-specific message. The `Int8Array` message names the C# runtime; Swift keeps it unchanged (its runtime has no `Int8Array` either).
 - A Swift-only diagnostic goes where Kotlin accepts a construct Swift cannot express, in a new `errors/swift-<case>/` fixture checked by the Swift target alone. The known one: a setter that would be `throws` (see Errors).
-- The negative branch of `fixture.test.ts` runs `csharp` and `kotlin` only; `swift` joins its target list once the emitter reports diagnostics.
+- The negative branch of `fixture.test.ts` runs `csharp`, `kotlin` and `swift`; all three must produce the same listing.
 
 ## Expression and statement details
 
