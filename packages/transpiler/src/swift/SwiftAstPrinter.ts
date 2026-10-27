@@ -1806,6 +1806,16 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     protected writeElementAccessExpression(expr: cs.ElementAccessExpression) {
         this.writeExpression(expr.expression);
         this.write(expr.nullSafe ? '?[' : '[');
+        let index = expr.argumentExpression;
+        while (cs.isParenthesizedExpression(index) || cs.isCastExpression(index)) {
+            index = index.expression;
+        }
+        if (cs.isNumericLiteral(index) && /^\d+$/.test(index.value)) {
+            // a literal index is an `Int` (the runtime subscripts take `Int`), whatever suffix the operand got
+            this.write(index.value);
+            this.write(']');
+            return;
+        }
         this.writeExpression(expr.argumentExpression);
         this.write(']');
     }
