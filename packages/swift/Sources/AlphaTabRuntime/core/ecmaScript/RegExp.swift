@@ -139,4 +139,8 @@ extension String {
     public func replaceAll(_ pattern: RegExp, _ replacement: String) -> String {
         return replace(pattern, replacement)
     }
+
+    public func replaceAll(_ pattern: RegExp, _ replacement: (_ match: String) -> String) -> String {
+        return replace(pattern, replacement)
+    }
 }

@@ -109,3 +109,21 @@ import Testing
         #expect(a.subarray(1).bytes == [2, 3])
     }
 }
+
+/// `Int16Array`, `Uint16Array`, `Uint32Array`: ToInt16/ToUint16/ToUint32 on write (values from node).
+@Suite struct SixteenAndThirtyTwoBitArrayTests {
+    @Test func int16WrapsAndTruncates() {
+        let a = Int16Array(List(32768.0, -32769.0, 1.9, -1.9, Double.nan, 65535.0))
+        #expect(Swift.Array(a) == [-32768.0, 32767.0, 1.0, -1.0, 0.0, -1.0])
+    }
+
+    @Test func uint16WrapsAndTruncates() {
+        let a = Uint16Array(List(65536.0, -1.0, 1.9, Double.infinity))
+        #expect(Swift.Array(a) == [0.0, 65535.0, 1.0, 0.0])
+    }
+
+    @Test func uint32WrapsAndTruncates() {
+        let a = Uint32Array(List(4294967296.0, -1.0, 2.5))
+        #expect(Swift.Array(a) == [0.0, 4294967295.0, 2.0])
+    }
+}

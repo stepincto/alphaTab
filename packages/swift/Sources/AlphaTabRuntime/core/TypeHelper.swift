@@ -105,6 +105,33 @@ public enum TypeHelper {
         }
     }
 
+    /// `value as bigint` from `unknown`. Traps on a non-integer (JS has no implicit number to bigint).
+    public static func unknownToInt64(_ value: Any?) -> Int64 {
+        switch unwrapAny(value) {
+        case let i as Int64:
+            return i
+        case let i as Int:
+            return Int64(i)
+        case let v:
+            fatalError("Cannot cast \(v.map { "\(type(of: $0))" } ?? "null") to bigint")
+        }
+    }
+
+    /// `value as T[]` from `unknown`. The same list when it already is a `List<T>`; otherwise (a JSON
+    /// list built as `List<T?>` or `List<Any?>`) a copy with each element cast, trapping where an
+    /// element is not a `T` (Kotlin's cast throws). shortcut: the copy does not alias the original;
+    /// fine for the readers so far (serializers, test helpers), revisit for a caller that mutates it.
+    public static func unknownToList<T>(_ value: Any?, _: T.Type) -> List<T> {
+        let v = unwrapAny(value)
+        if let list = v as? List<T> {
+            return list
+        }
+        guard let list = v as? any _AnyList else {
+            fatalError("Cannot cast \(v.map { "\(type(of: $0))" } ?? "null") to List<\(T.self)>")
+        }
+        return List<T>(contentsOf: list._anyElements.map { $0 as! T })
+    }
+
     /// `E[s as keyof typeof E]`, case-insensitive as Kotlin. Traps on an unknown name (Kotlin throws).
     public static func parseEnum<E: IAlphaTabEnum & CaseIterable>(_ value: String, _ type: E.Type) -> E {
         let lower = value.lowercased()

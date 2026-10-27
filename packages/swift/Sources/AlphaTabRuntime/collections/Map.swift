@@ -124,3 +124,8 @@ open class Map<TKey, TValue>: Sequence {
         _holes = 0
     }
 }
+
+/// Lets `x instanceof Map` recognise a `Map` of any key and value type.
+public protocol _AnyMap {}
+
+extension Map: _AnyMap {}

@@ -64,3 +64,8 @@ public final class Set<T>: Sequence {
         return _storage.lazy.map { $0.1 }.makeIterator()
     }
 }
+
+/// Lets `x instanceof Set` recognise a `Set` of any element type.
+public protocol _AnySet {}
+
+extension Set: _AnySet {}

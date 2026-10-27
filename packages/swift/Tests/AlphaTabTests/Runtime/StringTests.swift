@@ -114,3 +114,32 @@ import Testing
         await #expect(processExitsWith: .failure) { _ = "a".`repeat`(Double.infinity) }
     }
 }
+
+/// `trimEnd`, `replaceAll(regexp, fn)` (values from node).
+@Suite struct StringTrimEndAndReplaceTests {
+    @Test func trimEndStripsJsWhitespaceOnTheRight() {
+        #expect("  a b \t\n\u{00A0}\u{FEFF}".trimEnd() == "  a b")
+        #expect("".trimEnd() == "")
+        #expect(" \n ".trimEnd() == "")
+    }
+
+    @Test func replaceAllWithFunction() {
+        #expect("a\"b\\c".replaceAll(RegExp("\"|\\\\", "g"), { (v: String) -> String in "\\" + v }) == "a\\\"b\\\\c")
+    }
+}
+
+/// `JSON.stringify` of primitives (values from node).
+@Suite struct JsonStringifyTests {
+    @Test func stringsAreQuotedAndEscaped() {
+        #expect(JSON.stringify("a\"b\\c") == "\"a\\\"b\\\\c\"")
+        #expect(JSON.stringify("\n\t\u{01}") == "\"\\n\\t\\u0001\"")
+        #expect(JSON.stringify("é😀") == "\"é😀\"")
+    }
+
+    @Test func otherPrimitives() {
+        #expect(JSON.stringify(1.5) == "1.5")
+        #expect(JSON.stringify(Double.nan) == "null")
+        #expect(JSON.stringify(true) == "true")
+        #expect(JSON.stringify(nil) == "null")
+    }
+}

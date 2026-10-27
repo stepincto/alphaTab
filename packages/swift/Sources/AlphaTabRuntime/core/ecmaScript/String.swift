@@ -197,6 +197,16 @@ extension String {
         return String._fromU16(u[a..<b])
     }
 
+    /// JS `trimEnd`: strips trailing WhiteSpace and LineTerminator.
+    public func trimEnd() -> String {
+        let u = self._u16
+        var b = u.count
+        while b > 0, String._isJsSpace(u[b - 1]) {
+            b -= 1
+        }
+        return String._fromU16(u[0..<b])
+    }
+
     private static func _isJsSpace(_ c: UInt16) -> Bool {
         switch c {
         case 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x20, 0xA0, 0x1680, 0x2000...0x200A,

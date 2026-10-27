@@ -21,6 +21,12 @@ public enum Array {
 }
 
 /// Lets `isArray` recognise a `List` of any element type.
-public protocol _AnyList {}
+public protocol _AnyList {
+    var _anyElements: [Any?] { get }
+}
 
-extension List: _AnyList {}
+extension List: _AnyList {
+    public var _anyElements: [Any?] {
+        return _data.map { $0 }
+    }
+}

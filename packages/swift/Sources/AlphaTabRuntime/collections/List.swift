@@ -24,6 +24,11 @@ public final class List<T>: Sequence {
         _data = Swift.Array(items)
     }
 
+    /// A `T[]` passed where `(T | undefined)[]` is expected: a copy, since Swift classes are invariant.
+    public init<U>(widening items: List<U>) where T == U? {
+        _data = items._data.map { $0 }
+    }
+
     /// `Array.from(iterator)` / `new Array(...iterator)`: drains the iterator (e.g. `IOHelper.iterateCodepoints`).
     public init(_ iterator: some IteratorProtocol<T>) {
         _data = Swift.Array(IteratorSequence(iterator))

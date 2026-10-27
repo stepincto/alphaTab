@@ -45,6 +45,13 @@ extension Int {
     }
 }
 
+extension Int64 {
+    /// `${n}` for a `bigint`.
+    public func toTemplate() -> String {
+        return String(self)
+    }
+}
+
 extension String {
     /// UTF-16 length, as JS.
     public var length: Double {
