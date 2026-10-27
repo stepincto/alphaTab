@@ -169,7 +169,7 @@ Choices the `expressions/` and `statements/` fixtures pin that the sections abov
 - `Record<K, V>` -> runtime `Record<K, V>`; an object literal of it -> `Record<String, Double>(("alice", 95.0), ("bob", 80.0))`.
 - Regex literal -> `TypeHelper.createRegex("\\d+", "")`, typed `RegExp`, as Kotlin.
 - `E[e]` (enum to name) -> `String(describing: e)`; `E[s as keyof typeof E]` -> `TypeHelper.parseEnum(s, E.self)` (Swift cannot write `parseEnum<E>(...)`).
-- `value as number` from `unknown` -> `TypeHelper.unknownToNumber(value)`.
+- `value as number` from `unknown` -> `TypeHelper.unknownToNumber(value)`; the same for any value declared `unknown` or `any` (a call result, an `any` lambda parameter, `v!`, or one TS narrowed with `typeof v === "number"`), since Swift keeps it `Any?`.
 - `new Promise<T>(resolve => ...)` -> `await TypeHelper.createPromise({ (resolve: @escaping (T) -> Void) in ... })` inside an `async` function.
 - Arrow functions and `function` expressions -> closures with typed parameters and return: `x => x * 2` -> `{ (x: Double) -> Double in return x * 2.0 }`, closed with `})` when an argument.
 - Local `function` -> nested `func`, parameters unlabelled.
