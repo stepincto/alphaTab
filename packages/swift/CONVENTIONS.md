@@ -30,7 +30,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - String literal unions -> their base type: `'a' | 'b'` -> `String`.
 - `T & {}` -> as Kotlin, param `T?`, unwrapped with `!`: `requireValue<T>(_ value: T?) -> T { return value! }`.
 - `T[]`, `Array<T>` -> runtime `List<T>`; `Map<K, V>` -> `Map<K, V>`. Kotlin's primitive specialisations (`DoubleList`, `ObjectDoubleMap`) collapse into the generic ones: Swift generics are specialised, not boxed.
-- `Iterable<T>` -> `any Sequence<T>`; `Iterator<T>`, `Generator<T>` -> `any IteratorProtocol<T>`; `x[Symbol.iterator]()` -> `x.makeIterator()`.
+- `Iterable<T>` -> `any Sequence<T>`; `Iterator<T>`, `Generator<T>` -> `any IteratorProtocol<T>`; `x[Symbol.iterator]()` -> `x.makeIterator()`. A class that implements `Iterable<T>` conforms to `Sequence` (no `any` in an inheritance clause), and its `makeIterator()` returns `AnyIterator<T>` (`return AnyIterator(...)`), since `any IteratorProtocol<T>` does not conform to `IteratorProtocol`.
 - `Promise<T>` return -> `async -> T`: `fetch(): Promise<number>` -> `func fetch() async -> Double`.
 - Tuples -> native Swift tuples (Kotlin has none, so it uses `ArrayTuple` classes): `[number, string]` -> `(Double, String)`, `[42, 'a']` -> `(42.0, "a")`, `t[0]` -> `t.0`.
 - Typed arrays -> runtime classes of the same name: `new Uint8Array(n)` -> `Uint8Array(n)`.
