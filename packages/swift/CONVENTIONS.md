@@ -112,6 +112,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - `x is T` (instanceof) -> `x is T`; narrowed use -> `(x as! T)` (Kotlin's smart-cast lowering); `x as T` that may fail -> `x as? T`.
 - `typeof v === 'string'` -> `TypeHelper.typeOf(v) == "string"`; narrowed use -> `(v as! String)`.
 - `new C(a)` -> `C(a)`.
+- `new Array<T>(n)` -> `List<T>(n)` with an `Int` length: `new Array<number>(31)` -> `List<Double>(31)`, `new Array<string>(n)` -> `List<String>((n).toInt())` (`List<Double>(31.0)` is a one-element list).
 - Reserved words get backticks: a method named `init` -> ``func `init`()``, called ``x.`init`()``. Swift keywords: `associatedtype class deinit enum extension fileprivate func import init inout internal let open operator private precedencegroup protocol public rethrows static struct subscript typealias var break case catch continue default defer do else fallthrough for guard if in repeat return throw switch where while Any as false is nil self Self super throws true try`.
 
 ## Statements

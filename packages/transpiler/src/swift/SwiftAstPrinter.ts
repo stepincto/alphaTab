@@ -1863,6 +1863,24 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return;
         }
 
+        const lengthArg = expr.arguments.length === 1 ? expr.arguments[0] : undefined;
+        if (
+            cs.isArrayTypeNode(resolved) &&
+            lengthArg &&
+            !cs.isCastExpression(lengthArg) &&
+            this._isNumericExpression(lengthArg)
+        ) {
+            // `new Array<number>(n)` is a length; `List<Double>(31.0)` would be a one-element list
+            this._writeType(expr.type, { forNew: true });
+            this.write('(');
+            const forceInteger = this._forceInteger;
+            this._forceInteger = true;
+            this._writeIntOperand(this._unwrapLiteral(lengthArg));
+            this._forceInteger = forceInteger;
+            this.write(')');
+            return;
+        }
+
         if (expr.objectInitializers?.length) {
             this.write('with(');
         }
