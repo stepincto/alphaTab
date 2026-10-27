@@ -1698,6 +1698,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             switch (expr.type.type) {
                 case cs.PrimitiveType.Double: {
                     const inner = this._unwrapParens(expr.expression);
+                    if (this._isDeclaredUnknown(inner)) {
+                        // `unknown`/`any` stays `Any?` in Swift, even where TS narrowed it to a number
+                        this.write('TypeHelper.unknownToNumber(');
+                        this.writeExpression(cs.isNonNullExpression(inner) ? inner.expression : inner);
+                        this.write(')');
+                        return;
+                    }
                     if (!this._forceInteger && this._isBitOp(inner)) {
                         this.writeExpression(inner);
                         return;
@@ -1776,6 +1783,24 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         if (parens) {
             this.write(')');
         }
+    }
+
+    /** Declared (not narrowed) as `unknown` or `any`. */
+    private _isDeclaredUnknown(expr: cs.Expression): boolean {
+        let e = this._unwrapParens(expr);
+        if (cs.isNonNullExpression(e)) {
+            e = this._unwrapParens(e.expression);
+        }
+        const tsNode = e.tsNode;
+        if (!tsNode) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const symbol = ts.isIdentifier(tsNode) ? checker.getSymbolAtLocation(tsNode) : undefined;
+        const t = symbol?.valueDeclaration
+            ? checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration)
+            : checker.getTypeAtLocation(tsNode);
+        return !!(t.flags & (ts.TypeFlags.Unknown | ts.TypeFlags.Any));
     }
 
     /** Declared (not narrowed) as a string: a narrowed `Any?` still needs its cast in Swift. */
