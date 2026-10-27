@@ -140,3 +140,10 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - `describe('X')` -> `@Suite("X") final class X` with `init() {}`; `it('does y')` -> `@Test("does y") func doesY() async throws`.
 - Test files import `Testing`, `@testable import AlphaTab` and `AlphaTabRuntime`.
 - `expect(a).toBe(b)` and the other chai chains -> the runtime `Expector` (port of Kotlin's `TestGlobals`), which reports through Swift Testing's `#expect`/`Issue.record`. The chains (`toBe`, `toEqual`, `toBeCloseTo`, `toThrow`, snapshots) do not map one to one onto the `#expect` macro.
+
+## Diagnostics
+
+- Negative fixtures (`test/fixtures/errors/`) keep one shared `errors.txt` and no `expected.swift`, as they carry no `expected.kt`: the emitter must refuse the input, so there is no Swift to compare. The Swift target reports the same listing as Kotlin and C#, because all 21 come from the shared transformer (`CSharpEmitterContext`, `transforms/`), not from a printer.
+- None of the 21 is legal in Kotlin, so none needs a Swift-specific message. The `Int8Array` message names the C# runtime; Swift keeps it unchanged (its runtime has no `Int8Array` either).
+- A Swift-only diagnostic goes where Kotlin accepts a construct Swift cannot express, in a new `errors/swift-<case>/` fixture checked by the Swift target alone. The known one: a setter that would be `throws` (see Errors).
+- The negative branch of `fixture.test.ts` runs `csharp` and `kotlin` only; `swift` joins its target list once the emitter reports diagnostics.
