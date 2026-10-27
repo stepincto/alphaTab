@@ -46,6 +46,16 @@ import Testing
         #expect(count == 2)
         JsonHelperPartials.forEach(nil, { (_: Any?, _: String) in count += 1 })
         #expect(count == 2)
+        // a multi-statement closure without a return type is the TS `=> void` callback (generated deserializers)
+        JsonHelperPartials.forEach(m, { (_: Any?, k: String) in
+            switch k {
+            case "a":
+                count += 10
+            default:
+                break
+            }
+        })
+        #expect(count == 12)
     }
 
     @Test func getValueReadsMapKeys() {
