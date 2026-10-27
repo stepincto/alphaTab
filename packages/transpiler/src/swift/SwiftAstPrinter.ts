@@ -1854,7 +1854,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
         // the shared transform spells tuple `x[0]` as Kotlin's `x.v0`; a Swift tuple reads `x.0`
         const tsNode = expr.tsNode;
-        if (tsNode && ts.isElementAccessExpression(tsNode) && /^v\d+$/.test(name)) {
+        if (tsNode && ts.isElementAccessExpression(tsNode) && /^v\d+$/.test(name) && this._isSwiftTuple(tsNode.expression)) {
             this.write(name.substring(1));
             return;
         }
@@ -1884,6 +1884,12 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         return !!declared && isNullable(declared) && !isNullable(narrowed);
     }
 
+    /** A TS tuple prints as a Swift tuple; a union of tuples has a hand-written class (Kotlin's partial) with `v0`... */
+    private _isSwiftTuple(expr: ts.Expression): boolean {
+        const checker = this._context.typeChecker;
+        return checker.isTupleType(checker.getNonNullableType(checker.getTypeAtLocation(expr)));
+    }
+
     /** Kotlin-only member spellings the shared transformer produces. */
     private _swiftMemberName(name: string): string {
         switch (name) {
@@ -1901,8 +1907,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
         const tsNode = expr.tsNode;
         if (tsNode && ts.isElementAccessExpression(tsNode) && cs.isNumericLiteral(index) && /^\d+$/.test(index.value)) {
-            const target = this._context.typeChecker.getNonNullableType(this._context.typeChecker.getTypeAtLocation(tsNode.expression));
-            if (this._context.typeChecker.isTupleType(target)) {
+            if (this._isSwiftTuple(tsNode.expression)) {
                 // `t?.[1]` on a tuple: Swift reads tuple elements by `.1`
                 this.write(expr.nullSafe ? `?.${index.value}` : `.${index.value}`);
                 return;
