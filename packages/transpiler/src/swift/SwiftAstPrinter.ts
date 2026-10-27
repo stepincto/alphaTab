@@ -2495,7 +2495,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return false;
         }
         let t: ts.Type;
-        if (ts.isCallExpression(tsNode) || ts.isElementAccessExpression(tsNode)) {
+        if (ts.isElementAccessExpression(tsNode)) {
+            // the declared element type: `x[0] !== undefined` narrows the access, but Swift's subscript stays optional
+            const target = checker.getNonNullableType(checker.getTypeAtLocation(tsNode.expression));
+            t = checker.getTypeArguments(target as ts.TypeReference)[0];
+        } else if (ts.isCallExpression(tsNode)) {
             t = checker.getTypeAtLocation(tsNode);
         } else {
             const symbol = checker.getSymbolAtLocation(ts.isPropertyAccessExpression(tsNode) ? tsNode.name : tsNode);
