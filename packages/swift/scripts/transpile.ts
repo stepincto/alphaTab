@@ -57,14 +57,20 @@ const sources = [
     '/alphatab/src/importer/ScoreImporter.ts',
     '/alphatab/src/importer/UnsupportedFormatError.ts',
     '/alphatab/src/midi/GeneralMidi.ts',
-    '/alphatab/test/importer/AlphaTex'
+    '/alphatab/test/importer/AlphaTex',
+    // runtime:snapshot: the vitest snapshot printer behind toMatchSnapshot (TestPlatform is hand-written in Tests/Runtime)
+    '/alphatab/test/PrettyFormat.ts',
+    // tier "io-alphatex": the export roundtrip in AlphaTexImporter.test.ts (113 tests) needs the exporter
+    // and ComparisonHelpers (which calls TestPlatform.typedArrayAsUnknownArray). Environment and ScoreLoader
+    // stay out (whole library); Settings.swift holds stand-ins for the members named here.
+    '/alphatab/src/exporter/AlphaTexExporter.ts',
+    '/alphatab/src/exporter/ScoreExporter.ts'
 ];
 // tier "model": tests whose bodies need modules left out above (importers via ScoreLoader/GpxImporter,
 // test/TestPlatform file IO, Settings/SettingsSerializer, AccidentalHelper, TabBarRendererFactory).
-// They come back with the tier that brings those modules; ComparisonHelpers is used only by JsonConverter.
+// They come back with the tier that brings those modules.
 const excluded = [
     '/alphatab/test/model/Bar.test.ts',
-    '/alphatab/test/model/ComparisonHelpers.ts',
     '/alphatab/test/model/JsonConverter.test.ts',
     '/alphatab/test/model/Lyrics.test.ts',
     '/alphatab/test/model/ModelUtils.test.ts',

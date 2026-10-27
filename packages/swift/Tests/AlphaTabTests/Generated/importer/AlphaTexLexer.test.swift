@@ -136,7 +136,7 @@ final class AlphaTexLexerTest {
     }
 
     @Suite("errors")
-    final class Errors {
+    final class ErrorsSuite {
         @Test("at001")
         func at001() async throws {
             AlphaTexLexerTest.lexerTest("/a */", true)

@@ -31,7 +31,7 @@ final class AlphaTexImporterTest {
             return try importer.readScore()
         } catch {
             let e = error
-            let x: Any? = (e as! JsError).cause() is AlphaTexErrorWithDiagnostics ? (e as! JsError).cause() : e
+            let x: Any? = (e as! JsError).cause is AlphaTexErrorWithDiagnostics ? (e as! JsError).cause : e
             if x is AlphaTexErrorWithDiagnostics {
                 let withDiag: AlphaTexErrorWithDiagnostics = (x as! AlphaTexErrorWithDiagnostics)
                 if e is UnsupportedFormatError {
@@ -1933,9 +1933,9 @@ final class AlphaTexImporterTest {
     }
 
     @Suite("errors")
-    final class Errors {
+    final class ErrorsSuite {
         @Suite("at209")
-        final class At209 {
+        final class At209Suite {
             @Test("tuning")
             func tuning() async throws {
                 AlphaTexImporterTest.importErrorTest("\\tuning Invalid")
@@ -1975,7 +1975,7 @@ final class AlphaTexImporterTest {
         }
 
         @Suite("at219")
-        final class At219 {
+        final class At219Suite {
             @Test("score empty")
             func scoreEmpty() async throws {
                 AlphaTexImporterTest.importErrorTest("\\title ()")
@@ -2113,166 +2113,166 @@ final class AlphaTexImporterTest {
     }
 
     @Suite("bar-meta-interweaving")
-    final class BarMetaInterweaving {
+    final class BarMetaInterweavingSuite {
         private static func test(_ tex: String) throws {
             try TestGlobals.expect(AlphaTexImporterTest.parseTex(tex)).toMatchSnapshot()
         }
 
         @Suite("initial")
-        final class Initial {
+        final class InitialSuite {
             @Test("meta-track")
             func metaTrack() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\track \"T1\"")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\track \"T1\"")
             }
 
             @Test("meta-track-staff")
             func metaTrackStaff() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\track \"T1\" \\staff")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\track \"T1\" \\staff")
             }
 
             @Test("meta-track-staff-voice")
             func metaTrackStaffVoice() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\track \"T1\" \\staff \\voice")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\track \"T1\" \\staff \\voice")
             }
 
             @Test("meta-track-staff-voice-voice")
             func metaTrackStaffVoiceVoice() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\track \"T1\" \\staff \\voice \\voice")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\track \"T1\" \\staff \\voice \\voice")
             }
 
             @Test("meta-track-staff-staff")
             func metaTrackStaffStaff() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\track \"T1\" \\staff \\staff")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\track \"T1\" \\staff \\staff")
             }
 
             @Test("meta-track-voice")
             func metaTrackVoice() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\track \"T1\" \\voice")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\track \"T1\" \\voice")
             }
 
             @Test("meta-track-voice-voice")
             func metaTrackVoiceVoice() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\track \"T1\" \\voice \\voice")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\track \"T1\" \\voice \\voice")
             }
 
             @Test("meta-track-track")
             func metaTrackTrack() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\track \"T1\" \\track \"T2\"")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\track \"T1\" \\track \"T2\"")
             }
 
             @Test("meta-staff")
             func metaStaff() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\staff")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\staff")
             }
 
             @Test("meta-staff-voice")
             func metaStaffVoice() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\staff \\voice")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\staff \\voice")
             }
 
             @Test("meta-staff-voice-voice")
             func metaStaffVoiceVoice() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\staff \\voice \\voice")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\staff \\voice \\voice")
             }
 
             @Test("meta-staff-staff")
             func metaStaffStaff() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\staff \\staff")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\staff \\staff")
             }
 
             @Test("meta-voice")
             func metaVoice() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\voice")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\voice")
             }
 
             @Test("meta-voice-voice")
             func metaVoiceVoice() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\voice \\voice")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\voice \\voice")
             }
 
             @Test("meta-track-track-meta")
             func metaTrackTrackMeta() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\track \"T1\" \\track \"T2\" \\clef C4")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\track \"T1\" \\track \"T2\" \\clef C4")
             }
 
             init() {}
         }
 
         @Suite("with-previous-bars")
-        final class WithPreviousBars {
+        final class WithPreviousBarsSuite {
             @Test("meta-track")
             func metaTrack() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\track \"T1\"")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\track \"T1\"")
             }
 
             @Test("meta-track-staff")
             func metaTrackStaff() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\track \"T1\" \\staff")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\track \"T1\" \\staff")
             }
 
             @Test("meta-track-staff-voice")
             func metaTrackStaffVoice() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\track \"T1\" \\staff \\voice")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\track \"T1\" \\staff \\voice")
             }
 
             @Test("meta-track-staff-voice-voice")
             func metaTrackStaffVoiceVoice() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\track \"T1\" \\staff \\voice \\voice")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\track \"T1\" \\staff \\voice \\voice")
             }
 
             @Test("meta-track-staff-staff")
             func metaTrackStaffStaff() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\track \"T1\" \\staff \\staff")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\track \"T1\" \\staff \\staff")
             }
 
             @Test("meta-track-voice")
             func metaTrackVoice() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\track \"T1\" \\voice")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\track \"T1\" \\voice")
             }
 
             @Test("meta-track-voice-voice")
             func metaTrackVoiceVoice() async throws {
-                try BarMetaInterweaving.test("\\clef C3 \\track \"T1\" \\voice \\voice")
+                try BarMetaInterweavingSuite.test("\\clef C3 \\track \"T1\" \\voice \\voice")
             }
 
             @Test("meta-track-track")
             func metaTrackTrack() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\track \"T1\" \\track \"T2\"")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\track \"T1\" \\track \"T2\"")
             }
 
             @Test("meta-staff")
             func metaStaff() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\staff")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\staff")
             }
 
             @Test("meta-staff-voice")
             func metaStaffVoice() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\staff \\voice")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\staff \\voice")
             }
 
             @Test("meta-staff-voice-voice")
             func metaStaffVoiceVoice() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\staff \\voice \\voice")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\staff \\voice \\voice")
             }
 
             @Test("meta-staff-staff")
             func metaStaffStaff() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\staff \\staff")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\staff \\staff")
             }
 
             @Test("meta-voice")
             func metaVoice() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\voice")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\voice")
             }
 
             @Test("meta-voice-voice")
             func metaVoiceVoice() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\voice \\voice")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\voice \\voice")
             }
 
             @Test("meta-track-track-meta")
             func metaTrackTrackMeta() async throws {
-                try BarMetaInterweaving.test("C4 | C5 | \\clef C3 \\track \"T1\" \\track \"T2\" \\clef C4")
+                try BarMetaInterweavingSuite.test("C4 | C5 | \\clef C3 \\track \"T1\" \\track \"T2\" \\clef C4")
             }
 
             init() {}
@@ -2282,7 +2282,7 @@ final class AlphaTexImporterTest {
     }
 
     @Suite("staff-autodetect")
-    final class StaffAutodetect {
+    final class StaffAutodetectSuite {
         private static func test(_ tex: String, _ type: AlphaTexStaffNoteKind) throws {
             let importer: AlphaTexImporter = AlphaTexImporter()
             importer.initFromString(tex, Settings())
@@ -2291,40 +2291,40 @@ final class AlphaTexImporterTest {
         }
 
         @Suite("direct")
-        final class Direct {
+        final class DirectSuite {
             @Test("pitch-value")
             func pitchValue() async throws {
-                try StaffAutodetect.test("C4", AlphaTexStaffNoteKind.Pitched)
+                try StaffAutodetectSuite.test("C4", AlphaTexStaffNoteKind.Pitched)
             }
 
             @Test("fretted")
             func fretted() async throws {
-                try StaffAutodetect.test("3.3", AlphaTexStaffNoteKind.Fretted)
+                try StaffAutodetectSuite.test("3.3", AlphaTexStaffNoteKind.Fretted)
             }
 
             @Test("articulation")
             func articulation() async throws {
-                try StaffAutodetect.test("\"Ride (choke)\"", AlphaTexStaffNoteKind.Articulation)
+                try StaffAutodetectSuite.test("\"Ride (choke)\"", AlphaTexStaffNoteKind.Articulation)
             }
 
             init() {}
         }
 
         @Suite("tuning")
-        final class Tuning {
+        final class TuningSuite {
             @Test("pitch-value")
             func pitchValue() async throws {
-                try StaffAutodetect.test("\\tuning (C4 C4 C4) C4", AlphaTexStaffNoteKind.Pitched)
+                try StaffAutodetectSuite.test("\\tuning (C4 C4 C4) C4", AlphaTexStaffNoteKind.Pitched)
             }
 
             @Test("fretted")
             func fretted() async throws {
-                try StaffAutodetect.test("\\tuning (C4 C4 C4) 3.3", AlphaTexStaffNoteKind.Fretted)
+                try StaffAutodetectSuite.test("\\tuning (C4 C4 C4) 3.3", AlphaTexStaffNoteKind.Fretted)
             }
 
             @Test("articulation")
             func articulation() async throws {
-                try StaffAutodetect.test("\\tuning (C4 C4 C4) \"Ride (choke)\"", AlphaTexStaffNoteKind.Articulation)
+                try StaffAutodetectSuite.test("\\tuning (C4 C4 C4) \"Ride (choke)\"", AlphaTexStaffNoteKind.Articulation)
             }
 
             init() {}
@@ -2341,7 +2341,7 @@ final class AlphaTexImporterTest {
     }
 
     @Suite("voice-mode")
-    final class VoiceMode {
+    final class VoiceModeSuite {
         @Test("default")
         func `default`() async throws {
             try TestGlobals.expect(AlphaTexImporterTest.parseTex("\n                    \\voice\n                        C4 | C5\n                    \\voice\n                        C3 | C4\n                ")).toMatchSnapshot()
@@ -2387,7 +2387,7 @@ final class AlphaTexImporterTest {
     }
 
     @Suite("tremolos")
-    final class Tremolos {
+    final class TremolosSuite {
         private static func test(_ tex: String) throws {
             let score: Score = try AlphaTexImporterTest.parseTex(tex)
             let beat: Beat = score.tracks[0].staves[0].bars[0].voices[0].beats[0]
@@ -2398,99 +2398,99 @@ final class AlphaTexImporterTest {
 
         @Test("tremolo1")
         func tremolo1() async throws {
-            try Tremolos.test("C4 {tp 1}")
+            try TremolosSuite.test("C4 {tp 1}")
         }
 
         @Test("tremolo2")
         func tremolo2() async throws {
-            try Tremolos.test("C4 {tp 2}")
+            try TremolosSuite.test("C4 {tp 2}")
         }
 
         @Test("tremolo3")
         func tremolo3() async throws {
-            try Tremolos.test("C4 {tp 3}")
+            try TremolosSuite.test("C4 {tp 3}")
         }
 
         @Test("tremolo4")
         func tremolo4() async throws {
-            try Tremolos.test("C4 {tp 4}")
+            try TremolosSuite.test("C4 {tp 4}")
         }
 
         @Test("tremolo5")
         func tremolo5() async throws {
-            try Tremolos.test("C4 {tp 5}")
+            try TremolosSuite.test("C4 {tp 5}")
         }
 
         @Test("tremolo8")
         func tremolo8() async throws {
-            try Tremolos.test("C4 {tp 8}")
+            try TremolosSuite.test("C4 {tp 8}")
         }
 
         @Test("tremolo16")
         func tremolo16() async throws {
-            try Tremolos.test("C4 {tp 16}")
+            try TremolosSuite.test("C4 {tp 16}")
         }
 
         @Test("tremolo32")
         func tremolo32() async throws {
-            try Tremolos.test("C4 {tp 32}")
+            try TremolosSuite.test("C4 {tp 32}")
         }
 
         @Test("tremolo-default1")
         func tremoloDefault1() async throws {
-            try Tremolos.test("C4 {tp (1 default)}")
+            try TremolosSuite.test("C4 {tp (1 default)}")
         }
 
         @Test("tremolo-default2")
         func tremoloDefault2() async throws {
-            try Tremolos.test("C4 {tp (2 default)}")
+            try TremolosSuite.test("C4 {tp (2 default)}")
         }
 
         @Test("tremolo-default3")
         func tremoloDefault3() async throws {
-            try Tremolos.test("C4 {tp (3 default)}")
+            try TremolosSuite.test("C4 {tp (3 default)}")
         }
 
         @Test("tremolo-default4")
         func tremoloDefault4() async throws {
-            try Tremolos.test("C4 {tp (4 default)}")
+            try TremolosSuite.test("C4 {tp (4 default)}")
         }
 
         @Test("tremolo-default5")
         func tremoloDefault5() async throws {
-            try Tremolos.test("C4 {tp (5 default)}")
+            try TremolosSuite.test("C4 {tp (5 default)}")
         }
 
         @Test("buzzroll-default1")
         func buzzrollDefault1() async throws {
-            try Tremolos.test("C4 {tp (1 buzzRoll)}")
+            try TremolosSuite.test("C4 {tp (1 buzzRoll)}")
         }
 
         @Test("buzzroll-default2")
         func buzzrollDefault2() async throws {
-            try Tremolos.test("C4 {tp (2 buzzRoll)}")
+            try TremolosSuite.test("C4 {tp (2 buzzRoll)}")
         }
 
         @Test("buzzroll-default3")
         func buzzrollDefault3() async throws {
-            try Tremolos.test("C4 {tp (3 buzzRoll)}")
+            try TremolosSuite.test("C4 {tp (3 buzzRoll)}")
         }
 
         @Test("buzzroll-default4")
         func buzzrollDefault4() async throws {
-            try Tremolos.test("C4 {tp (4 buzzRoll)}")
+            try TremolosSuite.test("C4 {tp (4 buzzRoll)}")
         }
 
         @Test("buzzroll-default5")
         func buzzrollDefault5() async throws {
-            try Tremolos.test("C4 {tp (5 buzzRoll)}")
+            try TremolosSuite.test("C4 {tp (5 buzzRoll)}")
         }
 
         init() {}
     }
 
     @Suite("defaultBarNumberDisplay")
-    final class DefaultBarNumberDisplay {
+    final class DefaultBarNumberDisplaySuite {
         private static func test(_ tex: String, _ mode: BarNumberDisplay) throws {
             let score: Score = try AlphaTexImporterTest.parseTex(tex)
             TestGlobals.expect(score.stylesheet.barNumberDisplay).toBe(mode)
@@ -2499,24 +2499,24 @@ final class AlphaTexImporterTest {
 
         @Test("all")
         func all() async throws {
-            try DefaultBarNumberDisplay.test("\\defaultBarNumberDisplay allBars C4", BarNumberDisplay.AllBars)
+            try DefaultBarNumberDisplaySuite.test("\\defaultBarNumberDisplay allBars C4", BarNumberDisplay.AllBars)
         }
 
         @Test("first")
         func first() async throws {
-            try DefaultBarNumberDisplay.test("\\defaultBarNumberDisplay firstOfSystem C4", BarNumberDisplay.FirstOfSystem)
+            try DefaultBarNumberDisplaySuite.test("\\defaultBarNumberDisplay firstOfSystem C4", BarNumberDisplay.FirstOfSystem)
         }
 
         @Test("hide")
         func hide() async throws {
-            try DefaultBarNumberDisplay.test("\\defaultBarNumberDisplay hide C4", BarNumberDisplay.Hide)
+            try DefaultBarNumberDisplaySuite.test("\\defaultBarNumberDisplay hide C4", BarNumberDisplay.Hide)
         }
 
         init() {}
     }
 
     @Suite("barNumberDisplay")
-    final class BarNumberDisplay {
+    final class BarNumberDisplaySuite {
         private static func test(_ tex: String, _ mode: BarNumberDisplay?) throws {
             let score: Score = try AlphaTexImporterTest.parseTex(tex)
             TestGlobals.expect(score.tracks[0].staves[0].bars[0].barNumberDisplay).toBeUndefined()
@@ -2526,29 +2526,29 @@ final class AlphaTexImporterTest {
 
         @Test("unsert")
         func unsert() async throws {
-            try BarNumberDisplay.test("\\defaultBarNumberDisplay hide C4 | C4 ", nil)
+            try BarNumberDisplaySuite.test("\\defaultBarNumberDisplay hide C4 | C4 ", nil)
         }
 
         @Test("all")
         func all() async throws {
-            try BarNumberDisplay.test("\\defaultBarNumberDisplay hide C4 | \\u{8}arNumberDisplay allBars C4 ", BarNumberDisplay.AllBars)
+            try BarNumberDisplaySuite.test("\\defaultBarNumberDisplay hide C4 | \\u{8}arNumberDisplay allBars C4 ", BarNumberDisplay.AllBars)
         }
 
         @Test("first")
         func first() async throws {
-            try BarNumberDisplay.test("\\defaultBarNumberDisplay hide C4 | \\u{8}arNumberDisplay firstOfSystem C4 ", BarNumberDisplay.FirstOfSystem)
+            try BarNumberDisplaySuite.test("\\defaultBarNumberDisplay hide C4 | \\u{8}arNumberDisplay firstOfSystem C4 ", BarNumberDisplay.FirstOfSystem)
         }
 
         @Test("hide")
         func hide() async throws {
-            try BarNumberDisplay.test("\\defaultBarNumberDisplay allBars C4 | \\u{8}arNumberDisplay hide C4 ", BarNumberDisplay.Hide)
+            try BarNumberDisplaySuite.test("\\defaultBarNumberDisplay allBars C4 | \\u{8}arNumberDisplay hide C4 ", BarNumberDisplay.Hide)
         }
 
         init() {}
     }
 
     @Suite("staffDisplay")
-    final class StaffDisplay {
+    final class StaffDisplaySuite {
         @Test("levels")
         func levels() async throws {
             let score: Score = try AlphaTexImporterTest.parseTex("\n                \\defaultStaffDisplay tabs { tsVisibility false tsPlacement allStaves rhythm showWithBeams }\n                \\staff {score tabs}\n                \\staffDisplay { ksVisibility false barNumber hide }\n                C4 | \\u{8}arDisplay (score tabs) { clefVisibility false tsSystems firstSystemOnly } C4 | C4\n            ")

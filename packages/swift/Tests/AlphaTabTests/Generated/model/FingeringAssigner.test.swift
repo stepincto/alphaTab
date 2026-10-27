@@ -92,7 +92,7 @@ internal enum FingeringAssigner_testGlobals {
 @Suite("FingeringAssignerTests")
 final class FingeringAssignerTests {
     @Suite("A pitch identity")
-    final class APitchIdentity {
+    final class APitchIdentitySuite {
         @Test("A1 single-note-guitar-range")
         func A1SingleNoteGuitarRange() async throws {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
@@ -178,7 +178,7 @@ final class FingeringAssignerTests {
     }
 
     @Suite("B chord voicing quality")
-    final class BChordVoicingQuality {
+    final class BChordVoicingQualitySuite {
         @Test("B1 power-chord-clusters")
         func B1PowerChordClusters() async throws {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(55.0, 62.0, 67.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
@@ -239,7 +239,7 @@ final class FingeringAssignerTests {
     }
 
     @Suite("C streaming state")
-    final class CStreamingState {
+    final class CStreamingStateSuite {
         @Test("C1 initial-hand-position")
         func C1InitialHandPosition() async throws {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(62.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
@@ -333,7 +333,7 @@ final class FingeringAssignerTests {
     }
 
     @Suite("D ties")
-    final class DTies {
+    final class DTiesSuite {
         @Test("D1 tie-destination-inherits")
         func D1TieDestinationInherits() async throws {
             let b1: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(60.0), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
@@ -371,7 +371,7 @@ final class FingeringAssignerTests {
     }
 
     @Suite("E edge cases")
-    final class EEdgeCases {
+    final class EEdgeCasesSuite {
         @Test("E1 empty-beat")
         func E1EmptyBeat() async throws {
             let beat: Beat = FingeringAssigner_testGlobals.buildBeat(List<Double>(), (BuildOptions(tuning: FingeringAssigner_testGlobals.GUITAR_6) as BuildOptions))
@@ -472,7 +472,7 @@ final class FingeringAssignerTests {
     }
 
     @Suite("F constructor validation")
-    final class FConstructorValidation {
+    final class FConstructorValidationSuite {
         @Test("F1 tuning-empty")
         func F1TuningEmpty() async throws {
             try TestGlobals.expect({ () -> FingeringAssigner in

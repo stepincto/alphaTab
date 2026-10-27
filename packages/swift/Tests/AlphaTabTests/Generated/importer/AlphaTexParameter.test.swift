@@ -11,7 +11,7 @@ import AlphaTabRuntime
 @Suite("AlphaTexParameterTests")
 final class AlphaTexParameterTests {
     @Suite("parser")
-    final class Parser {
+    final class ParserSuite {
         private static func parserTest(_ tex: String) {
             let parser: AlphaTexParser = AlphaTexParser(tex)
             parser.mode = AlphaTexParseMode.Full
@@ -23,132 +23,132 @@ final class AlphaTexParameterTests {
         }
 
         @Suite("metadata")
-        final class Metadata {
+        final class MetadataSuite {
             @Suite("empty signature")
-            final class EmptySignature {
+            final class EmptySignatureSuite {
                 @Test("empty1")
                 func empty1() async throws {
-                    Parser.parserTest("\\ac C4")
+                    ParserSuite.parserTest("\\ac C4")
                 }
 
                 @Test("empty2")
                 func empty2() async throws {
-                    Parser.parserTest("\\ac \\u{c}t C4")
+                    ParserSuite.parserTest("\\ac \\u{c}t C4")
                 }
 
                 init() {}
             }
 
             @Suite("single overload")
-            final class SingleOverload {
+            final class SingleOverloadSuite {
                 @Test("correct")
                 func correct() async throws {
-                    Parser.parserTest("\\jump Segno C4")
+                    ParserSuite.parserTest("\\jump Segno C4")
                 }
 
                 @Test("missing")
                 func missing() async throws {
-                    Parser.parserTest("\\jump \\ac")
+                    ParserSuite.parserTest("\\jump \\ac")
                 }
 
                 @Test("wrong identifier")
                 func wrongIdentifier() async throws {
-                    Parser.parserTest("\\jump C4")
+                    ParserSuite.parserTest("\\jump C4")
                 }
 
                 @Test("wrong type")
                 func wrongType() async throws {
-                    Parser.parserTest("\\jump 3.3")
+                    ParserSuite.parserTest("\\jump 3.3")
                 }
 
                 init() {}
             }
 
             @Suite("required overloads")
-            final class RequiredOverloads {
+            final class RequiredOverloadsSuite {
                 @Test("overload1")
                 func overload1() async throws {
-                    Parser.parserTest("\\section \"Text\"")
+                    ParserSuite.parserTest("\\section \"Text\"")
                 }
 
                 @Test("overload2")
                 func overload2() async throws {
-                    Parser.parserTest("\\section \"T\" \"Text\"")
+                    ParserSuite.parserTest("\\section \"T\" \"Text\"")
                 }
 
                 init() {}
             }
 
             @Suite("value overloads")
-            final class ValueOverloads {
+            final class ValueOverloadsSuite {
                 @Test("overload1")
                 func overload1() async throws {
-                    Parser.parserTest("\\ts common")
+                    ParserSuite.parserTest("\\ts common")
                 }
 
                 @Test("overload2")
                 func overload2() async throws {
-                    Parser.parserTest("\\ts 3 4")
+                    ParserSuite.parserTest("\\ts 3 4")
                 }
 
                 init() {}
             }
 
             @Suite("list")
-            final class List {
+            final class ListSuite {
                 @Test("single")
                 func single() async throws {
-                    Parser.parserTest("\\systemslayout 3")
+                    ParserSuite.parserTest("\\systemslayout 3")
                 }
 
                 @Test("multi")
                 func multi() async throws {
-                    Parser.parserTest("\\systemslayout 3 2 3")
+                    ParserSuite.parserTest("\\systemslayout 3 2 3")
                 }
 
                 @Test("switch to note")
                 func switchToNote() async throws {
-                    Parser.parserTest("\\ae 1 1.1")
+                    ParserSuite.parserTest("\\ae 1 1.1")
                 }
 
                 init() {}
             }
 
             @Suite("type overloads")
-            final class TypeOverloads {
+            final class TypeOverloadsSuite {
                 @Test("overload1")
                 func overload1() async throws {
-                    Parser.parserTest("\\articulation defaults")
+                    ParserSuite.parserTest("\\articulation defaults")
                 }
 
                 @Test("overload2")
                 func overload2() async throws {
-                    Parser.parserTest("\\articulation \"A\" 1")
+                    ParserSuite.parserTest("\\articulation \"A\" 1")
                 }
 
                 @Test("overload3")
                 func overload3() async throws {
-                    Parser.parserTest("\\articulation A 1")
+                    ParserSuite.parserTest("\\articulation A 1")
                 }
 
                 init() {}
             }
 
             @Suite("optional overloads")
-            final class OptionalOverloads {
+            final class OptionalOverloadsSuite {
                 @Test("none")
                 func none() async throws {
-                    Parser.parserTest("\\track")
+                    ParserSuite.parserTest("\\track")
                 }
 
                 @Test("single")
                 func single() async throws {
-                    Parser.parserTest("\\track \"Name\"")
+                    ParserSuite.parserTest("\\track \"Name\"")
                 }
 
                 @Test("multi")
                 func multi() async throws {
-                    Parser.parserTest("\\track \"Name\" \"ShortName\"")
+                    ParserSuite.parserTest("\\track \"Name\" \"ShortName\"")
                 }
 
                 init() {}
@@ -158,194 +158,194 @@ final class AlphaTexParameterTests {
         }
 
         @Suite("props")
-        final class Props {
+        final class PropsSuite {
             @Suite("empty signature")
-            final class EmptySignature {
+            final class EmptySignatureSuite {
                 @Test("empty1")
                 func empty1() async throws {
-                    Parser.parserTest("C4 {v}")
+                    ParserSuite.parserTest("C4 {v}")
                 }
 
                 @Test("empty2")
                 func empty2() async throws {
-                    Parser.parserTest("C4 {v ac}")
+                    ParserSuite.parserTest("C4 {v ac}")
                 }
 
                 init() {}
             }
 
             @Suite("optional overload")
-            final class OptionalOverload {
+            final class OptionalOverloadSuite {
                 @Test("correct")
                 func correct() async throws {
-                    Parser.parserTest("C4 {ad 100}")
+                    ParserSuite.parserTest("C4 {ad 100}")
                 }
 
                 @Test("missing1")
                 func missing1() async throws {
-                    Parser.parserTest("C4 {ad}")
+                    ParserSuite.parserTest("C4 {ad}")
                 }
 
                 @Test("missing2")
                 func missing2() async throws {
-                    Parser.parserTest("C4 {ad v}")
+                    ParserSuite.parserTest("C4 {ad v}")
                 }
 
                 @Test("wrong identifier")
                 func wrongIdentifier() async throws {
-                    Parser.parserTest("C4 {beam invalid}")
+                    ParserSuite.parserTest("C4 {beam invalid}")
                 }
 
                 @Test("wrong type")
                 func wrongType() async throws {
-                    Parser.parserTest("C4 {ad \"1\"}")
+                    ParserSuite.parserTest("C4 {ad \"1\"}")
                 }
 
                 init() {}
             }
 
             @Suite("single overload")
-            final class SingleOverload {
+            final class SingleOverloadSuite {
                 @Test("correct")
                 func correct() async throws {
-                    Parser.parserTest("\\jump Segno C4")
+                    ParserSuite.parserTest("\\jump Segno C4")
                 }
 
                 @Test("missing")
                 func missing() async throws {
-                    Parser.parserTest("\\jump \\ac")
+                    ParserSuite.parserTest("\\jump \\ac")
                 }
 
                 @Test("wrong identifier")
                 func wrongIdentifier() async throws {
-                    Parser.parserTest("\\jump C4")
+                    ParserSuite.parserTest("\\jump C4")
                 }
 
                 @Test("wrong type")
                 func wrongType() async throws {
-                    Parser.parserTest("\\jump 3.3")
+                    ParserSuite.parserTest("\\jump 3.3")
                 }
 
                 init() {}
             }
 
             @Suite("mixed overloads")
-            final class MixedOverloads {
+            final class MixedOverloadsSuite {
                 @Test("overload1")
                 func overload1() async throws {
-                    Parser.parserTest("\\section \"Text\"")
+                    ParserSuite.parserTest("\\section \"Text\"")
                 }
 
                 @Test("overload2")
                 func overload2() async throws {
-                    Parser.parserTest("\\section \"T\" \"Text\"")
+                    ParserSuite.parserTest("\\section \"T\" \"Text\"")
                 }
 
                 init() {}
             }
 
             @Suite("type overloads")
-            final class TypeOverloads {
+            final class TypeOverloadsSuite {
                 @Test("overload1-number")
                 func overload1Number() async throws {
-                    Parser.parserTest("\\track { instrument 20 }")
+                    ParserSuite.parserTest("\\track { instrument 20 }")
                 }
 
                 @Test("overload2-string")
                 func overload2String() async throws {
-                    Parser.parserTest("\\track { instrument \"Acoustic Grand Piano\"}")
+                    ParserSuite.parserTest("\\track { instrument \"Acoustic Grand Piano\"}")
                 }
 
                 @Test("overload2-identifier")
                 func overload2Identifier() async throws {
-                    Parser.parserTest("\\track { instrument AcousticGrandPiano }")
+                    ParserSuite.parserTest("\\track { instrument AcousticGrandPiano }")
                 }
 
                 @Test("overload3-percussion")
                 func overload3Percussion() async throws {
-                    Parser.parserTest("\\track { instrument percussion }")
+                    ParserSuite.parserTest("\\track { instrument percussion }")
                 }
 
                 init() {}
             }
 
             @Suite("vararg overloads")
-            final class VarargOverloads {
+            final class VarargOverloadsSuite {
                 @Suite("parenthesis")
-                final class Parenthesis {
+                final class ParenthesisSuite {
                     @Test("overload1")
                     func overload1() async throws {
-                        Parser.parserTest("C4 { tb (0 4) }")
+                        ParserSuite.parserTest("C4 { tb (0 4) }")
                     }
 
                     @Test("overload2-ident")
                     func overload2Ident() async throws {
-                        Parser.parserTest("C4 { tb custom (0 4) }")
+                        ParserSuite.parserTest("C4 { tb custom (0 4) }")
                     }
 
                     @Test("overload2-string")
                     func overload2String() async throws {
-                        Parser.parserTest("C4 { tb \"custom\" (0 4) }")
+                        ParserSuite.parserTest("C4 { tb \"custom\" (0 4) }")
                     }
 
                     @Test("overload3-ident")
                     func overload3Ident() async throws {
-                        Parser.parserTest("C4 { tb gradual (0 4) }")
+                        ParserSuite.parserTest("C4 { tb gradual (0 4) }")
                     }
 
                     @Test("overload3-string")
                     func overload3String() async throws {
-                        Parser.parserTest("C4 { tb \"gradual\" (0 4) }")
+                        ParserSuite.parserTest("C4 { tb \"gradual\" (0 4) }")
                     }
 
                     @Test("overload4-ident")
                     func overload4Ident() async throws {
-                        Parser.parserTest("C4 { tb custom gradual (0 4) }")
+                        ParserSuite.parserTest("C4 { tb custom gradual (0 4) }")
                     }
 
                     @Test("overload4-string")
                     func overload4String() async throws {
-                        Parser.parserTest("C4 { tb \"custom\" \"gradual\" (0 4) }")
+                        ParserSuite.parserTest("C4 { tb \"custom\" \"gradual\" (0 4) }")
                     }
 
                     init() {}
                 }
 
                 @Suite("flat")
-                final class Flat {
+                final class FlatSuite {
                     @Test("overload1")
                     func overload1() async throws {
-                        Parser.parserTest("C4 { tb 0 4 }")
+                        ParserSuite.parserTest("C4 { tb 0 4 }")
                     }
 
                     @Test("overload2-ident")
                     func overload2Ident() async throws {
-                        Parser.parserTest("C4 { tb custom 0 4 }")
+                        ParserSuite.parserTest("C4 { tb custom 0 4 }")
                     }
 
                     @Test("overload2-string")
                     func overload2String() async throws {
-                        Parser.parserTest("C4 { tb \"custom\" 0 4 }")
+                        ParserSuite.parserTest("C4 { tb \"custom\" 0 4 }")
                     }
 
                     @Test("overload3-ident")
                     func overload3Ident() async throws {
-                        Parser.parserTest("C4 { tb gradual 0 4 }")
+                        ParserSuite.parserTest("C4 { tb gradual 0 4 }")
                     }
 
                     @Test("overload3-string")
                     func overload3String() async throws {
-                        Parser.parserTest("C4 { tb \"gradual\" 0 4 }")
+                        ParserSuite.parserTest("C4 { tb \"gradual\" 0 4 }")
                     }
 
                     @Test("overload4-ident")
                     func overload4Ident() async throws {
-                        Parser.parserTest("C4 { tb custom gradual 0 4 }")
+                        ParserSuite.parserTest("C4 { tb custom gradual 0 4 }")
                     }
 
                     @Test("overload4-string")
                     func overload4String() async throws {
-                        Parser.parserTest("C4 { tb \"custom\" \"gradual\" 0 4 }")
+                        ParserSuite.parserTest("C4 { tb \"custom\" \"gradual\" 0 4 }")
                     }
 
                     init() {}
@@ -355,10 +355,10 @@ final class AlphaTexParameterTests {
             }
 
             @Suite("ambiguous")
-            final class Ambiguous {
+            final class AmbiguousSuite {
                 @Test("incomplete")
                 func incomplete() async throws {
-                    Parser.parserTest("C4 { tu 3 }")
+                    ParserSuite.parserTest("C4 { tu 3 }")
                 }
 
                 init() {}
@@ -371,7 +371,7 @@ final class AlphaTexParameterTests {
     }
 
     @Suite("handler-validation")
-    final class HandlerValidation {
+    final class HandlerValidationSuite {
         private static func importTest(_ tex: String) {
             let importer: AlphaTexImporter = AlphaTexImporter()
             importer.initFromString(tex, Settings())
@@ -388,122 +388,122 @@ final class AlphaTexParameterTests {
         }
 
         @Suite("metadata")
-        final class Metadata {
+        final class MetadataSuite {
             @Suite("empty signature")
-            final class EmptySignature {
+            final class EmptySignatureSuite {
                 @Test("empty")
                 func empty() async throws {
-                    HandlerValidation.importTest("\\track() C4")
+                    HandlerValidationSuite.importTest("\\track() C4")
                 }
 
                 init() {}
             }
 
             @Suite("single overload")
-            final class SingleOverload {
+            final class SingleOverloadSuite {
                 @Test("correct")
                 func correct() async throws {
-                    HandlerValidation.importTest("\\jump (Segno) C4")
+                    HandlerValidationSuite.importTest("\\jump (Segno) C4")
                 }
 
                 @Test("missing")
                 func missing() async throws {
-                    HandlerValidation.importTest("\\jump () \\ac")
+                    HandlerValidationSuite.importTest("\\jump () \\ac")
                 }
 
                 @Test("wrong identifier")
                 func wrongIdentifier() async throws {
-                    HandlerValidation.importTest("\\jump (C4)")
+                    HandlerValidationSuite.importTest("\\jump (C4)")
                 }
 
                 @Test("wrong type")
                 func wrongType() async throws {
-                    HandlerValidation.importTest("\\jump (3)")
+                    HandlerValidationSuite.importTest("\\jump (3)")
                 }
 
                 init() {}
             }
 
             @Suite("required overloads")
-            final class RequiredOverloads {
+            final class RequiredOverloadsSuite {
                 @Test("overload1")
                 func overload1() async throws {
-                    HandlerValidation.importTest("\\section (\"Text\")")
+                    HandlerValidationSuite.importTest("\\section (\"Text\")")
                 }
 
                 @Test("overload2")
                 func overload2() async throws {
-                    HandlerValidation.importTest("\\section (\"T\" \"Text\")")
+                    HandlerValidationSuite.importTest("\\section (\"T\" \"Text\")")
                 }
 
                 init() {}
             }
 
             @Suite("value overloads")
-            final class ValueOverloads {
+            final class ValueOverloadsSuite {
                 @Test("overload1")
                 func overload1() async throws {
-                    HandlerValidation.importTest("\\ts (common)")
+                    HandlerValidationSuite.importTest("\\ts (common)")
                 }
 
                 @Test("overload2")
                 func overload2() async throws {
-                    HandlerValidation.importTest("\\ts (3 4)")
+                    HandlerValidationSuite.importTest("\\ts (3 4)")
                 }
 
                 init() {}
             }
 
             @Suite("list")
-            final class List {
+            final class ListSuite {
                 @Test("single")
                 func single() async throws {
-                    HandlerValidation.importTest("\\systemslayout (3)")
+                    HandlerValidationSuite.importTest("\\systemslayout (3)")
                 }
 
                 @Test("multi")
                 func multi() async throws {
-                    HandlerValidation.importTest("\\systemslayout (3 2 3)")
+                    HandlerValidationSuite.importTest("\\systemslayout (3 2 3)")
                 }
 
                 init() {}
             }
 
             @Suite("type overloads")
-            final class TypeOverloads {
+            final class TypeOverloadsSuite {
                 @Test("overload1-ident")
                 func overload1Ident() async throws {
-                    HandlerValidation.importTest("\\articulation (defaults)")
+                    HandlerValidationSuite.importTest("\\articulation (defaults)")
                 }
 
                 @Test("overload2-string")
                 func overload2String() async throws {
-                    HandlerValidation.importTest("\\articulation (\"A\" 38)")
+                    HandlerValidationSuite.importTest("\\articulation (\"A\" 38)")
                 }
 
                 @Test("overload2-ident")
                 func overload2Ident() async throws {
-                    HandlerValidation.importTest("\\articulation (A 38)")
+                    HandlerValidationSuite.importTest("\\articulation (A 38)")
                 }
 
                 init() {}
             }
 
             @Suite("optional overloads")
-            final class OptionalOverloads {
+            final class OptionalOverloadsSuite {
                 @Test("none")
                 func none() async throws {
-                    HandlerValidation.importTest("\\track ()")
+                    HandlerValidationSuite.importTest("\\track ()")
                 }
 
                 @Test("single")
                 func single() async throws {
-                    HandlerValidation.importTest("\\track (\"Name\")")
+                    HandlerValidationSuite.importTest("\\track (\"Name\")")
                 }
 
                 @Test("multi")
                 func multi() async throws {
-                    HandlerValidation.importTest("\\track (\"Name\" \"ShortName\")")
+                    HandlerValidationSuite.importTest("\\track (\"Name\" \"ShortName\")")
                 }
 
                 init() {}
@@ -513,149 +513,149 @@ final class AlphaTexParameterTests {
         }
 
         @Suite("props")
-        final class Props {
+        final class PropsSuite {
             @Suite("empty signature")
-            final class EmptySignature {
+            final class EmptySignatureSuite {
                 @Test("empty1")
                 func empty1() async throws {
-                    HandlerValidation.importTest("C4 {v()}")
+                    HandlerValidationSuite.importTest("C4 {v()}")
                 }
 
                 @Test("empty2")
                 func empty2() async throws {
-                    HandlerValidation.importTest("C4 {v() ac}")
+                    HandlerValidationSuite.importTest("C4 {v() ac}")
                 }
 
                 init() {}
             }
 
             @Suite("optional overload")
-            final class OptionalOverload {
+            final class OptionalOverloadSuite {
                 @Test("correct")
                 func correct() async throws {
-                    HandlerValidation.importTest("C4 {ad (100)}")
+                    HandlerValidationSuite.importTest("C4 {ad (100)}")
                 }
 
                 @Test("missing")
                 func missing() async throws {
-                    HandlerValidation.importTest("C4 {ad()}")
+                    HandlerValidationSuite.importTest("C4 {ad()}")
                 }
 
                 @Test("wrong identifier")
                 func wrongIdentifier() async throws {
-                    HandlerValidation.importTest("C4 {beam (invalid)}")
+                    HandlerValidationSuite.importTest("C4 {beam (invalid)}")
                 }
 
                 @Test("wrong type")
                 func wrongType() async throws {
-                    HandlerValidation.importTest("C4 {ad (\"1\")}")
+                    HandlerValidationSuite.importTest("C4 {ad (\"1\")}")
                 }
 
                 init() {}
             }
 
             @Suite("type overloads")
-            final class TypeOverloads {
+            final class TypeOverloadsSuite {
                 @Test("overload1-number")
                 func overload1Number() async throws {
-                    HandlerValidation.importTest("\\track { instrument (20) }")
+                    HandlerValidationSuite.importTest("\\track { instrument (20) }")
                 }
 
                 @Test("overload2-string")
                 func overload2String() async throws {
-                    HandlerValidation.importTest("\\track { instrument (\"Acoustic Grand Piano\")}")
+                    HandlerValidationSuite.importTest("\\track { instrument (\"Acoustic Grand Piano\")}")
                 }
 
                 @Test("overload2-identifier")
                 func overload2Identifier() async throws {
-                    HandlerValidation.importTest("\\track { instrument (AcousticGrandPiano) }")
+                    HandlerValidationSuite.importTest("\\track { instrument (AcousticGrandPiano) }")
                 }
 
                 @Test("overload3-percussion")
                 func overload3Percussion() async throws {
-                    HandlerValidation.importTest("\\track { instrument (percussion) }")
+                    HandlerValidationSuite.importTest("\\track { instrument (percussion) }")
                 }
 
                 init() {}
             }
 
             @Suite("vararg overloads")
-            final class VarargOverloads {
+            final class VarargOverloadsSuite {
                 @Suite("parenthesis")
-                final class Parenthesis {
+                final class ParenthesisSuite {
                     @Test("overload1")
                     func overload1() async throws {
-                        HandlerValidation.importTest("C4 { tb (0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb (0 4) }")
                     }
 
                     @Test("overload2-ident")
                     func overload2Ident() async throws {
-                        HandlerValidation.importTest("C4 { tb custom (0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb custom (0 4) }")
                     }
 
                     @Test("overload2-string")
                     func overload2String() async throws {
-                        HandlerValidation.importTest("C4 { tb \"custom\" (0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb \"custom\" (0 4) }")
                     }
 
                     @Test("overload3-ident")
                     func overload3Ident() async throws {
-                        HandlerValidation.importTest("C4 { tb gradual (0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb gradual (0 4) }")
                     }
 
                     @Test("overload3-string")
                     func overload3String() async throws {
-                        HandlerValidation.importTest("C4 { tb \"gradual\" (0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb \"gradual\" (0 4) }")
                     }
 
                     @Test("overload4-ident")
                     func overload4Ident() async throws {
-                        HandlerValidation.importTest("C4 { tb custom gradual (0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb custom gradual (0 4) }")
                     }
 
                     @Test("overload4-string")
                     func overload4String() async throws {
-                        HandlerValidation.importTest("C4 { tb \"custom\" \"gradual\" (0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb \"custom\" \"gradual\" (0 4) }")
                     }
 
                     init() {}
                 }
 
                 @Suite("flat")
-                final class Flat {
+                final class FlatSuite {
                     @Test("overload1")
                     func overload1() async throws {
-                        HandlerValidation.importTest("C4 { tb (0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb (0 4) }")
                     }
 
                     @Test("overload2-ident")
                     func overload2Ident() async throws {
-                        HandlerValidation.importTest("C4 { tb (custom 0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb (custom 0 4) }")
                     }
 
                     @Test("overload2-string")
                     func overload2String() async throws {
-                        HandlerValidation.importTest("C4 { tb (\"custom\" 0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb (\"custom\" 0 4) }")
                     }
 
                     @Test("overload3-ident")
                     func overload3Ident() async throws {
-                        HandlerValidation.importTest("C4 { tb (gradual 0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb (gradual 0 4) }")
                     }
 
                     @Test("overload3-string")
                     func overload3String() async throws {
-                        HandlerValidation.importTest("C4 { tb (\"gradual\" 0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb (\"gradual\" 0 4) }")
                     }
 
                     @Test("overload4-ident")
                     func overload4Ident() async throws {
-                        HandlerValidation.importTest("C4 { tb (custom gradual 0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb (custom gradual 0 4) }")
                     }
 
                     @Test("overload4-string")
                     func overload4String() async throws {
-                        HandlerValidation.importTest("C4 { tb (\"custom\" \"gradual\" 0 4) }")
+                        HandlerValidationSuite.importTest("C4 { tb (\"custom\" \"gradual\" 0 4) }")
                     }
 
                     init() {}
@@ -665,10 +665,10 @@ final class AlphaTexParameterTests {
             }
 
             @Suite("ambiguous")
-            final class Ambiguous {
+            final class AmbiguousSuite {
                 @Test("incomplete")
                 func incomplete() async throws {
-                    HandlerValidation.importTest("C4 { tu (3) }")
+                    HandlerValidationSuite.importTest("C4 { tu (3) }")
                 }
 
                 init() {}
