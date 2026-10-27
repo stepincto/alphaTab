@@ -142,7 +142,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 
 ## Tests
 
-- `describe('X')` -> `@Suite("X") final class X` with `init() {}`; `it('does y')` -> `@Test("does y") func doesY() async throws`.
+- `describe('X')` -> `@Suite("X") final class X` with `init() {}` (a nested `describe('X')` becomes `final class XSuite`, so it cannot shadow a model type `X`); `it('does y')` -> `@Test("does y") func doesY() async throws`.
 - Test files import `Testing`, `@testable import AlphaTab` and `AlphaTabRuntime`.
 - `expect(a).toBe(b)` and the other chai chains -> the runtime `Expector` (port of Kotlin's `TestGlobals`), which reports through Swift Testing's `#expect`/`Issue.record`. The chains (`toBe`, `toEqual`, `toBeCloseTo`, `toThrow`, snapshots) do not map one to one onto the `#expect` macro.
 

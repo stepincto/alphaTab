@@ -11,7 +11,7 @@ import AlphaTabRuntime
 @Suite("Outer")
 final class Outer {
     @Suite("Inner")
-    final class Inner {
+    final class InnerSuite {
         @Test("inner test")
         func innerTest() async throws {
             let x: Double = 1.0
