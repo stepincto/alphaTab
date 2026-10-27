@@ -1373,7 +1373,53 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.write(')');
     }
 
+    private static readonly _tsBitOperators = new Set([
+        ts.SyntaxKind.AmpersandToken,
+        ts.SyntaxKind.BarToken,
+        ts.SyntaxKind.CaretToken,
+        ts.SyntaxKind.LessThanLessThanToken,
+        ts.SyntaxKind.GreaterThanGreaterThanToken,
+        ts.SyntaxKind.GreaterThanGreaterThanGreaterThanToken
+    ]);
+
+    private static readonly _tsBitAssignOperators = new Set([
+        ts.SyntaxKind.AmpersandEqualsToken,
+        ts.SyntaxKind.BarEqualsToken,
+        ts.SyntaxKind.CaretEqualsToken,
+        ts.SyntaxKind.LessThanLessThanEqualsToken,
+        ts.SyntaxKind.GreaterThanGreaterThanEqualsToken,
+        ts.SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken
+    ]);
+
+    private readonly _reportedFlagEnums = new Set<ts.Node>();
+
+    /** No flag enums: a Swift enum cannot hold `Read ^ Write` when that is no declared case. */
+    private _checkFlagEnum(expr: cs.BinaryExpression) {
+        const n = expr.tsNode;
+        if (!n || !ts.isBinaryExpression(n) || this._reportedFlagEnums.has(n)) {
+            return;
+        }
+        const checker = this._context.typeChecker;
+        const isEnumType = (t: ts.Type | undefined) => !!t && !!(checker.getNonNullableType(t).flags & ts.TypeFlags.EnumLike);
+        const isEnum = (e: ts.Expression) => isEnumType(checker.getTypeAtLocation(e));
+        const op = n.operatorToken.kind;
+        const enumResult = SwiftAstPrinter._tsBitAssignOperators.has(op)
+            ? isEnum(n.left)
+            : SwiftAstPrinter._tsBitOperators.has(op) &&
+              (isEnum(n.left) || isEnum(n.right)) &&
+              isEnumType(checker.getContextualType(n));
+        if (enumResult) {
+            this._reportedFlagEnums.add(n);
+            this._context.addTsNodeDiagnostics(
+                n,
+                'Swift enums hold only their declared cases, so a bit operator on an enum cannot produce an enum value. Use a number for bit flags.',
+                ts.DiagnosticCategory.Error
+            );
+        }
+    }
+
     protected writeBinaryExpression(expr: cs.BinaryExpression) {
+        this._checkFlagEnum(expr);
         if (!this._forceInteger && (expr.operator === '%' || expr.operator === '%=')) {
             if (expr.operator === '%=') {
                 this.writeExpression(expr.left);
