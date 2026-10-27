@@ -43,6 +43,10 @@ import {
  * fixtures under `test/fixtures/errors/<name>/`. A negative fixture named
  * `swift-<case>` is a Swift-only diagnostic and runs the Swift target alone.
  *
+ * A positive fixture named `swift-<case>` carries only `expected.swift` and runs
+ * the Swift target alone: it pins a Swift mapping without touching the C# and
+ * Kotlin goldens.
+ *
  * A positive fixture may carry `errors.swift.txt`: the diagnostics the Swift
  * target must report for a construct Kotlin and C# accept; its output is
  * still compared with `expected.swift`.
@@ -133,8 +137,9 @@ describe('transpiler fixtures', () => {
             continue;
         }
 
-        // Swift is checked only where a fixture opts in with an expected.swift (spec 027).
-        const targets: Target[] = ['csharp', 'kotlin'];
+        // Swift is checked only where a fixture opts in with an expected.swift (spec 027);
+        // a positive fixture named `swift-*` pins a Swift-only mapping and runs Swift alone.
+        const targets: Target[] = path.basename(fixture.dir).startsWith('swift-') ? [] : ['csharp', 'kotlin'];
         if (fs.existsSync(goldenPath(fixture.dir, 'swift'))) {
             targets.push('swift');
         }

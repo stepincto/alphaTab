@@ -107,7 +107,8 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - Templates -> interpolation through runtime `toTemplate()` (JS number formatting: `3`, not `3.0`): `` `a=${x}` `` -> `"a=\((x).toTemplate())"`.
 - String literals -> `"..."` with Swift escapes; never raw strings.
 - `===`/`==` -> `==`, `!==`/`!=` -> `!=`; reference identity of class instances -> `===` only where TS compares objects.
-- `x!` -> `x!`; `x ?? y` -> `x ?? y`; `a?.b?.c` -> `a?.b?.c`.
+- `x!` -> `x!`; `x ?? y` -> `x ?? y`; `a?.b?.c` -> `a?.b?.c`. A `!` on a value declared non-optional (a `T[]` field, a call returning `T`) prints nothing; a value unwrapped once is not unwrapped again (`previous!.bar`, never `previous!!.bar`), and `?.` after an unwrap prints `.` (`obj!.list!.map`).
+- Truthiness: `if (x)` -> `if TypeHelper.isTruthy(x)` (once; the shared transformer's `isTruthy(isTruthy(x))` collapses); `!!x` -> `TypeHelper.isTruthy(x)`.
 - `x is T` (instanceof) -> `x is T`; narrowed use -> `(x as! T)` (Kotlin's smart-cast lowering); `x as T` that may fail -> `x as? T`.
 - `typeof v === 'string'` -> `TypeHelper.typeOf(v) == "string"`; narrowed use -> `(v as! String)`.
 - `new C(a)` -> `C(a)`.
