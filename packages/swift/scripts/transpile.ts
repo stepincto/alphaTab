@@ -120,16 +120,42 @@ export class VersionInfo {
 
 const srcOut = path.resolve(__dirname, '../Sources/AlphaTab/Generated');
 const testOut = path.resolve(__dirname, '../Tests/AlphaTabTests/Generated');
-// the emitter only writes files, so output of a source that left the filter would linger and still compile
+// emit into a scratch copy, then sync: only changed files are rewritten, so SwiftPM rebuilds what changed
+// instead of the whole module; output of a source that left the filter is deleted so it cannot linger
+// outside Sources/ and Tests/, so a crashed run never leaves a second copy that SwiftPM compiles
+const scratch = (dir: string) => path.resolve(__dirname, '../.build/transpile-next', dir === srcOut ? 'src' : 'test');
 for (const dir of [srcOut, testOut]) {
-    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(scratch(dir), { recursive: true, force: true });
 }
+
+function syncDir(from: string, to: string) {
+    const files = (d: string) =>
+        fs.existsSync(d) ? (fs.readdirSync(d, { recursive: true }) as string[]).filter(f => fs.statSync(path.join(d, f)).isFile()) : [];
+    const next = new Set(files(from));
+    for (const f of files(to)) {
+        if (!next.has(f)) fs.rmSync(path.join(to, f));
+    }
+    for (const f of next) {
+        const src = fs.readFileSync(path.join(from, f));
+        const dst = path.join(to, f);
+        if (fs.existsSync(dst) && fs.readFileSync(dst).equals(src)) continue;
+        fs.mkdirSync(path.dirname(dst), { recursive: true });
+        fs.writeFileSync(dst, src);
+    }
+    fs.rmSync(from, { recursive: true, force: true });
+}
+// the transpiler ends with ts.sys.exit, so code after its call never runs; sync on exit instead
+process.on('exit', () => {
+    for (const dir of [srcOut, testOut]) {
+        syncDir(scratch(dir), dir);
+    }
+});
 
 transpiler(
     [
         {
             name: 'Swift',
-            emit: createEmit(srcOut, testOut, excludedTests)
+            emit: createEmit(scratch(srcOut), scratch(testOut), excludedTests)
         }
     ],
     true,
