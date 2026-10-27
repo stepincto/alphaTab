@@ -19,8 +19,11 @@ const sources = [
     '/alphatab/test/rendering/skyline/',
     // tier "model": the model and its tests, plus the small modules they import (closure stays inside
     // this list). Left out on purpose because their import closure is the whole library: Settings,
-    // generated/SettingsSerializer, RenderingResources, platform/ICanvas, rendering/utils/AccidentalHelper,
+    // generated/SettingsSerializer, RenderingResources, rendering/utils/AccidentalHelper,
     // importer/* (ScoreLoader, GpxImporter), test/TestPlatform, rendering/TabBarRendererFactory.
+    // Settings reaches everything through CoreSettings -> Environment (importers, renderers, workers),
+    // so it waits for the tier that drops this filter. platform/ICanvas is in: it brings TextAlign for
+    // the model and adds no missing type beyond Settings.
     '/alphatab/src/model/',
     '/alphatab/src/generated/model/',
     '/alphatab/test/model/',
@@ -40,6 +43,7 @@ const sources = [
     '/alphatab/src/midi/MidiEvent.ts',
     '/alphatab/src/midi/MidiFile.ts',
     '/alphatab/src/midi/MidiUtils.ts',
+    '/alphatab/src/platform/ICanvas.ts',
     '/alphatab/src/rendering/utils/BeamDirection.ts',
     '/alphatab/src/synth/SynthConstants.ts',
     '/alphatab/src/util/Lazy.ts'
