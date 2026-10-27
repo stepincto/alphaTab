@@ -11,6 +11,15 @@ import url from 'node:url';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
+// shortcut: the skyline spike (spec 027 T016) generates one self-contained module; widen this list
+// module by module until the filter goes away and the whole of alphaTab is generated.
+const sources = [
+    '/alphatab/src/rendering/skyline/',
+    '/alphatab/src/rendering/utils/ObjectPool.ts',
+    '/alphatab/test/rendering/skyline/'
+];
+const fileFilter = (fileName: string) => sources.some(s => fileName.replaceAll('\\', '/').includes(s));
+
 transpiler(
     [
         {
@@ -21,5 +30,6 @@ transpiler(
             )
         }
     ],
-    true
+    true,
+    fileFilter
 );

@@ -10,7 +10,11 @@ interface Emitter {
     emit(program: ts.Program, diagnostics: ts.Diagnostic[]): void;
 }
 
-export default function (emitters: Emitter[], handleErrors: boolean) {
+/**
+ * @param fileFilter optional: transpile only the root files it accepts (a spike target uses it to
+ * generate one module); their imports still resolve through the program.
+ */
+export default function (emitters: Emitter[], handleErrors: boolean, fileFilter?: (fileName: string) => boolean) {
     console.log(`Parsing using typescript ${ts.version}...`);
     const commandLine = ts.parseCommandLine(ts.sys.args);
     if (!commandLine.options.project) {
@@ -34,7 +38,9 @@ export default function (emitters: Emitter[], handleErrors: boolean) {
     )!;
 
     parsedCommandLine.fileNames = parsedCommandLine.fileNames.filter(
-        f => (!f.includes('playground') && f.includes('src/')) || f.includes('test/')
+        f =>
+            ((!f.includes('playground') && f.includes('src/')) || f.includes('test/')) &&
+            (!fileFilter || fileFilter(f))
     );
 
     const pretty = !!ts.sys.writeOutputIsTTY?.();
