@@ -482,7 +482,7 @@ final class FingeringAssignerTests {
 
         @Test("F2 tuning-oversize")
         func F2TuningOversize() async throws {
-            let oversized: List<Double> = List<Double>(31.0).fill(40.0)
+            let oversized: List<Double> = List<Double>(31).fill(40.0)
             try TestGlobals.expect({ () -> FingeringAssigner in
                 return try FingeringAssigner(oversized, 0.0, 0.0)
             }).toThrow()

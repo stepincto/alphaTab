@@ -23,11 +23,13 @@ public final class Tuning {
     nonisolated(unsafe) public static let noteNames: List<String> = List<String>("C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B")
 
     public static func getTextForTuning(_ tuning: Double, _ includeOctave: Bool) -> String {
+        Self._staticInit()
         let parts: List<String> = Tuning.getTextPartsForTuning(tuning)
         return includeOctave ? parts.join("") : parts[0]
     }
 
     public static func getTextPartsForTuning(_ tuning: Double, _ octaveShift: Double = -1.0) -> List<String> {
+        Self._staticInit()
         let octave: Double = jsOr(tuning / 12.0, 0)
         let note: Double = tuning.truncatingRemainder(dividingBy: 12.0)
         let notes: List<String> = Tuning.noteNames
@@ -38,6 +40,7 @@ public final class Tuning {
      * Gets the default tuning for the given string count.
      */
     public static func getDefaultTuningFor(_ stringCount: Double) -> Tuning? {
+        Self._staticInit()
         if Tuning._defaultTunings.has(stringCount) {
             let d: Tuning = Tuning._defaultTunings.get(stringCount)!
             return Tuning(d.name, d.tunings, d.isStandard)
@@ -49,6 +52,7 @@ public final class Tuning {
      * Gets a list of all tuning presets for a given stirng count.
      */
     public static func getPresetsFor(_ stringCount: Double) -> List<Tuning> {
+        Self._staticInit()
         switch stringCount {
         case 7.0:
             return Tuning._sevenStrings
@@ -65,6 +69,7 @@ public final class Tuning {
     }
 
     public static func initialize() {
+        Self._staticInit()
         Tuning._defaultTunings.set(7.0, Tuning("Guitar 7 strings", List<Double>(64.0, 59.0, 55.0, 50.0, 45.0, 40.0, 35.0), true))
         Tuning._sevenStrings.push(Tuning._defaultTunings.get(7.0)!)
         Tuning._defaultTunings.set(6.0, Tuning("Guitar Standard Tuning", List<Double>(64.0, 59.0, 55.0, 50.0, 45.0, 40.0), true))
@@ -124,6 +129,7 @@ public final class Tuning {
      * Tries to find a known tuning by a given list of tuning values.
      */
     public static func findTuning(_ strings: List<Double>) -> Tuning? {
+        Self._staticInit()
         let tunings: List<Tuning> = Tuning.getPresetsFor(strings.length)
         do {
             var t: Double = 0.0
@@ -167,6 +173,7 @@ public final class Tuning {
     public var tunings: List<Double>!
 
     public init(_ name: String = "", _ tuning: List<Double>? = nil, _ isStandard: Bool = false) {
+        Self._staticInit()
         self.isStandard = isStandard
         self.name = name
         self.tunings = tuning ?? List<Double>()
@@ -192,4 +199,14 @@ public final class Tuning {
         }
     }
 
+    nonisolated(unsafe) private static var _staticInitDone: Bool = false
+
+    /// TS module statements and `static {}`: run once, before the first static call or `init`.
+    private static func _staticInit() {
+        if Self._staticInitDone {
+            return
+        }
+        Self._staticInitDone = true
+        Tuning.initialize()
+    }
 }
