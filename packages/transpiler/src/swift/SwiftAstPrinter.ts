@@ -307,7 +307,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             heritage.push(d.baseClass);
         }
         if (d.interfaces) {
-            heritage.push(...d.interfaces);
+            heritage.push(...d.interfaces.filter(i => !(d.isRecord && d.baseClass && this._isRecordInterface(i))));
         }
         if (heritage.length > 0) {
             this.write(': ');
@@ -331,6 +331,10 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     }
 
     /** A heritage entry: a protocol is named without type arguments (`: Container`), its associated type is inferred. */
+    private _isRecordInterface(t: cs.TypeNode) {
+        return cs.isTypeReference(t) && typeof t.reference === 'string' && t.reference.endsWith('.IRecord');
+    }
+
     private _writeConformance(t: cs.TypeNode, isBaseClass: boolean) {
         if (!isBaseClass && cs.isTypeReference(t) && t.typeArguments) {
             this._writeType({ ...t, typeArguments: undefined } as cs.TypeReference, { existential: false });
@@ -575,8 +579,22 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     }
 
     /** `override` only where a superclass member is overridden (TS also marks `toString`/`equals`). */
-    private _isRealOverride(d: { isOverride: boolean; parent: cs.Node | null }) {
-        return d.isOverride && !!d.parent && cs.isClassDeclaration(d.parent) && !!d.parent.baseClass;
+    private _isRealOverride(d: { isOverride: boolean; parent: cs.Node | null; name?: string }) {
+        if (!d.isOverride || !d.parent || !cs.isClassDeclaration(d.parent) || !d.parent.baseClass) {
+            return false;
+        }
+        // TS marks a member that implements an interface member as an override too; Swift needs a superclass member
+        let base: cs.TypeReferenceType | undefined = cs.isTypeReference(d.parent.baseClass)
+            ? d.parent.baseClass.reference
+            : d.parent.baseClass;
+        while (base && typeof base !== 'string' && cs.isClassDeclaration(base)) {
+            if (base.members.some(m => (m as { name?: string }).name === d.name)) {
+                return true;
+            }
+            base = base.baseClass && cs.isTypeReference(base.baseClass) ? base.baseClass.reference : undefined;
+        }
+        // a superclass outside this program (runtime): keep the override
+        return base !== undefined;
     }
 
     private _writeMemberModifiers(
@@ -831,17 +849,33 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         if (staticInit) {
             this.writeLine('Self._staticInit()');
         }
+        // a record sets its own (non-optional) fields before super.init, as Swift's two-phase init requires
+        const ownFirst = !!cls.isRecord && !!d.baseConstructorArguments;
+        if (ownFirst) {
+            for (const s of statements) {
+                this.writeStatement(s);
+            }
+        }
         if (d.baseConstructorArguments) {
+            let args = d.baseConstructorArguments;
+            if (cls.isRecord && baseParameters) {
+                // the base record's init lists required fields first; labels must follow its order
+                const order = baseParameters.map(p => p.name);
+                const labelOf = (e: cs.Expression) => (cs.isLabeledExpression(e) ? e.label : '');
+                args = [...args].sort((a, b) => order.indexOf(labelOf(a)) - order.indexOf(labelOf(b)));
+            }
             this.write('super.init(');
-            this.writeCommaSeparated(d.baseConstructorArguments, e => this.writeExpression(e));
+            this.writeCommaSeparated(args, e => this.writeExpression(e));
             this.writeLine(')');
         }
         if (d.body && !cs.isBlock(d.body)) {
             this.writeExpression(d.body);
             this.writeLine();
         }
-        for (const s of statements) {
-            this.writeStatement(s);
+        if (!ownFirst) {
+            for (const s of statements) {
+                this.writeStatement(s);
+            }
         }
         this._closeBrace();
     }
@@ -1065,6 +1099,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         } else if (this._isAnyType(type, d) || type.isNullable) {
             this._writeType(type, { nullable: true, owner: d });
             this.write(' = nil');
+        } else if (d.parent && cs.isClassDeclaration(d.parent) && d.parent.isRecord) {
+            this._writeType(type, { owner: d });
         } else {
             this._writeImplicitlyUnwrapped(type, d);
         }
