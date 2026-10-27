@@ -81,7 +81,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - `interface` -> `public protocol P: AnyObject` (class-bound, so `===` and reference semantics hold).
 - `extends` -> protocol inheritance: `interface Tagged extends Named` -> `protocol Tagged: Named`.
 - `readonly x: T` -> `var x: T { get }`; mutable `x: T` -> `var x: T { get set }`.
-- Methods -> requirements without body or `public`: `area(): number` -> `func area() -> Double`.
+- Methods -> requirements without body or `public`: `area(): number` -> `func area() -> Double`. A requirement takes no defaults (Swift forbids them): optional parameters stay `T?` without `= nil`, and a `public extension P` adds one overload per omissible trailing parameter that passes `nil` (or the TS default): `fill(x: number, y?: number)` -> `func fill(_ x: Double, _ y: Double?)` plus `func fill(_ x: Double) { fill(x, nil) }`.
 - Generic interface -> primary associated type: `interface Container<T>` -> `protocol Container<T>: AnyObject { associatedtype T ... }`; a class conforms as `: Container` (no `<T>`), `T` inferred.
 - A class implementing a protocol -> `final class Label: Tagged` with plain `public var` members (no `override`).
 - Discriminated unions -> one protocol plus one `final class` per member, as Kotlin.
