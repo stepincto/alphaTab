@@ -15,6 +15,20 @@ export class Compare {
             const m = expected as Map<string, unknown>;
             return m.size;
         }
-        return 0;
+        return expected instanceof Set ? 1 : 0;
+    }
+
+    // `x as T[]` from `unknown`: a JSON list may hold `T | null` elements
+    public first(json: Map<string, unknown>): Map<string, unknown> {
+        const items = json.get('items') as Map<string, unknown>[];
+        return items[0];
+    }
+
+    // `x as bigint` from `unknown`, and `===` on values cast to `undefined`
+    public sameBig(expected: unknown, actual: unknown): boolean {
+        if ((actual as undefined) === (expected as undefined)) {
+            return true;
+        }
+        return (actual as bigint) === (expected as bigint);
     }
 }

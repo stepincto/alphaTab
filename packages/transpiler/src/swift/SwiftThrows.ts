@@ -11,9 +11,11 @@ import ts from 'typescript';
  * A function throws when its body throws outside a `catch`, calls a throwing function outside
  * a `catch`, or is overridden or implemented by a throwing one (a Swift override cannot add
  * `throws`). A closure that throws makes the call it is passed to throw (the callee must be
- * `rethrows`, as the runtime's callback helpers are).
- * shortcut: getters and setters are never `throws`, and a stored throwing closure is not tracked;
- * give them effectful accessors or throwing function types when alphaTab code needs them.
+ * `rethrows`, as the runtime's callback helpers are). A function value passed as an argument
+ * (closure, method reference, function-typed value) makes the parameter's function type throw
+ * when it throws, and a call through a throwing function type throws.
+ * shortcut: getters and setters are never `throws`, and a function value stored in a variable or
+ * field (not passed as an argument) is not tracked; track assignments when alphaTab code needs it.
  */
 export class SwiftThrows {
     private _throwing: Set<ts.Node> | undefined;
@@ -29,8 +31,38 @@ export class SwiftThrows {
         if (this.throws(this._program.getTypeChecker().getResolvedSignature(call)?.declaration)) {
             return true;
         }
-        // a throwing closure argument: the callee rethrows (runtime helpers are `rethrows`)
-        return (call.arguments ?? []).some(a => SwiftThrows._isClosure(a) && this.throws(a));
+        // a throwing function argument: the callee rethrows (runtime helpers are `rethrows`)
+        return (call.arguments ?? []).some(a => this._functionValues(a).some(f => this.throws(f)));
+    }
+
+    /** The declaration behind a function type (`(v: T) => U`, also through a type alias). */
+    public functionTypeOf(type: ts.Type | undefined): ts.FunctionTypeNode | undefined {
+        const signatures = type?.getNonNullableType().getCallSignatures() ?? [];
+        const d = signatures.length === 1 ? signatures[0].declaration : undefined;
+        return d && ts.isFunctionTypeNode(d) ? d : undefined;
+    }
+
+    /**
+     * What a function-valued expression stands for in the graph: a closure itself, a referenced
+     * method or function (`PrettyFormat.printer`), or the function type of a function-typed value.
+     */
+    private _functionValues(e: ts.Expression): ts.Node[] {
+        while (ts.isParenthesizedExpression(e)) {
+            e = e.expression;
+        }
+        if (SwiftThrows._isClosure(e)) {
+            return [e];
+        }
+        if (!ts.isIdentifier(e) && !ts.isPropertyAccessExpression(e)) {
+            return [];
+        }
+        const checker = this._program.getTypeChecker();
+        const d = checker.getSymbolAtLocation(e)?.valueDeclaration;
+        if (d && (ts.isMethodDeclaration(d) || ts.isFunctionDeclaration(d))) {
+            return [d];
+        }
+        const t = this.functionTypeOf(checker.getTypeAtLocation(e));
+        return t ? [t] : [];
     }
 
     private static _isClosure(n: ts.Node): n is ts.ArrowFunction | ts.FunctionExpression {
@@ -79,8 +111,14 @@ export class SwiftThrows {
                         edge(callee, fn);
                     }
                     for (const a of n.arguments ?? []) {
-                        if (SwiftThrows._isClosure(a)) {
-                            edge(a, fn);
+                        // a function value passed on: the call rethrows it, and the parameter's
+                        // function type throws once the value does
+                        const target = this.functionTypeOf(checker.getContextualType(a));
+                        for (const f of this._functionValues(a)) {
+                            edge(f, fn);
+                            if (target && target !== f) {
+                                edge(f, target);
+                            }
                         }
                     }
                 }

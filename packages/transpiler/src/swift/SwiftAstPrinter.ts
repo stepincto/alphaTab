@@ -586,7 +586,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeTypeParameters(d.typeParameters);
         this.write(' = (');
         this.writeCommaSeparated(d.parameters, p => this.writeType(p.type!));
-        this.write(') -> ');
+        this.write(this._functionTypeThrows(d.tsNode) ? ') throws -> ' : ') -> ');
         this._writeReturnType(d.returnType);
         this.writeLine();
     }
@@ -743,6 +743,15 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         const checker = this._context.typeChecker;
         const signature = checker.getSignatureFromDeclaration(tsNode as ts.SignatureDeclaration);
         return !!signature && checker.getReturnTypeOfSignature(signature).symbol?.name === 'Promise';
+    }
+
+    /** A function type some throwing function value is passed into (`SwiftThrows`). */
+    private _functionTypeThrows(tsNode: ts.Node | undefined): boolean {
+        let t: ts.Node | undefined = tsNode;
+        if (t && !ts.isFunctionTypeNode(t) && 'type' in t) {
+            t = (t as { type?: ts.Node }).type;
+        }
+        return !!t && ts.isFunctionTypeNode(t) && (this._context as SwiftEmitterContext).throwsAnalysis.throws(t);
     }
 
     /** `throws` per the whole-program analysis (`SwiftThrows`). */
@@ -1336,7 +1345,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 const functionType = type as cs.FunctionTypeNode;
                 this.write('(');
                 this.writeCommaSeparated(functionType.parameterTypes, p => this._writeType(p, {}), false);
-                this.write(') -> ');
+                this.write(this._functionTypeThrows(functionType.tsNode) ? ') throws -> ' : ') -> ');
                 this._writeReturnType(functionType.returnType);
                 break;
             }
@@ -1757,7 +1766,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             case '==':
             case '!=': {
                 const negated = expr.operator.startsWith('!');
-                if (this._isDeclaredUnknown(expr.left) && this._isDeclaredUnknown(expr.right)) {
+                if (this._isAnyValue(expr.left) && this._isAnyValue(expr.right)) {
                     // two `Any?` values: Swift has no `==` on them
                     this.write(negated ? '!TypeHelper.strictEquals(' : 'TypeHelper.strictEquals(');
                     this.writeExpression(expr.left);
@@ -2121,6 +2130,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                     return;
                 }
                 case cs.PrimitiveType.Long:
+                    if (this._isDeclaredUnknown(this._unwrapParens(expr.expression))) {
+                        // `x as bigint` from `unknown`, as `unknownToNumber`
+                        this.write('TypeHelper.unknownToInt64(');
+                        this.writeExpression(expr.expression);
+                        this.write(')');
+                        return;
+                    }
                     this.write('Int64(');
                     this.writeExpression(expr.expression);
                     this.write(')');
@@ -2141,6 +2157,28 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
         if (this._isNoOpNullableCast(expr)) {
             this.writeExpression(expr.expression);
+            return;
+        }
+
+        const resolvedTarget = this._resolveTypeNode(expr.type);
+        if (cs.isArrayTypeNode(resolvedTarget) && this._isDeclaredUnknown(this._unwrapParens(expr.expression))) {
+            // `v as T[]` from `unknown`: the list may hold `T?` or `Any?` elements (JSON), which `as!` cannot convert
+            this.write('TypeHelper.unknownToList(');
+            this.writeExpression(expr.expression);
+            this.write(', ');
+            this._writeType(resolvedTarget.elementType, {});
+            this.write('.self)');
+            return;
+        }
+
+        if (this._isImplicitArrayWidening(expr)) {
+            // `T[]` passed as `(T | undefined)[]`: Swift classes are invariant, so `as!` would trap.
+            // shortcut: a copy, so a callee that mutates the array no longer changes the caller's;
+            // alphaTab's callers (Atnf.args) only read it. Revisit if a mutating one appears.
+            this._writeType(expr.type, { nullable: false });
+            this.write('(widening: ');
+            this.writeExpression(expr.expression);
+            this.write(')');
             return;
         }
 
@@ -2189,6 +2227,15 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         return !parts.some(u => !!(u.flags & zeroOrOptional) && !(u.flags & ts.TypeFlags.EnumLike));
     }
 
+    /** `Any?` in Swift: declared `unknown`/`any`, or cast to `any`/`undefined` (`v as undefined`). */
+    private _isAnyValue(expr: cs.Expression): boolean {
+        const e = this._unwrapParens(expr);
+        if (cs.isCastExpression(e) && cs.isPrimitiveTypeNode(e.type) && e.type.type === cs.PrimitiveType.Object) {
+            return true;
+        }
+        return this._isDeclaredUnknown(e);
+    }
+
     /** Declared (not narrowed) as `unknown` or `any`. */
     private _isDeclaredUnknown(expr: cs.Expression): boolean {
         let e = this._unwrapParens(expr);
@@ -2219,6 +2266,23 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             ? checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration)
             : checker.getTypeAtLocation(tsNode);
         return !!(t.flags & ts.TypeFlags.StringLike);
+    }
+
+    /** A cast the transformer added (no `as` in the TS) from `T[]` to `(T | undefined)[]`. */
+    private _isImplicitArrayWidening(expr: cs.CastExpression): boolean {
+        const tsNode = expr.tsNode;
+        if (!tsNode || ts.isAsExpression(tsNode) || ts.isTypeAssertionExpression(tsNode) || !ts.isExpression(tsNode)) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const source = checker.getTypeAtLocation(tsNode);
+        const target = checker.getContextualType(tsNode);
+        if (!target || source === target || !checker.isArrayType(source) || !checker.isArrayType(target)) {
+            return false;
+        }
+        const sourceElement = checker.getTypeArguments(source as ts.TypeReference)[0];
+        const targetElement = checker.getTypeArguments(target as ts.TypeReference)[0];
+        return sourceElement !== targetElement && checker.getNonNullableType(targetElement) === checker.getNonNullableType(sourceElement);
     }
 
     /** `x as T` where TS already knows `x` is a `T`: Swift's `as` (cannot fail). */
@@ -2601,6 +2665,21 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.write(' as! ');
             this._writeType(expr.type, { nullable: false });
             this.write(')');
+            return;
+        }
+        // `x instanceof Map` / `Set`: Swift cannot test a generic class without its arguments
+        // (`is Map<Any, Any?>` misses a `Map<String, Any?>`), so the runtime marks every Map and Set
+        const tsNode = expr.tsNode;
+        if (
+            tsNode &&
+            ts.isBinaryExpression(tsNode) &&
+            tsNode.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword &&
+            ts.isIdentifier(tsNode.right) &&
+            (tsNode.right.text === 'Map' || tsNode.right.text === 'Set') &&
+            !this._isDeclaredInSource(this._context.typeChecker.getSymbolAtLocation(tsNode.right))
+        ) {
+            this.writeExpression(expr.expression);
+            this.write(` is any _Any${tsNode.right.text}`);
             return;
         }
         super.writeIsExpression(expr);

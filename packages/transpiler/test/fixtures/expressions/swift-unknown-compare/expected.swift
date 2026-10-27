@@ -15,11 +15,23 @@ public final class Compare {
     }
 
     public func size(_ expected: Any?) -> Double {
-        if expected is Map<Any, Any?> {
+        if expected is any _AnyMap {
             let m: Map<String, Any?> = (expected as! Map<String, Any?>)
             return m.size
         }
-        return 0.0
+        return expected is any _AnySet ? 1.0 : 0.0
+    }
+
+    public func first(_ json: Map<String, Any?>) -> Map<String, Any?> {
+        let items: List<Map<String, Any?>> = TypeHelper.unknownToList(json.get("items"), Map<String, Any?>.self)
+        return items[0]
+    }
+
+    public func sameBig(_ expected: Any?, _ actual: Any?) -> Bool {
+        if TypeHelper.strictEquals((actual as Any?), (expected as Any?)) {
+            return true
+        }
+        return (TypeHelper.unknownToInt64(actual)) == (TypeHelper.unknownToInt64(expected))
     }
 
     public init() {}

@@ -7,8 +7,8 @@
 import AlphaTabRuntime
 
 public final class Json {
-    public static func forEach(_ o: Map<String, Any?>, _ fn: @escaping (Any?, String) -> Void) {
-        o.forEach(fn)
+    public static func forEach(_ o: Map<String, Any?>, _ fn: @escaping (Any?, String) throws -> Void) throws {
+        try o.forEach(fn)
     }
 
     public static func check(_ k: String) throws {
