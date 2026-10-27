@@ -102,7 +102,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - Numeric literals keep Kotlin's `DoubleSuffixPass` result minus `.toDouble()`: `(2.0).toDouble() * r` -> `2.0 * r`; `v < 0` stays `v < 0` (Swift infers `Double`).
 - Number to `Int` (indices) -> runtime `(x).toInt()` (Kotlin semantics: NaN -> 0, saturating; `Int(x)` traps); a literal index prints bare: `items[0]`, `bytes[(i).toInt()]`.
 - `x.length` on strings and lists -> runtime `length: Double` (UTF-16 count for strings, as JS).
-- `x++`, `x--` -> `x += 1`, `x -= 1` (Swift has no `++`); as an expression value, the emitter hoists it.
+- `x++`, `x--` -> `x += 1`, `x -= 1` (Swift has no `++`); as an expression value -> runtime `jsPostInc(&x)`, `jsPreInc(&x)`, `jsPostDec(&x)`, `jsPreDec(&x)` (`core/Increments.swift`), which return the JS value: `array[n++]` -> `array[(jsPostInc(&n)).toInt()]`.
 - `const` -> `let`, `let` -> `var` (Kotlin uses `var` for both; Swift warns on unmutated `var`).
 - Templates -> interpolation through runtime `toTemplate()` (JS number formatting: `3`, not `3.0`): `` `a=${x}` `` -> `"a=\((x).toTemplate())"`.
 - String literals -> `"..."` with Swift escapes; never raw strings.
