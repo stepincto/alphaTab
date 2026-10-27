@@ -19,24 +19,24 @@ import AlphaTabRuntime
  */
 public final class Binary {
     public func bits(_ a: Double, _ b: Double) -> Double {
-        return Double(((a).toInt() & 255) | ((b).toInt() << 8))
+        return jsOr(jsAnd(a, 255), jsShl(b, 8))
     }
 
     public func shift(_ a: Double) -> Double {
-        return Double((a).toInt() >> 2)
+        return jsShr(a, 2)
     }
 
     public func unsignedShift(_ a: Double) -> Double {
-        return Double(UInt32(truncatingIfNeeded: (a).toInt()) >> 1)
+        return jsUshr(a, 1)
     }
 
     public func mask(_ a: Double, _ m: Double) -> Double {
         var x: Double = a
-        x = Double((x).toInt() & (m).toInt())
-        x = Double((x).toInt() | 16)
-        x = Double((x).toInt() ^ 255)
-        x = Double((x).toInt() << 2)
-        x = Double((x).toInt() >> 1)
+        x = jsAnd(x, m)
+        x = jsOr(x, 16)
+        x = jsXor(x, 255)
+        x = jsShl(x, 2)
+        x = jsShr(x, 1)
         return x
     }
 

@@ -152,8 +152,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 
 Choices the `expressions/` and `statements/` fixtures pin that the sections above leave open.
 
-- Number bit ops -> `Int` ops wrapped in `Double(...)`, Kotlin's parentheses kept: `(a & 0xff) | (b << 8)` -> `Double(((a).toInt() & 255) | ((b).toInt() << 8))`. A compound bit assignment spells the operation out: `x &= m` -> `x = Double((x).toInt() & (m).toInt())`; an integer literal operand stays bare (`x |= 0x10` -> `x = Double((x).toInt() | 16)`).
-- `>>>` -> `Double(UInt32(truncatingIfNeeded: (a).toInt()) >> 1)`, JS's unsigned result (Kotlin prints `shr`, wrong for negatives).
+- Number bit ops -> runtime `jsAnd`, `jsOr`, `jsXor`, `jsNot`, `jsShl`, `jsShr`, `jsUshr` (`core/BitOps.swift`), which take and return `Double` with JS's ToInt32/ToUint32 semantics: NaN and +-Infinity read as 0, values wrap modulo 2^32, shift counts are masked `& 31`, `>>>` gives the unsigned result. Swift's `Int` is 64-bit, so plain `Int` operators (Kotlin's and C#'s 32-bit `Int` mapping) would not wrap (`1 << 31` stayed positive) and `x | 0` would not truncate to int32. `(a & 0xff) | (b << 8)` -> `jsOr(jsAnd(a, 255), jsShl(b, 8))`; `a >>> 1` -> `jsUshr(a, 1)`; `~a` -> `jsNot(a)`; `x | 0` -> `jsOr(x, 0)`. The shared transformer's `Int` casts on the operands are dropped; an integer literal operand stays bare (Swift reads it as `Double`). A compound bit assignment spells the operation out: `x &= m` -> `x = jsAnd(x, m)`, `x |= 0x10` -> `x = jsOr(x, 16)`.
 - `%`, `%=` on numbers -> `truncatingRemainder(dividingBy:)` (Swift has no `%` on `Double`; it has JS's sign rule): `x %= 5` -> `x = x.truncatingRemainder(dividingBy: 5.0)`.
 - `x ??= y` -> `x = x ?? y`; `f ||= b` -> `f = f || b`; `f &&= b` -> `f = f && b`.
 - String concatenation with a number and `String(n)` -> runtime `(n).toInvariantString()`, as Kotlin; templates keep `toTemplate()`.
