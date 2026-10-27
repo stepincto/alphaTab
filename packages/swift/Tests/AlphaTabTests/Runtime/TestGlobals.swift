@@ -29,12 +29,20 @@ public enum TestGlobals {
         return Expector(actual, nil, false, sourceLocation)
     }
 
+    /// `expect(() => new X()).toThrow()`: the closure's value is dropped, as JS does.
+    public static func expect<R>(
+        _ actual: @escaping () throws -> R,
+        sourceLocation: SourceLocation = #_sourceLocation
+    ) -> Expector<() throws -> Void> {
+        return Expector({ _ = try actual() }, nil, false, sourceLocation)
+    }
+
     public static func fail(_ message: Any?, sourceLocation: SourceLocation = #_sourceLocation) {
         Issue.record(Comment(rawValue: jsTemplate(message)), sourceLocation: sourceLocation)
     }
 }
 
-/// vitest's `expect(actual)` chain. `.not` flips every check (Kotlin's separate `NotExpector`).
+/// vitest's `expect(actual)` chain. `.not()` (a call, as Kotlin's) flips every check (Kotlin's separate `NotExpector`).
 public final class Expector<T> {
     private let _actual: T
     private let _message: String?
@@ -48,7 +56,7 @@ public final class Expector<T> {
         _location = location
     }
 
-    public var not: Expector<T> {
+    public func not() -> Expector<T> {
         return Expector(_actual, _message, !_negated, _location)
     }
 

@@ -73,10 +73,12 @@ public final class List<T>: Sequence {
         _data.insert(item, at: 0)
     }
 
-    public func fill(_ item: T) {
+    @discardableResult
+    public func fill(_ item: T) -> List<T> {
         for i in _data.indices {
             _data[i] = item
         }
+        return self
     }
 
     public func filter(_ predicate: (T) throws -> Bool) rethrows -> List<T> {
@@ -132,6 +134,16 @@ public final class List<T>: Sequence {
             return d < 0 || (!(d > 0) && a.offset < b.offset)
         }
         _data = indexed.map { $0.element }
+        return self
+    }
+
+    /// JS `sort()` with no comparator orders by each element's string form (`[10, 9].sort()` stays
+    /// `[10, 9]`); Kotlin's `DoubleList.sort()` sorts numerically instead.
+    @discardableResult
+    public func sort() -> List<T> {
+        let keys = _data.map { jsTemplate($0) }
+        let order = _data.indices.sorted { keys[$0] < keys[$1] || (keys[$0] == keys[$1] && $0 < $1) }
+        _data = order.map { _data[$0] }
         return self
     }
 

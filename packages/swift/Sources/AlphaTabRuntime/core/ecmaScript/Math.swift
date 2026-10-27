@@ -136,4 +136,14 @@ public enum Math {
     public static func min(_ values: Double...) -> Double {
         return values.reduce(Double.infinity) { min($0, $1) }
     }
+
+    /// `Math.max(...list)`: the emitter passes the spread array as is (Swift cannot splat a variadic).
+    public static func max(_ values: List<Double>) -> Double {
+        return values._data.reduce(-Double.infinity) { max($0, $1) }
+    }
+
+    /// `Math.min(...list)`.
+    public static func min(_ values: List<Double>) -> Double {
+        return values._data.reduce(Double.infinity) { min($0, $1) }
+    }
 }
