@@ -20,6 +20,23 @@ extension String {
         return String(decoding: units, as: UTF16.self)
     }
 
+    // Single-unit reads and slices go through the UTF-16 view by offset instead of copying the whole
+    // string (`_u16`): the importers scan multi-megabyte XML one `charCodeAt` at a time, so a copy per
+    // call made parsing quadratic. Offsets are O(1) for ASCII and breadcrumb-indexed otherwise.
+
+    @usableFromInline
+    internal func _u16Index(_ offset: Int) -> String.Index {
+        return self.utf16.index(self.utf16.startIndex, offsetBy: offset)
+    }
+
+    /// Units `[a, b)`, `0 <= a <= b <= utf16.count`.
+    @usableFromInline
+    internal func _u16Slice(_ a: Int, _ b: Int) -> String {
+        let units = self.utf16[self._u16Index(a)..<self._u16Index(b)]
+        // nil only for a slice that splits a surrogate pair: decode it as before (U+FFFD)
+        return String(units) ?? String(decoding: Swift.Array(units), as: UTF16.self)
+    }
+
     /// ToIntegerOrInfinity clamped to [0, len] (NaN -> 0).
     private static func _clamp(_ d: Double, _ len: Int) -> Int {
         if d.isNaN {
@@ -49,26 +66,26 @@ extension String {
     }
 
     public func substr(_ start: Double, _ length: Double = Double.infinity) -> String {
-        let u = self._u16
-        let s = String._relative(start, u.count)
-        let n = String._clamp(length, u.count - s)
-        return String._fromU16(u[s..<(s + n)])
+        let count = self.utf16.count
+        let s = String._relative(start, count)
+        let n = String._clamp(length, count - s)
+        return self._u16Slice(s, s + n)
     }
 
     public func substring(_ start: Double, _ end: Double = Double.infinity) -> String {
-        let u = self._u16
-        let a = String._clamp(start, u.count)
-        let b = String._clamp(end, u.count)
-        return String._fromU16(u[Swift.min(a, b)..<Swift.max(a, b)])
+        let count = self.utf16.count
+        let a = String._clamp(start, count)
+        let b = String._clamp(end, count)
+        return self._u16Slice(Swift.min(a, b), Swift.max(a, b))
     }
 
     public func charAt(_ index: Double) -> String {
-        let u = self._u16
-        guard !index.isNaN, index >= 0, index < Double(u.count) else {
-            return index.isNaN && !u.isEmpty ? String._fromU16(u[0..<1]) : ""
+        let count = self.utf16.count
+        guard !index.isNaN, index >= 0, index < Double(count) else {
+            return index.isNaN && count > 0 ? self._u16Slice(0, 1) : ""
         }
         let i = Int(index)
-        return String._fromU16(u[i..<(i + 1)])
+        return self._u16Slice(i, i + 1)
     }
 
     /// JS `s[i]`: a one-unit string (Kotlin returns a Char); out of range is `""` (JS: undefined).
@@ -77,12 +94,11 @@ extension String {
     }
 
     public func charCodeAt(_ index: Double) -> Double {
-        let u = self._u16
         let i = index.isNaN ? 0 : index
-        guard i >= 0, i < Double(u.count) else {
+        guard i >= 0, i < Double(self.utf16.count) else {
             return Double.nan
         }
-        return Double(u[Int(i)])
+        return Double(self.utf16[self._u16Index(Int(i))])
     }
 
     public func charCodeAt(_ index: Int) -> Double {
@@ -158,13 +174,20 @@ extension String {
     }
 
     public func indexOfInDouble(_ item: String, _ fromIndex: Double = 0) -> Double {
-        let u = self._u16
+        let count = self.utf16.count
         let v = item._u16
-        var i = String._clamp(fromIndex, u.count)
-        while i + v.count <= u.count {
-            if u[i..<(i + v.count)].elementsEqual(v) {
+        var i = String._clamp(fromIndex, count)
+        guard i + v.count <= count else {
+            return -1
+        }
+        // walk the view from `fromIndex` once instead of copying the whole string
+        let units = self.utf16[self._u16Index(i)...]
+        var index = units.startIndex
+        while i + v.count <= count {
+            if units[index...].starts(with: v) {
                 return Double(i)
             }
+            units.formIndex(after: &index)
             i += 1
         }
         return -1

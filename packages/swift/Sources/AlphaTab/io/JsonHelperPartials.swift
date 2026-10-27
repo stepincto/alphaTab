@@ -38,6 +38,11 @@ internal enum JsonHelperPartials {
 
     /// JS returns the raw number for a value with no case; a Swift enum cannot hold one, so nil.
     /// Traps on a boolean or other non-object where JS throws: generated callers carry no `try`.
+    /// JS `s in enumType`: the case named exactly `s` (case-sensitive), else nil.
+    static func parseEnumExact<E: IAlphaTabEnum & CaseIterable>(_ s: String, _ type: E.Type) -> E? {
+        return E.allCases.first { String(describing: $0) == s }
+    }
+
     static func parseEnum<E: IAlphaTabEnum & CaseIterable>(_ value: Any?, _ type: E.Type) -> E? {
         switch unwrapAny(value) {
         case nil:

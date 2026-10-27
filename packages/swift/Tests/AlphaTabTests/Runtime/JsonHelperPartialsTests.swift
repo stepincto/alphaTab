@@ -17,6 +17,13 @@ import Testing
         #expect(JsonHelperPartials.parseEnum("nope", FontStyle.self) == nil)
     }
 
+    @Test func parseEnumExactMatchesTheCaseNameOnly() {
+        // JS: `s in enumType`, case-sensitive and by name only
+        #expect(JsonHelperPartials.parseEnumExact("Italic", FontStyle.self) == .Italic)
+        #expect(JsonHelperPartials.parseEnumExact("italic", FontStyle.self) == nil)
+        #expect(JsonHelperPartials.parseEnumExact("1", FontStyle.self) == nil)
+    }
+
     @Test func parseEnumNumericStringUsesParseInt() {
         // JS: Number.parseInt(s, 10), so a leading number wins ("1px" -> 1).
         #expect(JsonHelperPartials.parseEnum("1", FontStyle.self) == .Italic)

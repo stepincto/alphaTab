@@ -132,6 +132,11 @@ public enum TypeHelper {
         return List<T>(contentsOf: list._anyElements.map { $0 as! T })
     }
 
+    /// `value as T[] | null` from `unknown`: nil for null, otherwise as `unknownToList`.
+    public static func unknownToNullableList<T>(_ value: Any?, _ type: T.Type) -> List<T>? {
+        return unwrapAny(value) == nil ? nil : unknownToList(value, type)
+    }
+
     /// `E[s as keyof typeof E]`, case-insensitive as Kotlin. Traps on an unknown name (Kotlin throws).
     public static func parseEnum<E: IAlphaTabEnum & CaseIterable>(_ value: String, _ type: E.Type) -> E {
         let lower = value.lowercased()

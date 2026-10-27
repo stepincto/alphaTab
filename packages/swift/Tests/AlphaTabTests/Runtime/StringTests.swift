@@ -58,6 +58,16 @@ import Testing
         #expect("a(b)c)".lastIndexOfInDouble(")") == 5)
         #expect("abcabc".indexOfInDouble("b", 2) == 4)
         #expect("\u{1F600}x".indexOfInDouble("x") == 2)
+        #expect("é\u{1F600}xé\u{1F600}x".indexOfInDouble("x", 4) == 7)
+        #expect("ab".indexOfInDouble("", 5) == 2)
+    }
+
+    @Test func slicesByUtf16Offsets() {
+        #expect("é\u{1F600}xyz".substring(3, 5) == "xy")
+        #expect("é\u{1F600}xyz".substr(3) == "xyz")
+        #expect("é\u{1F600}xyz".charAt(3) == "x")
+        // a slice that splits a surrogate pair: Swift has no lone surrogate, so U+FFFD
+        #expect("\u{1F600}".substring(0, 1) == "\u{FFFD}")
     }
 
     @Test func prefixSuffixAreCodeUnitExact() {

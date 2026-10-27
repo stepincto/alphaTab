@@ -58,6 +58,15 @@ private enum SampleEnum: Int, IAlphaTabEnum, CaseIterable {
         #expect(values.map({ $0 as! Double })._data == [2.0, -1.0, 5.0])
     }
 
+    @Test func objectEntriesOfRecordGivesPairsInInsertionOrder() {
+        let record = Record<String, Double>()
+        record.set("b", 1.0)
+        record.set("a", 2.0)
+        let entries = Object.entries(record)
+        #expect(entries.map({ $0.0 })._data == ["b", "a"])
+        #expect(entries.map({ $0.1 })._data == [1.0, 2.0])
+    }
+
     @Test func typeConversionsWrapLikeDataView() {
         #expect(TypeConversions.int32ToUint16(65535) == 65535)
         #expect(TypeConversions.int32ToInt16(65535) == -1)

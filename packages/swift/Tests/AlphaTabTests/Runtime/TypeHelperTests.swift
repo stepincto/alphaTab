@@ -43,6 +43,13 @@ private final class Box {}
         #expect(Swift.Array(TypeHelper.unknownToList(any, Double.self)) == [1.0, 2.0])
     }
 
+    @Test func unknownToNullableListKeepsNull() {
+        let null: Any? = Optional<List<String>>.none
+        #expect(TypeHelper.unknownToNullableList(null, String.self) == nil)
+        let any: Any? = List<Any?>("a")
+        #expect(TypeHelper.unknownToNullableList(any, String.self)?.length == 1.0)
+    }
+
     @Test func unknownToInt64() {
         #expect(TypeHelper.unknownToInt64(Int64(42)) == 42)
         #expect(TypeHelper.unknownToInt64(7) == 7)
