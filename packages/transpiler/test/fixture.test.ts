@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
@@ -39,7 +40,12 @@ import {
  * share the transformer and thus must produce identical listings. Negative
  * fixtures must not also carry `expected.cs`/`expected.kt` goldens — that
  * combination is a configuration error and fails loudly. Place negative
- * fixtures under `test/fixtures/errors/<name>/`.
+ * fixtures under `test/fixtures/errors/<name>/`. A negative fixture named
+ * `swift-<case>` is a Swift-only diagnostic and runs the Swift target alone.
+ *
+ * A positive fixture may carry `errors.swift.txt`: the diagnostics the Swift
+ * target must report for a construct Kotlin and C# accept; its output is
+ * still compared with `expected.swift`.
  */
 describe('transpiler fixtures', () => {
     const fixtures = discoverFixtures();
@@ -56,7 +62,10 @@ describe('transpiler fixtures', () => {
             // separate `it` so failures point at the offending target.
             const listings = new Map<Target, string>();
 
-            for (const target of ['csharp', 'kotlin', 'swift'] as Target[]) {
+            const negativeTargets: Target[] = path.basename(fixture.dir).startsWith('swift-')
+                ? ['swift']
+                : ['csharp', 'kotlin', 'swift'];
+            for (const target of negativeTargets) {
                 it(`[${target}] ${fixture.name}`, () => {
                     const result = runFixture(target, fixture.dir);
                     try {
@@ -140,10 +149,17 @@ describe('transpiler fixtures', () => {
                     ).toEqual([]);
 
                     const emitErrors = result.emitDiagnostics.filter(d => d.category === ts.DiagnosticCategory.Error);
-                    expect(
-                        emitErrors,
-                        `Fixture ${fixture.name} produced emitter errors:\n${formatDiags(emitErrors)}`
-                    ).toEqual([]);
+                    const targetErrors = path.join(fixture.dir, `errors.${target}.txt`);
+                    if (target === 'swift' && fs.existsSync(targetErrors)) {
+                        expect(formatEmitDiagnostics(emitErrors)).toBe(
+                            fs.readFileSync(targetErrors, 'utf8').replace(/\s+$/, '')
+                        );
+                    } else {
+                        expect(
+                            emitErrors,
+                            `Fixture ${fixture.name} produced emitter errors:\n${formatDiags(emitErrors)}`
+                        ).toEqual([]);
+                    }
 
                     const isSmoke = fixture.name.startsWith('_');
                     if (isSmoke) {

@@ -1,0 +1,3 @@
+input.ts:19:16: Swift enums hold only their declared cases, so a bit operator on an enum cannot produce an enum value. Use a number for bit flags.
+input.ts:23:27: Swift enums hold only their declared cases, so a bit operator on an enum cannot produce an enum value. Use a number for bit flags.
+input.ts:25:9: Swift enums hold only their declared cases, so a bit operator on an enum cannot produce an enum value. Use a number for bit flags.

@@ -92,7 +92,9 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - Numeric enum -> `public enum E: Int, IAlphaTabEnum, CaseIterable { case Up = 0 }`. Case names keep their TS spelling. `IAlphaTabEnum` (runtime) supplies `fromValue(_: Double)`; `CaseIterable` replaces Kotlin's `values`, so no companion object.
 - Raw values are the folded constants (`checker.getConstantValue`): `All = Read | Write` -> `case All = 3`. Swift raw values must be literals.
 - Enum member -> `E.Up`.
-- Bitwise on enums works on `rawValue`; a `number` result -> `Double(...)`, an enum result -> `E.fromValue(Double(...))`: `c | Color.Green` -> `Double(c.rawValue | Color.Green.rawValue)`.
+- Bitwise on enums works on `rawValue` and must give a `number`: `c | Color.Green` -> `Double(c.rawValue | Color.Green.rawValue)`.
+- No flag enums. An enum combined with a bit operator into an enum-typed slot (a `return` of an enum-returning method, an enum-typed variable, `e &= E.X` on an enum) is refused with a Swift-only diagnostic (`errors/swift-flag-enum/`): a Swift enum holds only its declared cases, and `Flags.Read ^ Flags.Write` may be none (`fromValue` would trap at run time). Enums stay plain Swift enums rather than `OptionSet`, because alphaTab's own source keeps bit flags in plain numbers: a type-checked scan of `packages/alphatab/src` (529 files, 2026-10-27) found no enum operand of `& | ^ << >> >>>` or their compound forms outside enum initializers. Write such flags as `number`.
+- `classes/enums` keeps Kotlin's `toggleFlag(f): Flags { return f ^ Flags.Read }`, so the Swift target reports that refusal there too, pinned in `classes/enums/errors.swift.txt`; its `expected.swift` still pins the rest of the file (the refused method prints as `Flags.fromValue(Double(...))`, which no build ships since the emit fails).
 - `n as E` (number to enum) -> `E.fromValue(n)`; enum to number -> `Double(e.rawValue)`.
 
 ## Expressions
@@ -145,7 +147,8 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 
 - Negative fixtures (`test/fixtures/errors/`) keep one shared `errors.txt` and no `expected.swift`, as they carry no `expected.kt`: the emitter must refuse the input, so there is no Swift to compare. The Swift target reports the same listing as Kotlin and C#, because all 21 come from the shared transformer (`CSharpEmitterContext`, `transforms/`), not from a printer.
 - None of the 21 is legal in Kotlin, so none needs a Swift-specific message. The `Int8Array` message names the C# runtime; Swift keeps it unchanged (its runtime has no `Int8Array` either).
-- A Swift-only diagnostic goes where Kotlin accepts a construct Swift cannot express, in a new `errors/swift-<case>/` fixture checked by the Swift target alone. The known one: a setter that would be `throws` (see Errors).
+- A Swift-only diagnostic goes where Kotlin accepts a construct Swift cannot express, in a new `errors/swift-<case>/` fixture checked by the Swift target alone (`fixture.test.ts` runs only Swift for a negative fixture named `swift-*`). The known ones: a setter that would be `throws` (see Errors), and an enum bit operation with an enum result (`errors/swift-flag-enum/`, see Enums).
+- A positive fixture whose input Kotlin and C# accept but Swift refuses in one place carries `errors.swift.txt` next to `expected.swift`: the Swift target must report exactly that listing, and its output is still compared with `expected.swift`.
 - The negative branch of `fixture.test.ts` runs `csharp`, `kotlin` and `swift`; all three must produce the same listing.
 
 ## Expression and statement details
