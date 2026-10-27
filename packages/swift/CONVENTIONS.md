@@ -145,6 +145,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - `describe('X')` -> `@Suite("X") final class X` with `init() {}` (a nested `describe('X')` becomes `final class XSuite`, so it cannot shadow a model type `X`); `it('does y')` -> `@Test("does y") func doesY() async throws`.
 - Test files import `Testing`, `@testable import AlphaTab` and `AlphaTabRuntime`.
 - A single `it(...)` that needs an unported module is left out by name (`createEmit(..., excludedTests)`, `<path>#<test name>`, or `<path>#<describe> > <test name>` when the bare name repeats in the file (`tests/swift-excluded-test-path/` fixture, via `excluded-tests.txt`), listed in `scripts/transpile.ts`), with its reason in `Tests/AlphaTabTests/SKIPPED.md`; the rest of its file still runs.
+- Tests run serially (`npm test` passes `--no-parallel`): alphaTab keeps process-wide id counters (`Bar._globalBarId`, `Note`, `Voice`, reset by `Score.resetIds()` at each import), so imports in parallel tests change each other's ids and snapshots differ. vitest runs a file's tests one after another.
 - `expect(a).toBe(b)` and the other chai chains -> the runtime `Expector` (port of Kotlin's `TestGlobals`), which reports through Swift Testing's `#expect`/`Issue.record`. The chains (`toBe`, `toEqual`, `toBeCloseTo`, `toThrow`, snapshots) do not map one to one onto the `#expect` macro.
 
 ## Diagnostics

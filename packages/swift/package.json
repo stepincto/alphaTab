@@ -8,6 +8,6 @@
         "clean": "rimraf Sources/AlphaTab/Generated && rimraf Tests/AlphaTabTests/Generated",
         "transpile": "tsx scripts/transpile.ts",
         "build": "npm run transpile && cd ../.. && swift build",
-        "test": "cd ../.. && swift test"
+        "test": "cd ../.. && swift test --no-parallel"
     }
 }
