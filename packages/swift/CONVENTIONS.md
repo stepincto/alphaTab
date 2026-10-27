@@ -118,7 +118,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 
 - `for (init; cond; step)` -> scope `do { init; while cond { ...; step } }` (Kotlin uses `if (true) { }`; Swift's scope block is `do`).
 - `for (const x of xs)` -> `for x in xs`.
-- `switch` -> `switch`; a `switch` without `default` gets `default: break` (Swift switches must be exhaustive).
+- `switch` -> `switch`; a `switch` without `default` gets `default: break` (Swift switches must be exhaustive). A switch on a field declared `T!` (no initializer, no zero value) unwraps it: `switch self.kind! {`, since a pattern cannot match an optional.
 
 ## Errors
 
