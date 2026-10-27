@@ -2221,7 +2221,7 @@ internal final class AlphaTex1LanguageHandler: IAlphaTexLanguageImportHandler {
             return b == barNumbers[0]
         }).length == barNumbers.length
         if isShared && barNumbers[0] != nil && barNumbers[0] != defaultBarNumber {
-            nodes.push(Atnf.identMeta(TypeHelper.isTruthy(bar) ? "barNumberDisplay" : "defaultBarNumberDisplay", String(describing: barNumbers[0])))
+            nodes.push(Atnf.identMeta(TypeHelper.isTruthy(bar) ? "barNumberDisplay" : "defaultBarNumberDisplay", String(describing: barNumbers[0]!)))
         }
         let tag: String = TypeHelper.isTruthy(bar) ? "barDisplay" : TypeHelper.isTruthy(staff) ? "staffDisplay" : "defaultStaffDisplay"
         let staffTypes: List<String> = List<String>("score", "tabs", "slash", "numbered")
