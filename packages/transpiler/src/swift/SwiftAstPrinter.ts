@@ -1332,6 +1332,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     protected writeStringTemplateExpression(expr: cs.StringTemplateExpression) {
         this.write('"');
+        const start = this._source.length - 1;
         for (const c of expr.chunks) {
             if (cs.isStringLiteral(c)) {
                 this.write(this._escapeString(c.text));
@@ -1352,7 +1353,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 this.write(').toTemplate())');
             }
         }
-        this.write('"');
+        if (this._source.indexOf('\n', start) === -1) {
+            this.write('"');
+        } else {
+            // a single-line literal cannot hold a multi-line closure; a closing delimiter at column 0 strips no indentation
+            const q = '"""';
+            this._source = `${this._source.substring(0, start)}${q}\n${this._source.substring(start + 1)}\n${q}`;
+        }
     }
 
     protected writeNumericLiteral(expr: cs.NumericLiteral) {

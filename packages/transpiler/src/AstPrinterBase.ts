@@ -6,7 +6,7 @@ import * as cs from './ir/Ir';
 
 export default abstract class AstPrinterBase {
     protected _sourceFile: cs.SourceFile;
-    private _source = '';
+    protected _source = '';
     protected _context: EmitterContextBase;
     protected _isStartOfLine: boolean = true;
     protected _indent: number = 0;
