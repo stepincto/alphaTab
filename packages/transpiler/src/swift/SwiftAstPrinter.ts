@@ -1221,10 +1221,17 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 this.writeExpression(expr.operand);
                 this.write(expr.operator === '++' ? ' += 1' : ' -= 1');
                 break;
-            default:
+            default: {
+                const operand = this._unwrapParens(expr.operand);
+                if (expr.operator === '!' && cs.isPrefixUnaryExpression(operand) && operand.operator === '!') {
+                    // `!!x` is `Boolean(x)`; its operand already is a Bool (`TypeHelper.isTruthy(x)`)
+                    this.writeExpression(operand.operand);
+                    break;
+                }
                 this.write(expr.operator);
                 this.writeExpression(expr.operand);
                 break;
+            }
         }
     }
 
@@ -1633,7 +1640,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         if (!isEmpty) {
             // enum to number: Kotlin's `e.toDouble()` -> `Double(e.rawValue)` (see writeInvocationExpression)
             this.writeExpression(expr.expression);
-            this.write(expr.nullSafe ? '?.' : '.');
+            // `x!?.m`: the `!` already unwrapped it
+            this.write(expr.nullSafe && !this._isUnwrapped(expr.expression) ? '?.' : '.');
         }
         this.writeIdentifier(this._swiftMemberName(name));
     }
@@ -1849,9 +1857,43 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     protected writeNonNullExpression(expr: cs.NonNullExpression) {
         this.writeExpression(expr.expression);
-        if (!cs.isNonNullExpression(expr.expression)) {
+        if (!this._isUnwrapped(expr.expression) && !this._isDeclaredNonNullable(expr.expression)) {
             this.write('!');
         }
+    }
+
+    /** Already prints its own `!`: a nested non-null, or a narrowed nullable local. */
+    private _isUnwrapped(e: cs.Expression): boolean {
+        const inner = this._unwrapParens(e);
+        return cs.isNonNullExpression(inner) || (cs.isIdentifier(inner) && this._isNarrowedNullableLocal(inner));
+    }
+
+    /** Declared without `null`/`undefined` (TS `!` on a non-optional field, call result or local): nothing to unwrap. */
+    private _isDeclaredNonNullable(e: cs.Expression): boolean {
+        const tsNode = this._unwrapParens(e).tsNode;
+        if (!tsNode || !(ts.isPropertyAccessExpression(tsNode) || ts.isIdentifier(tsNode) || ts.isCallExpression(tsNode))) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        let t: ts.Type;
+        if (ts.isCallExpression(tsNode)) {
+            t = checker.getTypeAtLocation(tsNode);
+        } else {
+            const symbol = checker.getSymbolAtLocation(ts.isPropertyAccessExpression(tsNode) ? tsNode.name : tsNode);
+            if (!symbol || !(symbol.flags & (ts.SymbolFlags.Property | ts.SymbolFlags.Variable))) {
+                return false;
+            }
+            t = checker.getTypeOfSymbol(symbol);
+        }
+        const loose =
+            ts.TypeFlags.Null |
+            ts.TypeFlags.Undefined |
+            ts.TypeFlags.Void |
+            ts.TypeFlags.Any |
+            ts.TypeFlags.Unknown |
+            ts.TypeFlags.TypeParameter;
+        const parts = t.isUnion() ? t.types : [t];
+        return !parts.some(u => !!(u.flags & loose));
     }
 
     protected override writeInvocationExpression(expr: cs.InvocationExpression): void {
@@ -1865,6 +1907,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.write('Double(');
             this.writeExpression(expr.expression.expression);
             this.write('.rawValue)');
+            return;
+        }
+        // the shared transformer wraps some conditions twice: `isTruthy(isTruthy(x))` -> `isTruthy(x)`
+        if (this._isTruthyCall(expr) && this._isTruthyCall(this._unwrapParens(expr.arguments[0]))) {
+            this.writeExpression(expr.arguments[0]);
             return;
         }
         // Kotlin's tuple assignment `rhs.let { a = it.v0 ... }` -> `(a, b) = rhs`
@@ -1917,6 +1964,15 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.write('(');
         this.writeCommaSeparated(expr.arguments, a => this.writeExpression(a), false);
         this.write(')');
+    }
+
+    private _isTruthyCall(e: cs.Expression): e is cs.InvocationExpression {
+        return (
+            cs.isInvocationExpression(e) &&
+            e.arguments.length === 1 &&
+            cs.isMemberAccessExpression(e.expression) &&
+            e.expression.member === 'isTruthy'
+        );
     }
 
     protected writeYieldExpression(expr: cs.YieldExpression) {
