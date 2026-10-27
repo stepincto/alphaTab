@@ -1,0 +1,13 @@
+{
+    "name": "@coderline/alphatab-swift",
+    "version": "1.9.0",
+    "description": "The Swift target of alphaTab.",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "clean": "rimraf Sources/AlphaTab/Generated && rimraf Tests/AlphaTabTests/Generated",
+        "transpile": "tsx scripts/transpile.ts",
+        "build": "npm run transpile && cd ../.. && swift build",
+        "test": "cd ../.. && swift test"
+    }
+}

@@ -6,3 +6,6 @@ temp/
 *.user
 *.tgz
 /playground/
+# SwiftPM (packages/swift)
+.build/
+.swiftpm/
