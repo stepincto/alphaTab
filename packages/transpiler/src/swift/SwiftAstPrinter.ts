@@ -1850,6 +1850,12 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             // `x!?.m`: the `!` already unwrapped it
             this.write(expr.nullSafe && !this._isUnwrapped(expr.expression) ? '?.' : '.');
         }
+        // the shared transform spells tuple `x[0]` as Kotlin's `x.v0`; a Swift tuple reads `x.0`
+        const tsNode = expr.tsNode;
+        if (tsNode && ts.isElementAccessExpression(tsNode) && /^v\d+$/.test(name)) {
+            this.write(name.substring(1));
+            return;
+        }
         this.writeIdentifier(this._swiftMemberName(name));
         if (this._isNarrowedNullableGetter(expr)) {
             this.write('!');
@@ -1887,11 +1893,20 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     protected writeElementAccessExpression(expr: cs.ElementAccessExpression) {
         this.writeExpression(expr.expression);
-        this.write(expr.nullSafe ? '?[' : '[');
         let index = expr.argumentExpression;
         while (cs.isParenthesizedExpression(index) || cs.isCastExpression(index)) {
             index = index.expression;
         }
+        const tsNode = expr.tsNode;
+        if (tsNode && ts.isElementAccessExpression(tsNode) && cs.isNumericLiteral(index) && /^\d+$/.test(index.value)) {
+            const target = this._context.typeChecker.getNonNullableType(this._context.typeChecker.getTypeAtLocation(tsNode.expression));
+            if (this._context.typeChecker.isTupleType(target)) {
+                // `t?.[1]` on a tuple: Swift reads tuple elements by `.1`
+                this.write(expr.nullSafe ? `?.${index.value}` : `.${index.value}`);
+                return;
+            }
+        }
+        this.write(expr.nullSafe ? '?[' : '[');
         if (cs.isNumericLiteral(index) && /^\d+$/.test(index.value)) {
             // a literal index is an `Int` (the runtime subscripts take `Int`), whatever suffix the operand got
             this.write(index.value);
