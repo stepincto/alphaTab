@@ -9,6 +9,7 @@ import AstPrinterBase from '../AstPrinterBase';
 import type EmitterContextBase from '../EmitterContextBase';
 import * as cs from '../ir/Ir';
 import { hasTag, JsDocTag } from '../jsDocTags';
+import type SwiftEmitterContext from './SwiftEmitterContext';
 
 /**
  * Prints the IR as Swift, following `packages/swift/CONVENTIONS.md`.
@@ -659,29 +660,45 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         return !!signature && checker.getReturnTypeOfSignature(signature).symbol?.name === 'Promise';
     }
 
+    /** `throws` per the whole-program analysis (`SwiftThrows`). */
+    private _throws(d: cs.MethodDeclaration | cs.ConstructorDeclaration): boolean {
+        return (this._context as SwiftEmitterContext).throwsAnalysis.throws(d.tsNode);
+    }
+
     /**
-     * `throws` when the body throws outside a `catch`.
-     * shortcut: calls, overrides and implementations of a throwing function are not followed
-     * (CONVENTIONS.md "Errors"); add the whole-program pass when a fixture needs it.
+     * A statement-level expression holding a throwing call: one `try` in front covers it all
+     * (Swift rejects `try` right of a binary operator, and `&&`, `??` are rethrowing autoclosures).
      */
-    private _throws(d: cs.MethodDeclaration): boolean {
-        const tsNode = d.tsNode;
-        if (!tsNode || !ts.isFunctionLike(tsNode) || !(tsNode as ts.FunctionLikeDeclaration).body) {
+    private _needsTry(expr: cs.Expression): boolean {
+        const parent = expr.parent;
+        if (!parent || !expr.tsNode || !SwiftAstPrinter._tryRoots.has(parent.nodeType)) {
             return false;
         }
-        const visit = (n: ts.Node): boolean => {
-            if (ts.isThrowStatement(n)) {
-                return true;
-            }
-            if (ts.isFunctionLike(n) || ts.isClassLike(n)) {
-                return false;
-            }
-            if (ts.isTryStatement(n) && n.catchClause) {
-                return visit(n.catchClause.block) || (!!n.finallyBlock && visit(n.finallyBlock));
-            }
-            return !!ts.forEachChild(n, c => visit(c) || undefined);
-        };
-        return visit((tsNode as ts.FunctionLikeDeclaration).body!);
+        if (cs.isLambdaExpression(parent) && parent.body !== expr) {
+            return false;
+        }
+        return (this._context as SwiftEmitterContext).throwsAnalysis.containsThrowingCall(expr.tsNode);
+    }
+
+    private static readonly _tryRoots = new Set<cs.SyntaxKind>([
+        cs.SyntaxKind.ExpressionStatement,
+        cs.SyntaxKind.ReturnStatement,
+        cs.SyntaxKind.VariableDeclaration,
+        cs.SyntaxKind.IfStatement,
+        cs.SyntaxKind.WhileStatement,
+        cs.SyntaxKind.DoStatement,
+        cs.SyntaxKind.ForStatement,
+        cs.SyntaxKind.ForEachStatement,
+        cs.SyntaxKind.SwitchStatement,
+        cs.SyntaxKind.ThrowStatement,
+        cs.SyntaxKind.LambdaExpression
+    ]);
+
+    protected override writeExpression(expr: cs.Expression) {
+        if (this._needsTry(expr)) {
+            this.write('try ');
+        }
+        super.writeExpression(expr);
     }
 
     protected override writeReturnStatement(r: cs.ReturnStatement) {
@@ -750,6 +767,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
         this.write('init');
         this.writeParameters(d.parameters);
+        if (this._throws(d)) {
+            this.write(' throws');
+        }
 
         const statements = d.body && cs.isBlock(d.body) ? d.body.statements : [];
         if (!d.baseConstructorArguments && statements.length === 0 && (!d.body || cs.isBlock(d.body))) {
@@ -1786,7 +1806,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         if (!symbol || !(symbol.flags & ts.SymbolFlags.GetAccessor)) {
             return false;
         }
-        const declared = checker.getTypeOfPropertyOfType(checker.getTypeAtLocation(tsNode.expression), symbol.name);
+        const property = checker.getPropertyOfType(checker.getTypeAtLocation(tsNode.expression), symbol.name);
+        const declared = property && checker.getTypeOfSymbol(property);
         const narrowed = checker.getTypeAtLocation(tsNode);
         const isNullable = (t: ts.Type) =>
             !!(t.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined)) ||
