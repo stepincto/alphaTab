@@ -696,9 +696,22 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     protected override writeExpression(expr: cs.Expression) {
         if (this._needsTry(expr)) {
-            this.write('try ');
+            // Swift accessors cannot throw: trap there, where JS would throw
+            this.write(this._inAccessor(expr) ? 'try! ' : 'try ');
         }
         super.writeExpression(expr);
+    }
+
+    private _inAccessor(n: cs.Node): boolean {
+        for (let p = n.parent; p; p = p.parent) {
+            if (cs.isPropertyAccessorDeclaration(p) || cs.isPropertyDeclaration(p)) {
+                return true;
+            }
+            if (cs.isMethodDeclaration(p) || cs.isConstructorDeclaration(p) || cs.isLambdaExpression(p) || p.nodeType === cs.SyntaxKind.LocalFunction) {
+                return false;
+            }
+        }
+        return false;
     }
 
     protected override writeReturnStatement(r: cs.ReturnStatement) {

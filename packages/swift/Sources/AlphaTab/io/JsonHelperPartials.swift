@@ -13,18 +13,18 @@ import AlphaTabRuntime
 internal enum JsonHelperPartials {
     // disfavoured: a closure with no return type is TS's `=> void` callback and must pick the Void overload
     @_disfavoredOverload
-    static func forEach(_ o: Any?, _ fn: (Any?, String) -> Bool) {
+    static func forEach(_ o: Any?, _ fn: (Any?, String) throws -> Bool) rethrows {
         guard let m = unwrapAny(o) as? Map<String, Any?> else {
             return
         }
         for (k, v) in m {
-            _ = fn(v, k)
+            _ = try fn(v, k)
         }
     }
 
-    static func forEach(_ o: Any?, _ fn: (Any?, String) -> Void) {
-        forEach(o, { (v: Any?, k: String) -> Bool in
-            fn(v, k)
+    static func forEach(_ o: Any?, _ fn: (Any?, String) throws -> Void) rethrows {
+        try forEach(o, { (v: Any?, k: String) -> Bool in
+            try fn(v, k)
             return true
         })
     }

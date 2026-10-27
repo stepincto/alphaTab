@@ -10,9 +10,10 @@ import ts from 'typescript';
  * Which functions are Swift `throws`, over the whole program (TS has no checked exceptions).
  * A function throws when its body throws outside a `catch`, calls a throwing function outside
  * a `catch`, or is overridden or implemented by a throwing one (a Swift override cannot add
- * `throws`). Closures do not make their enclosing function throw.
- * shortcut: getters, setters and closures are never `throws`; give them effectful accessors or
- * throwing function types when alphaTab code needs them.
+ * `throws`). A closure that throws makes the call it is passed to throw (the callee must be
+ * `rethrows`, as the runtime's callback helpers are).
+ * shortcut: getters and setters are never `throws`, and a stored throwing closure is not tracked;
+ * give them effectful accessors or throwing function types when alphaTab code needs them.
  */
 export class SwiftThrows {
     private _throwing: Set<ts.Node> | undefined;
@@ -25,7 +26,15 @@ export class SwiftThrows {
 
     /** A call or `new` whose target throws. */
     public callThrows(call: ts.CallExpression | ts.NewExpression): boolean {
-        return this.throws(this._program.getTypeChecker().getResolvedSignature(call)?.declaration);
+        if (this.throws(this._program.getTypeChecker().getResolvedSignature(call)?.declaration)) {
+            return true;
+        }
+        // a throwing closure argument: the callee rethrows (runtime helpers are `rethrows`)
+        return (call.arguments ?? []).some(a => SwiftThrows._isClosure(a) && this.throws(a));
+    }
+
+    private static _isClosure(n: ts.Node): n is ts.ArrowFunction | ts.FunctionExpression {
+        return ts.isArrowFunction(n) || ts.isFunctionExpression(n);
     }
 
     /** `node` holds a throwing call outside any nested function. */
@@ -69,6 +78,11 @@ export class SwiftThrows {
                     if (callee) {
                         edge(callee, fn);
                     }
+                    for (const a of n.arguments ?? []) {
+                        if (SwiftThrows._isClosure(a)) {
+                            edge(a, fn);
+                        }
+                    }
                 }
                 if (ts.isFunctionLike(n) || ts.isClassLike(n)) {
                     return;
@@ -83,7 +97,12 @@ export class SwiftThrows {
                 }
                 ts.forEachChild(n, visit);
             };
-            ts.forEachChild(fn.body!, visit);
+            const body = fn.body!;
+            if (ts.isBlock(body)) {
+                ts.forEachChild(body, visit);
+            } else {
+                visit(body);
+            }
             if (throws) {
                 seeds.push(fn);
             }
@@ -108,7 +127,10 @@ export class SwiftThrows {
         };
 
         const visitDeclarations = (n: ts.Node) => {
-            if ((ts.isMethodDeclaration(n) || ts.isConstructorDeclaration(n) || ts.isFunctionDeclaration(n)) && n.body) {
+            if (
+                (ts.isMethodDeclaration(n) || ts.isConstructorDeclaration(n) || ts.isFunctionDeclaration(n) || SwiftThrows._isClosure(n)) &&
+                n.body
+            ) {
                 scanBody(n);
             }
             if (ts.isMethodDeclaration(n) && ts.isClassLike(n.parent)) {
