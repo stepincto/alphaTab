@@ -91,7 +91,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         for (let t: cs.Node | null | undefined = this._currentType; t && this._isTestClass(t); t = t.parent) {
             const owner = t as cs.ClassDeclaration;
             if (owner.members.some(m => (m as { isStatic?: boolean }).isStatic && m.tsNode === declaration)) {
-                this.write(`${owner.name}.`);
+                this.write(`${this._testClassName(owner)}.`);
                 return;
             }
         }
@@ -246,6 +246,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         }
     }
 
+    /** A nested `describe('X')` class takes a `Suite` suffix, or it would shadow a model type `X` in its tests. */
+    private _testClassName(d: cs.ClassDeclaration): string {
+        return this._isTestClass(d.parent) ? `${d.name}Suite` : d.name;
+    }
+
     /** A `describe(...)` class: Swift Testing wants it internal, its tests `async throws`. */
     private _isTestClass(d: cs.Node | null | undefined): boolean {
         return !!d && cs.isClassDeclaration(d) && !!d.tsNode && ts.isCallExpression(d.tsNode);
@@ -299,7 +304,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this._writeTypeVisibility(d.visibility);
             this.write('final class ');
         }
-        this.writeIdentifier(d.name);
+        this.writeIdentifier(this._isTestClass(d) ? this._testClassName(d) : d.name);
         this.writeTypeParameters(d.typeParameters);
 
         const heritage: cs.TypeNode[] = [];
@@ -2426,6 +2431,12 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         return parts.some(u => !!(u.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined)));
     }
 
+    private _isErrorCause(expr: cs.InvocationExpression): boolean {
+        const symbol = expr.tsSymbol;
+        const owner = symbol?.declarations?.[0]?.parent;
+        return symbol?.name === 'cause' && !!owner && ts.isInterfaceDeclaration(owner) && owner.name.text === 'Error';
+    }
+
     protected override writeInvocationExpression(expr: cs.InvocationExpression): void {
         if (!this._flattenedMapGets.has(expr) && this._isOptionalValueMapGet(expr)) {
             // JS returns undefined for a missing key and for a stored null alike: flatten `V??` to `V?`
@@ -2433,6 +2444,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.write('(');
             this.writeInvocationExpression(expr);
             this.write(' ?? nil)');
+            return;
+        }
+        // the shared transform calls `Error.cause` like a method; JsError has it as a property
+        if (expr.arguments.length === 0 && expr.tsNode && ts.isPropertyAccessExpression(expr.tsNode) && this._isErrorCause(expr)) {
+            this.writeExpression(expr.expression);
             return;
         }
         // Kotlin's enum-to-number lowering: `e.toDouble()` -> `Double(e.rawValue)`
