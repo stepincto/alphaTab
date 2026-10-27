@@ -1212,9 +1212,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     protected writePrefixUnaryExpression(expr: cs.PrefixUnaryExpression) {
         switch (expr.operator) {
             case '~':
-                this.write('Double(~(');
-                this.writeExpression(expr.operand);
-                this.write(').toInt())');
+                this.write('jsNot(');
+                this._writeBitOperand(expr.operand);
+                this.write(')');
                 break;
             case '++':
             case '--':
@@ -1317,26 +1317,28 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         return e;
     }
 
-    /** An operand of a number bit operation, whose casts the shared transformer already made (`makeInt`). */
+    /** An operand of a number bit operation, as the `Double` the runtime's `js*` helpers take: the shared transformer's `Int` casts are dropped. */
     private _writeBitOperand(e: cs.Expression) {
-        const inner = this._unwrapParens(e);
+        let inner = this._unwrapParens(e);
         if (cs.isCastExpression(inner) && cs.isPrimitiveTypeNode(inner.type) && inner.type.type === cs.PrimitiveType.Int) {
+            inner = this._unwrapParens(inner.expression);
+        }
+        if (this._isEnumExpression(inner)) {
+            this.write('Double(');
             this.writeExpression(inner);
-        } else if (this._isIntegerLiteral(inner)) {
-            this.writeExpression(inner);
-        } else if (this._isBitOp(inner)) {
-            this.write('(');
-            this.writeExpression(inner);
-            this.write(')');
-        } else if (this._isEnumExpression(inner)) {
-            this.writeExpression(inner);
-            this.write('.rawValue');
+            this.write('.rawValue)');
         } else {
-            this.write('(');
             this.writeExpression(inner);
-            this.write(').toInt()');
         }
     }
+
+    private static readonly _bitHelpers: Record<string, string> = {
+        '&': 'jsAnd',
+        '|': 'jsOr',
+        '^': 'jsXor',
+        '<<': 'jsShl',
+        '>>': 'jsShr'
+    };
 
     private _isUnsignedShift(expr: cs.BinaryExpression): boolean {
         const tsNode = expr.tsNode;
@@ -1380,17 +1382,22 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this._writeRemainder(expr.left, expr.right);
             return;
         }
-        if (this._isBitOp(expr)) {
-            const unsigned = this._isUnsignedShift(expr);
-            if (unsigned) {
-                this.write('UInt32(truncatingIfNeeded: ');
-            }
+        if (expr.operator === '>>>=') {
+            // the shared transformer decomposes the other compound bit ops, not this one
+            this.writeExpression(expr.left);
+            this.write(' = jsUshr(');
             this._writeBitOperand(expr.left);
-            if (unsigned) {
-                this.write(')');
-            }
-            this.write(` ${unsigned ? '>>' : expr.operator} `);
+            this.write(', ');
             this._writeBitOperand(expr.right);
+            this.write(')');
+            return;
+        }
+        if (this._isBitOp(expr)) {
+            this.write(this._isUnsignedShift(expr) ? 'jsUshr(' : `${SwiftAstPrinter._bitHelpers[expr.operator]}(`);
+            this._writeBitOperand(expr.left);
+            this.write(', ');
+            this._writeBitOperand(expr.right);
+            this.write(')');
             return;
         }
         if (SwiftAstPrinter._bitOperators.has(expr.operator)) {
@@ -1638,9 +1645,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 case cs.PrimitiveType.Double: {
                     const inner = this._unwrapParens(expr.expression);
                     if (!this._forceInteger && this._isBitOp(inner)) {
-                        this.write('Double(');
                         this.writeExpression(inner);
-                        this.write(')');
                         return;
                     }
                     if (this._forceInteger || this._isNumericExpression(expr.expression)) {
