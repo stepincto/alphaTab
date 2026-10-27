@@ -165,7 +165,7 @@ Choices the `expressions/` and `statements/` fixtures pin that the sections abov
 - A narrowing cast to a non-optional type -> `as!` (Kotlin's `as` also throws): `item as SpecialItem` and `<SpecialItem>item` -> `(item as! SpecialItem)`; an upcast -> `(item as BaseItem)`. `as?` only where the target is optional.
 - A nullable local narrowed by a `=== null` check -> `!` at the use (Swift does not smart-cast): `return mode` -> `return mode!`.
 - `this.m.bind(this)` -> `self.m`.
-- Array literal -> runtime variadic init: `[1, 2, 3]` -> `List<Double>(1.0, 2.0, 3.0)`; `[]` -> `List<Double>()`. `arr?.[i]` -> `arr?[(i).toInt()]`.
+- Array literal -> runtime variadic init: `[1, 2, 3]` -> `List<Double>(1.0, 2.0, 3.0)`; `[]` -> `List<Double>()`. An array literal passed as an `Iterable` -> a Swift array literal: `new Set<number>([0])` -> `Set<Double>([0.0])`, `new Map([[k, v]])` -> `Map<K, V>([(k, v)])` (runtime `Map` builds from a sequence of tuples and iterates `(key, value)` tuples, so `for (const [k, v] of m)` -> `for (k, v) in m`). `arr?.[i]` -> `arr?[(i).toInt()]`.
 - `Record<K, V>` -> runtime `Record<K, V>`; an object literal of it -> `Record<String, Double>(("alice", 95.0), ("bob", 80.0))`.
 - Regex literal -> `TypeHelper.createRegex("\\d+", "")`, typed `RegExp`, as Kotlin.
 - `E[e]` (enum to name) -> `String(describing: e)`; `E[s as keyof typeof E]` -> `TypeHelper.parseEnum(s, E.self)` (Swift cannot write `parseEnum<E>(...)`).
