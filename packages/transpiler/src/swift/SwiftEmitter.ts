@@ -26,7 +26,7 @@ const SWIFT_PASSES: readonly IrPass[] = [
     new ResolveTypesPass(),
     new RecordPostProcessPass(),
     new SmartCastLoweringPass(),
-    new AsyncRewritePass(),
+    new AsyncRewritePass(true),
     new PartialsPass(),
     new DoubleSuffixPass(),
     new RewriteVisibilitiesPass()

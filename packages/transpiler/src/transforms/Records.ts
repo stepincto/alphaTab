@@ -63,7 +63,7 @@ export function visitObjectLiteralExpression(
     if (isRecord) {
         _recordCreation++;
 
-        const newObject = csf.newExpression(parent, createLazyTypeRef(state.context, null, expression, type), []);
+        const newObject = csf.newExpression(parent, createLazyTypeRef(state.context, null, expression, type), [], expression);
 
         for (const p of expression.properties) {
             const assignment = csf.labeledExpression(newObject, '', {} as cs.Expression);

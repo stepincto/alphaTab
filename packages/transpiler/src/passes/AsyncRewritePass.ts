@@ -47,6 +47,12 @@ import type { IrPass } from './IrPass';
 export class AsyncRewritePass implements IrPass {
     public readonly name = 'async-rewrite';
 
+    /**
+     * @param promiseFunctionsAreAsync Swift makes a function that returns a `Promise` without `async`
+     * an `async` function too (unless `@async` keeps the Promise object), so awaiting it needs no `.await()`.
+     */
+    public constructor(private readonly _promiseFunctionsAreAsync: boolean = false) {}
+
     public run(files: readonly cs.SourceFile[], context: EmitterContextBase): void {
         // Iterative DFS. The `seen` set is shared across files because
         // Kotlin partial-class re-registration causes a single
@@ -135,10 +141,16 @@ export class AsyncRewritePass implements IrPass {
                 m => m.kind === ts.SyntaxKind.AsyncKeyword
             ) ||
                 hasTag(method.valueDeclaration, JsDocTag.async));
+        // Swift: a Promise-returning function of alphaTab's own (not `lib.d.ts`'s `Promise.resolve`) is `async`
+        const isAsyncFunction =
+            this._promiseFunctionsAreAsync &&
+            !!method?.valueDeclaration &&
+            ts.isFunctionLike(method.valueDeclaration) &&
+            !method.valueDeclaration.getSourceFile().isDeclarationFile;
 
         if (!ts.isAwaitExpression(expression.parent) && isSuspend) {
             this._wrapInSuspendToDeferred(invocation, context);
-        } else if (ts.isAwaitExpression(expression.parent) && !isSuspend) {
+        } else if (ts.isAwaitExpression(expression.parent) && !isSuspend && !isAsyncFunction) {
             this._wrapInAwait(invocation);
         }
     }

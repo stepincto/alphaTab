@@ -114,7 +114,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return false;
         }
         const checker = this._context.typeChecker;
-        const symbol = checker.getSymbolAtLocation(tsNode);
+        // `{ note }`: the name's own symbol is the object literal's property, the local is its value
+        const symbol =
+            parent && ts.isShorthandPropertyAssignment(parent) && parent.name === tsNode
+                ? checker.getShorthandAssignmentValueSymbol(parent)
+                : checker.getSymbolAtLocation(tsNode);
         const declaration = symbol?.valueDeclaration;
         if (!declaration || !ts.isVariableDeclaration(declaration) || !declaration.type) {
             return false;
@@ -789,7 +793,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         cs.SyntaxKind.ForEachStatement,
         cs.SyntaxKind.SwitchStatement,
         cs.SyntaxKind.ThrowStatement,
-        cs.SyntaxKind.LambdaExpression
+        cs.SyntaxKind.LambdaExpression,
+        // an initializer cannot throw: `_inAccessor` makes it `try!`, a trap where JS would throw
+        cs.SyntaxKind.PropertyDeclaration
     ]);
 
     protected override writeExpression(expr: cs.Expression) {
@@ -842,14 +848,16 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     /** A return type: `Promise<T>` prints as `T` (the function is `async`). */
     private _writeReturnType(t: cs.TypeNode, owner?: cs.Node) {
+        // `Promise<T | null>`: the `?` sits on `T`, which the async reference wraps
+        const inner = cs.isTypeReference(t) && t.isAsync && typeof t.reference !== 'string' ? (t.reference as cs.TypeNode) : t;
         // an `@async` method returns the runtime `Promise<T>` itself (see _returnsPromise)
         if (cs.isTypeReference(t) && t.isAsync && owner?.tsNode && hasTag(owner.tsNode as ts.MethodDeclaration, JsDocTag.async)) {
             this.write('Promise<');
-            this._writeType(t, { owner });
+            this._writeType(inner, { owner });
             this.write('>');
             return;
         }
-        this._writeType(t, { owner });
+        this._writeType(inner, { owner });
     }
 
     /** ` {` + statements + `}` for a block or expression body. */
@@ -1273,7 +1281,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         const existential = options.existential ?? !forNew;
         const nullable = !forNew && (options.nullable ?? this._isNullableType(type, options.owner));
         const text = this._capture(() => this._writeTypeCore(type, forNew, existential));
-        if (nullable && !text.endsWith('?')) {
+        // a function type's text can end in its return type's `?` and still need its own
+        if (nullable && (!text.endsWith('?') || this._isFunctionType(type))) {
             const needsParens = text.startsWith('any ') || text.includes('->');
             this.write(needsParens ? `(${text})?` : `${text}?`);
         } else {
@@ -1749,6 +1758,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return;
         }
 
+        if (expr.operator === '+' && this._writeStringConcatWithUnknown(expr)) {
+            return;
+        }
         switch (expr.operator) {
             case '??':
                 this.writeExpression(expr.left);
@@ -2168,8 +2180,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
         const resolvedTarget = this._resolveTypeNode(expr.type);
         if (cs.isArrayTypeNode(resolvedTarget) && this._isDeclaredUnknown(this._unwrapParens(expr.expression))) {
-            // `v as T[]` from `unknown`: the list may hold `T?` or `Any?` elements (JSON), which `as!` cannot convert
-            this.write('TypeHelper.unknownToList(');
+            // `v as T[]` from `unknown`: the list may hold `T?` or `Any?` elements (JSON), which `as!` cannot convert;
+            // `v as T[] | null` keeps a null
+            this.write(expr.type.isNullable || resolvedTarget.isNullable ? 'TypeHelper.unknownToNullableList(' : 'TypeHelper.unknownToList(');
             this.writeExpression(expr.expression);
             this.write(', ');
             this._writeType(resolvedTarget.elementType, {});
@@ -2240,6 +2253,29 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return true;
         }
         return this._isDeclaredUnknown(e);
+    }
+
+    /** `"" + x` (JS `String(x)`) or `"a" + x` with `x` of type `unknown`/`any`: Swift has no `String + Any?`. */
+    private _writeStringConcatWithUnknown(expr: cs.BinaryExpression): boolean {
+        const isString = (e: cs.Expression) => cs.isStringLiteral(this._unwrapParens(e)) || this._isStringExpression(e);
+        const leftUnknown = this._isDeclaredUnknown(expr.left) && isString(expr.right);
+        const rightUnknown = this._isDeclaredUnknown(expr.right) && isString(expr.left);
+        if (!leftUnknown && !rightUnknown) {
+            return false;
+        }
+        const operand = (e: cs.Expression, unknown: boolean) => {
+            if (unknown) {
+                this.write('jsTemplate(');
+                this.writeExpression(e);
+                this.write(')');
+            } else {
+                this.writeExpression(e);
+            }
+        };
+        operand(expr.left, leftUnknown);
+        this.write(' + ');
+        operand(expr.right, rightUnknown);
+        return true;
     }
 
     /** Declared (not narrowed) as `unknown` or `any`. */
