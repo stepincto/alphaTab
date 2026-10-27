@@ -54,7 +54,7 @@ final class AlphaTexLexerTest {
         AlphaTexLexerTest.lexerTest("'Single \\'Quoted\\''")
         AlphaTexLexerTest.lexerTest("\"\\r\\n\\t\"")
         AlphaTexLexerTest.lexerTest("\"\\R\\N\\T\"")
-        AlphaTexLexerTest.lexerTest("\"\\u{D83D}\\u{DE38}\"")
+        AlphaTexLexerTest.lexerTest("\"\\uD83D\\uDE38\"")
         AlphaTexLexerTest.lexerTest("\"😸🤘🏻\"")
     }
 
@@ -159,7 +159,7 @@ final class AlphaTexLexerTest {
 
         @Test("at005")
         func at005() async throws {
-            AlphaTexLexerTest.lexerTest("\"\\u{8}01010101\"", true)
+            AlphaTexLexerTest.lexerTest("\"\\b01010101\"", true)
         }
 
         @Test("at006")

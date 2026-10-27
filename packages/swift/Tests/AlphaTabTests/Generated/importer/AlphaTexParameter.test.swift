@@ -33,7 +33,7 @@ final class AlphaTexParameterTests {
 
                 @Test("empty2")
                 func empty2() async throws {
-                    ParserSuite.parserTest("\\ac \\u{c}t C4")
+                    ParserSuite.parserTest("\\ac \\ft C4")
                 }
 
                 init() {}

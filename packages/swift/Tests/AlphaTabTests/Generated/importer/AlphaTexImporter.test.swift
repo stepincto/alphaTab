@@ -1568,7 +1568,7 @@ final class AlphaTexImporterTest {
 
     @Test("score-options")
     func scoreOptions() async throws {
-        let score: Score = try AlphaTexImporterTest.parseTex("\n            \\defaultSystemsLayout 5\n            \\systemsLayout 3 2 3\n            \\hideDynamics\n            \\u{8}racketExtendMode nobrackets\n            \\useSystemSignSeparator\n            \\tuningDisplayMode staff\n            \\singleTrackTrackNamePolicy allsystems\n            \\multiTrackTrackNamePolicy Hidden\n            \\u{c}irstSystemTrackNameMode fullname\n            \\otherSystemsTrackNameMode fullname\n            \\u{c}irstSystemTrackNameOrientation horizontal\n            \\otherSystemsTrackNameOrientation horizontal\n            .\n        ")
+        let score: Score = try AlphaTexImporterTest.parseTex("\n            \\defaultSystemsLayout 5\n            \\systemsLayout 3 2 3\n            \\hideDynamics\n            \\bracketExtendMode nobrackets\n            \\useSystemSignSeparator\n            \\tuningDisplayMode staff\n            \\singleTrackTrackNamePolicy allsystems\n            \\multiTrackTrackNamePolicy Hidden\n            \\firstSystemTrackNameMode fullname\n            \\otherSystemsTrackNameMode fullname\n            \\firstSystemTrackNameOrientation horizontal\n            \\otherSystemsTrackNameOrientation horizontal\n            .\n        ")
         TestGlobals.expect(score.defaultSystemsLayout).toBe(5.0)
         TestGlobals.expect(score.systemsLayout.length).toBe(3.0)
         TestGlobals.expect(score.systemsLayout[0]).toBe(3.0)
@@ -1782,7 +1782,7 @@ final class AlphaTexImporterTest {
 
     @Test("barlines")
     func barlines() async throws {
-        let score: Score = try AlphaTexImporterTest.parseTex("\n            \\instrument piano\n            .\n            \\track \"T1\"\n                \\staff\n                    \\u{8}arlineleft dashed\n                    \\u{8}arlineright dotted\n                    |\n                    \\u{8}arlineleft heavyheavy\n                    \\u{8}arlineright heavyheavy\n\n                \\staff\n                    \\u{8}arlineleft lightlight\n                    \\u{8}arlineright lightheavy\n                    |\n                    \\u{8}arlineleft heavylight\n                    \\u{8}arlineright dashed\n            ")
+        let score: Score = try AlphaTexImporterTest.parseTex("\n            \\instrument piano\n            .\n            \\track \"T1\"\n                \\staff\n                    \\barlineleft dashed\n                    \\barlineright dotted\n                    |\n                    \\barlineleft heavyheavy\n                    \\barlineright heavyheavy\n\n                \\staff\n                    \\barlineleft lightlight\n                    \\barlineright lightheavy\n                    |\n                    \\barlineleft heavylight\n                    \\barlineright dashed\n            ")
         TestGlobals.expect(score).toMatchSnapshot()
     }
 
@@ -1870,7 +1870,7 @@ final class AlphaTexImporterTest {
 
     @Test("unicode-escape")
     func unicodeEscape() async throws {
-        let score: Score = try AlphaTexImporterTest.parseTex("\n            \\title \"\\u{D83D}\\u{DE38}\"\n            .\n        ")
+        let score: Score = try AlphaTexImporterTest.parseTex("\n            \\title \"\\uD83D\\uDE38\"\n            .\n        ")
         TestGlobals.expect(score.title).toBe("😸")
     }
 
@@ -1989,7 +1989,7 @@ final class AlphaTexImporterTest {
 
             @Test("bracketextendmode")
             func bracketextendmode() async throws {
-                AlphaTexImporterTest.importErrorTest("\\u{8}racketextendmode invalid")
+                AlphaTexImporterTest.importErrorTest("\\bracketextendmode invalid")
             }
 
             @Test("singletracktracknamepolicy")
@@ -2004,7 +2004,7 @@ final class AlphaTexImporterTest {
 
             @Test("firstsystemtracknamemode")
             func firstsystemtracknamemode() async throws {
-                AlphaTexImporterTest.importErrorTest("\\u{c}irstsystemtracknamemode invalid")
+                AlphaTexImporterTest.importErrorTest("\\firstsystemtracknamemode invalid")
             }
 
             @Test("othersystemstracknamemode")
@@ -2014,12 +2014,12 @@ final class AlphaTexImporterTest {
 
             @Test("firstsystemtracknameorientation")
             func firstsystemtracknameorientation() async throws {
-                AlphaTexImporterTest.importErrorTest("\\u{c}irstsystemtracknameorientation invalid")
+                AlphaTexImporterTest.importErrorTest("\\firstsystemtracknameorientation invalid")
             }
 
             @Test("othersystemstracknameorientation")
             func othersystemstracknameorientation() async throws {
-                AlphaTexImporterTest.importErrorTest("\\u{c}irstsystemtracknameorientation invalid")
+                AlphaTexImporterTest.importErrorTest("\\firstsystemtracknameorientation invalid")
             }
 
             @Test("accidentalmode")
@@ -2507,17 +2507,17 @@ final class AlphaTexImporterTest {
 
         @Test("all")
         func all() async throws {
-            try BarNumberDisplaySuite.test("\\defaultBarNumberDisplay hide C4 | \\u{8}arNumberDisplay allBars C4 ", BarNumberDisplay.AllBars)
+            try BarNumberDisplaySuite.test("\\defaultBarNumberDisplay hide C4 | \\barNumberDisplay allBars C4 ", BarNumberDisplay.AllBars)
         }
 
         @Test("first")
         func first() async throws {
-            try BarNumberDisplaySuite.test("\\defaultBarNumberDisplay hide C4 | \\u{8}arNumberDisplay firstOfSystem C4 ", BarNumberDisplay.FirstOfSystem)
+            try BarNumberDisplaySuite.test("\\defaultBarNumberDisplay hide C4 | \\barNumberDisplay firstOfSystem C4 ", BarNumberDisplay.FirstOfSystem)
         }
 
         @Test("hide")
         func hide() async throws {
-            try BarNumberDisplaySuite.test("\\defaultBarNumberDisplay allBars C4 | \\u{8}arNumberDisplay hide C4 ", BarNumberDisplay.Hide)
+            try BarNumberDisplaySuite.test("\\defaultBarNumberDisplay allBars C4 | \\barNumberDisplay hide C4 ", BarNumberDisplay.Hide)
         }
 
         init() {}
@@ -2527,7 +2527,7 @@ final class AlphaTexImporterTest {
     final class StaffDisplaySuite {
         @Test("levels")
         func levels() async throws {
-            let score: Score = try AlphaTexImporterTest.parseTex("\n                \\defaultStaffDisplay tabs { tsVisibility false tsPlacement allStaves rhythm showWithBeams }\n                \\staff {score tabs}\n                \\staffDisplay { ksVisibility false barNumber hide }\n                C4 | \\u{8}arDisplay (score tabs) { clefVisibility false tsSystems firstSystemOnly } C4 | C4\n            ")
+            let score: Score = try AlphaTexImporterTest.parseTex("\n                \\defaultStaffDisplay tabs { tsVisibility false tsPlacement allStaves rhythm showWithBeams }\n                \\staff {score tabs}\n                \\staffDisplay { ksVisibility false barNumber hide }\n                C4 | \\barDisplay (score tabs) { clefVisibility false tsSystems firstSystemOnly } C4 | C4\n            ")
             let tabs: TabStaffConfig = score.stylesheet.tabConfig
             TestGlobals.expect(tabs.timeSignature!.isVisible).toBe(false)
             TestGlobals.expect(tabs.timeSignature!.staffPlacement).toBe(StaffPlacement.AllStaves)
@@ -2589,7 +2589,7 @@ final class AlphaTexImporterTest {
             TestGlobals.expect(unsupported.semanticDiagnostics.items.map({ (d: AlphaTexDiagnostic) -> AlphaTexDiagnosticCode in
                 return d.code
             })).toContain(AlphaTexDiagnosticCode.AT307)
-            let barLevel: AlphaTexImporter = importer("C4 | \\u{8}arDisplay { restsVisibility false } C4")
+            let barLevel: AlphaTexImporter = importer("C4 | \\barDisplay { restsVisibility false } C4")
             TestGlobals.expect(barLevel.parserDiagnostics.items.map({ (d: AlphaTexDiagnostic) -> AlphaTexDiagnosticCode in
                 return d.code
             })).toContain(AlphaTexDiagnosticCode.AT205)
@@ -2598,7 +2598,7 @@ final class AlphaTexImporterTest {
 
         @Test("legacy-shorthands")
         func legacyShorthands() async throws {
-            let score: Score = try AlphaTexImporterTest.parseTex("\\defaultBarNumberDisplay hide C4 | \\u{8}arNumberDisplay allBars C4")
+            let score: Score = try AlphaTexImporterTest.parseTex("\\defaultBarNumberDisplay hide C4 | \\barNumberDisplay allBars C4")
             TestGlobals.expect(score.stylesheet.tabConfig.barNumber).toBe(BarNumberDisplay.Hide)
             TestGlobals.expect(score.tracks[0].staves[0].bars[1].tabDisplay!.barNumber).toBe(BarNumberDisplay.AllBars)
             try AlphaTexImporterTest.testExportRoundtrip(score)
@@ -2609,14 +2609,14 @@ final class AlphaTexImporterTest {
 
     @Test("custom-beaming")
     func customBeaming() async throws {
-        let score: Score = try AlphaTexImporterTest.parseTex("\n            \\ts (4 4)\n            \\u{8}eaming (8 2 2 2 2)\n                C4.8 * 8 |\n                C4.8 * 8 |\n            \\ts (4 4)\n            \\u{8}eaming (8 4 4)\n                C4.8 * 8\n                C4.8 * 8            \n        ")
+        let score: Score = try AlphaTexImporterTest.parseTex("\n            \\ts (4 4)\n            \\beaming (8 2 2 2 2)\n                C4.8 * 8 |\n                C4.8 * 8 |\n            \\ts (4 4)\n            \\beaming (8 4 4)\n                C4.8 * 8\n                C4.8 * 8            \n        ")
         TestGlobals.expect(score).toMatchSnapshot()
         try AlphaTexImporterTest.testExportRoundtrip(score)
     }
 
     @Test("bar-numbers")
     func barNumbers() async throws {
-        let score: Score = try AlphaTexImporterTest.parseTex("\n             // anacrusis (no number)\n                \\ac \n                    C4.1 \n                | \n                // standard bar number 1\n                    C4 \n                | \n                // custom text instead of bar number 2\n                \\u{8}arNumber \"Hello\" \n                    C4\n                |\n                // a jump to 10 \n                \\u{8}arNumber 10\n                    C4\n                |\n                // now becomes 11 after the customization before\n                    C4\n        ")
+        let score: Score = try AlphaTexImporterTest.parseTex("\n             // anacrusis (no number)\n                \\ac \n                    C4.1 \n                | \n                // standard bar number 1\n                    C4 \n                | \n                // custom text instead of bar number 2\n                \\barNumber \"Hello\" \n                    C4\n                |\n                // a jump to 10 \n                \\barNumber 10\n                    C4\n                |\n                // now becomes 11 after the customization before\n                    C4\n        ")
         TestGlobals.expect(Number.isNaN(score.masterBars[0].barNumber)).toBe(true)
         TestGlobals.expect(score.masterBars[0].barNumberText).toBe("")
         TestGlobals.expect(score.masterBars[0].customBarNumber).toBeUndefined()
