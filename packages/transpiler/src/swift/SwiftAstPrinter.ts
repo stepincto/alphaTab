@@ -1219,8 +1219,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 break;
             case '++':
             case '--':
-                this.writeExpression(expr.operand);
-                this.write(expr.operator === '++' ? ' += 1' : ' -= 1');
+                this._writeIncrement(expr, expr.operator === '++' ? 'jsPreInc' : 'jsPreDec');
                 break;
             default: {
                 const operand = this._unwrapParens(expr.operand);
@@ -1240,14 +1239,26 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         switch (expr.operator) {
             case '++':
             case '--':
-                this.writeExpression(expr.operand);
-                this.write(expr.operator === '++' ? ' += 1' : ' -= 1');
+                this._writeIncrement(expr, expr.operator === '++' ? 'jsPostInc' : 'jsPostDec');
                 break;
             default:
                 this.writeExpression(expr.operand);
                 this.write(expr.operator);
                 break;
         }
+    }
+
+    /** `x++` as a statement -> `x += 1`; as a value -> runtime `jsPostInc(&x)` (Swift's `+=` returns `()`). */
+    private _writeIncrement(expr: cs.PrefixUnaryExpression | cs.PostfixUnaryExpression, helper: string) {
+        const parent = expr.parent;
+        if (parent && (cs.isExpressionStatement(parent) || cs.isForStatement(parent))) {
+            this.writeExpression(expr.operand);
+            this.write(expr.operator === '++' ? ' += 1' : ' -= 1');
+            return;
+        }
+        this.write(`${helper}(&`);
+        this.writeExpression(expr.operand);
+        this.write(')');
     }
 
     protected writeBaseLiteralExpression(_expr: cs.BaseLiteralExpression) {
