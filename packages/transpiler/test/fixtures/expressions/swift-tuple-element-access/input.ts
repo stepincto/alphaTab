@@ -11,3 +11,22 @@ export class Pairs {
         return p?.[1];
     }
 }
+
+/**
+ * A union of tuples has no Swift tuple type; a hand-written class stands in for it (as Kotlin's partial),
+ * so its elements keep the shared `.v0` spelling.
+ * @target web
+ */
+type Shape = [number, string] | [number, string, boolean] | null;
+
+/**
+ * @public
+ */
+export class Shapes {
+    public first(s: Shape): number {
+        if (!s) {
+            return 0;
+        }
+        return s[0];
+    }
+}

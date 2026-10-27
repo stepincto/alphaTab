@@ -17,3 +17,14 @@ public final class Pairs {
 
     public init() {}
 }
+
+public final class Shapes {
+    public func first(_ s: Shape?) -> Double {
+        if !TypeHelper.isTruthy(s) {
+            return 0.0
+        }
+        return s!.v0
+    }
+
+    public init() {}
+}
