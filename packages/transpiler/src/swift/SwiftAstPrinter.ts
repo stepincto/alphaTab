@@ -1456,7 +1456,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return false;
         }
         const nonNull = this._context.typeChecker.getNonNullableType(t);
-        return !!(nonNull.flags & ts.TypeFlags.EnumLike);
+        // a narrowed enum (`x !== E.A`) is a union of its remaining members
+        const isEnum = (u: ts.Type) => !!(u.flags & ts.TypeFlags.EnumLike);
+        return isEnum(nonNull) || (nonNull.isUnion() && nonNull.types.every(isEnum));
     }
 
     private _isIntegerLiteral(expr: cs.Expression): boolean {
