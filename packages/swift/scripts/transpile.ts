@@ -79,6 +79,8 @@ const excluded = [
     '/alphatab/test/model/NoteStepsAdditional.test.ts',
     '/alphatab/test/model/PercussionTablature.test.ts'
 ];
+// single test cases left out of files whose other tests run; each reason is in Tests/AlphaTabTests/SKIPPED.md
+const excludedTests = ['/alphatab/test/importer/AlphaTexImporter.test.ts#hamonics-rendering-text-issue79'];
 const fileFilter = (fileName: string) => {
     const f = fileName.replaceAll('\\', '/');
     return sources.some(s => f.includes(s)) && !excluded.some(s => f.endsWith(s));
@@ -127,7 +129,7 @@ transpiler(
     [
         {
             name: 'Swift',
-            emit: createEmit(srcOut, testOut)
+            emit: createEmit(srcOut, testOut, excludedTests)
         }
     ],
     true,
