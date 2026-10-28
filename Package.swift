@@ -23,7 +23,7 @@ let package = Package(
             name: "AlphaTabTests",
             dependencies: ["AlphaTab", "AlphaTabRuntime"],
             path: "packages/swift/Tests/AlphaTabTests",
-            exclude: ["SKIPPED.md", "SvgGoldens"]
+            exclude: ["SKIPPED.md", "SvgGoldens", "Runtime/Ieee754Vectors.txt"]
         )
     ],
     swiftLanguageModes: [.v6]

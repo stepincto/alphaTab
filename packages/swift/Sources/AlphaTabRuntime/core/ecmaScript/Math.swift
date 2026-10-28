@@ -7,19 +7,20 @@
 
 import Foundation
 
-// File-scope forwarders: inside `Math`, a bare `sin(x)` would call `Math.sin` itself.
+// File-scope forwarders: inside `Math`, a bare `sin(x)` would call `Math.sin` itself. sin, cos, atan, atan2, asin, log
+// and log2 are V8's own arithmetic (Ieee754.swift), the others the platform libm, which V8 matches (checked against Node).
 private func _sqrt(_ x: Double) -> Double { Foundation.sqrt(x) }
 private func _pow(_ b: Double, _ e: Double) -> Double { Foundation.pow(b, e) }
 private func _exp(_ x: Double) -> Double { Foundation.exp(x) }
-private func _log(_ x: Double) -> Double { Foundation.log(x) }
-private func _log2(_ x: Double) -> Double { Foundation.log2(x) }
+private func _log(_ x: Double) -> Double { Ieee754.log(x) }
+private func _log2(_ x: Double) -> Double { Ieee754.log2(x) }
 private func _log10(_ x: Double) -> Double { Foundation.log10(x) }
-private func _sin(_ x: Double) -> Double { Foundation.sin(x) }
-private func _cos(_ x: Double) -> Double { Foundation.cos(x) }
+private func _sin(_ x: Double) -> Double { Ieee754.sin(x) }
+private func _cos(_ x: Double) -> Double { Ieee754.cos(x) }
 private func _tan(_ x: Double) -> Double { Foundation.tan(x) }
-private func _asin(_ x: Double) -> Double { Foundation.asin(x) }
-private func _atan(_ x: Double) -> Double { Foundation.atan(x) }
-private func _atan2(_ y: Double, _ x: Double) -> Double { Foundation.atan2(y, x) }
+private func _asin(_ x: Double) -> Double { Ieee754.asin(x) }
+private func _atan(_ x: Double) -> Double { Ieee754.atan(x) }
+private func _atan2(_ y: Double, _ x: Double) -> Double { Ieee754.atan2(y, x) }
 
 /// JS `Math`, the members Kotlin's `alphaTab.core.ecmaScript.Math` has.
 public enum Math {

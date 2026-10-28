@@ -48,11 +48,14 @@ never from Swift: `npm run svg-goldens` (packages/swift) runs the same test file
 
 - Golden file = `total <w> <h>` plus, per partial result, `partial <x> <y> <w> <h>` and its SVG. A reference image
   that several tests name keeps every distinct rendering; the Swift side accepts any of them.
-- Comparison is exact. If it differs, the texts are compared again with every decimal number that has a fraction
+- Comparison is exact, and on Linux every case matches byte for byte: V8 computes `Math.sin`, `cos`, `atan`, `atan2`,
+  `asin`, `log` and `log2` with its own fdlibm port, which differs from glibc in the last bit for a few percent of
+  the arguments, so the runtime does the same arithmetic (`Ieee754.swift`, checked bit for bit against Node by
+  `Runtime/Ieee754Tests.swift`). If a platform's libm still differs in a function that is not ported (`pow`,
+  `exp`), the texts are compared again with every decimal number that has a fraction
   (`-?[0-9]+\.[0-9]+(e[+-]?[0-9]+)?`) rounded to 2 decimals (`%.2f`, `-0.00` as `0.00`), everything else
   (integers, ids, code points, text, markup) untouched. A pass by that fallback prints `note: <golden> equals its
-  golden only after rounding numbers to 2 decimals`. Cause: V8 computes sin/cos/pow/atan2 with its own fdlibm
-  port and glibc rounds the last bit differently, so a curve coordinate differs by one ulp.
+  golden only after rounding numbers to 2 decimals`; on this machine none does.
 - What the SVG cannot show is not compared: the overlays the tests draw on the finished PNG with
   `prepareFullImage` (bounds lookup rectangles in `BoundsLookup.test.ts`, skyline outlines in `skyline/Skyline*Coverage`).
   The Swift `AlphaSkiaCanvas` stand-in draws nothing; the overlay code still runs on the rendered result.

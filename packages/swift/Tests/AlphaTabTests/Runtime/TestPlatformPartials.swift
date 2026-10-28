@@ -12,6 +12,32 @@ import Testing
 
 /// The hand-written `@partial` members of test/TestPlatform.ts (Kotlin's TestPlatformPartialsImpl.kt),
 /// only those the generated code calls.
+/// JSON as `Any` (objects, arrays, Double, String, Bool, nil), decoded with `JSONDecoder`.
+private enum JSONValue: Decodable {
+    case number(Double), string(String), bool(Bool), array([JSONValue]), object([String: JSONValue]), null
+
+    init(from decoder: any Decoder) throws {
+        let c = try decoder.singleValueContainer()
+        if c.decodeNil() { self = .null }
+        else if let v = try? c.decode(Bool.self) { self = .bool(v) }
+        else if let v = try? c.decode(Double.self) { self = .number(v) }
+        else if let v = try? c.decode(String.self) { self = .string(v) }
+        else if let v = try? c.decode([JSONValue].self) { self = .array(v) }
+        else { self = .object(try c.decode([String: JSONValue].self)) }
+    }
+
+    var any: Any? {
+        switch self {
+        case .number(let v): return v
+        case .string(let v): return v
+        case .bool(let v): return v
+        case .array(let v): return v.map { $0.any as Any }
+        case .object(let v): return v.mapValues { $0.any as Any }
+        case .null: return nil
+        }
+    }
+}
+
 enum TestPlatformPartials {
     /// `packages/alphatab`: vitest runs there, so the tests' relative paths (`test-data/...`) start there.
     private static let projectRoot: URL = URL(fileURLWithPath: #filePath)
@@ -93,15 +119,17 @@ enum TestPlatformPartials {
             fatalError("TestPlatform.loadFileAsJson: only SmuflMetadata is supported, not \(T.self)")
         }
         let data = loadFileSync(path)
-        guard let root = try? JSONSerialization.jsonObject(with: Data(data.bytes)) as? [String: Any] else {
+        // JSONSerialization parses a fraction through Decimal, one ulp off JS's JSON.parse for some values; the
+        // decoder reads Doubles with strtod, which rounds correctly like JS
+        guard let root = (try? JSONDecoder().decode(JSONValue.self, from: Data(data.bytes)))?.any as? [String: Any] else {
             fatalError("TestPlatform.loadFileAsJson: \(path) is not a JSON object")
         }
         return parseSmuflMetadata(root) as! T
     }
 
     private static func point(_ any: Any?) -> (Double, Double)? {
-        guard let pair = any as? [Any], pair.count == 2, let x = (pair[0] as? NSNumber)?.doubleValue,
-              let y = (pair[1] as? NSNumber)?.doubleValue else {
+        guard let pair = any as? [Any], pair.count == 2, let x = (pair[0] as? Double),
+              let y = (pair[1] as? Double) else {
             return nil
         }
         return (x, y)
@@ -110,7 +138,7 @@ enum TestPlatformPartials {
     private static func parseSmuflMetadata(_ root: [String: Any]) -> SmuflMetadata {
         let d = root["engravingDefaults"] as? [String: Any] ?? [:]
         func n(_ key: String) -> Double {
-            return (d[key] as? NSNumber)?.doubleValue ?? 0
+            return (d[key] as? Double) ?? 0
         }
         let defaults = SmuflEngravingDefaults(
             arrowShaftThickness: n("arrowShaftThickness"), barlineSeparation: n("barlineSeparation"),
@@ -126,7 +154,7 @@ enum TestPlatformPartials {
             textEnclosureThickness: n("textEnclosureThickness"), thickBarlineThickness: n("thickBarlineThickness"),
             thinBarlineThickness: n("thinBarlineThickness"), tieEndpointThickness: n("tieEndpointThickness"),
             tieMidpointThickness: n("tieMidpointThickness"), tupletBracketThickness: n("tupletBracketThickness"),
-            thinThickBarlineSeparation: (d["thinThickBarlineSeparation"] as? NSNumber)?.doubleValue
+            thinThickBarlineSeparation: (d["thinThickBarlineSeparation"] as? Double)
         )
 
         let anchors = Record<String, SmuflGlyphWithAnchor>()
