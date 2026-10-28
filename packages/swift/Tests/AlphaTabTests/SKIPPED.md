@@ -8,9 +8,19 @@ holds the reasons.
 
 None. The renderer-only cases (`TabBarRendererFactory.canCreate` x4, `hamonics-rendering-text-issue79`) run since the rendering tier is generated.
 
-## Whole files (`excluded`)
+## Whole files (not in the filter)
 
-None.
+`test/AlphaTabApiMouse.test.ts` (5 cases) sets `PlayerMode.EnabledSynthesizer`: the API creates the audio synth
+(`AlphaSynth` on a `TestOutput`) to highlight beats while pressing. The audio synth is not part of the Swift target
+(a `Voice` class of the synth and the model's `Voice` share one Swift module).
+
+| Test | Why |
+|---|---|
+| `render-during-press-on-single-beat` | needs the audio synth |
+| `render-after-click-without-range-reset` | needs the audio synth |
+| `render-during-press-across-beats-uses-new-layout` | needs the audio synth |
+| `api-highlight-survives-render-without-range-selection` | needs the audio synth |
+| `release-outside-beats-ends-press` | needs the audio synth |
 
 ## Members of generated files whose body traps (`stubbedMembers` in `scripts/transpile.ts`)
 

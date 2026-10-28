@@ -117,7 +117,8 @@ const sources = [
     '/alphatab/src/synth/AlphaSynthWrapper.ts',
     '/alphatab/src/synth/IAudioExporter.ts',
     '/alphatab/test/visualTests/TestUiFacade.ts',
-    '/alphatab/test/importer/MusicXmlImporterTestHelper.ts',
+    '/alphatab/test/importer/',
+    '/alphatab/test/audio/FlatMidiEventGenerator.ts',
     // the visual tests, drawn as SVG and compared with goldens the TS wrote (see svg-goldens/); by feature group
     '/alphatab/test/visualTests/features/',
     '/alphatab/test/visualTests/issues/',

@@ -18,7 +18,7 @@ const helper = path.resolve(url.fileURLToPath(new URL('.', import.meta.url)), 'S
 const base = defineVitestConfig({ setupFiles: ['./test/global-hooks.ts'], truncateThreshold: 0 });
 
 // mergeConfig concatenates arrays: the visual tests only, not the whole suite the base config includes
-(base.test as { include: string[] }).include = ['test/visualTests/**/*.test.ts'];
+(base.test as { include: string[] }).include = ['test/visualTests/**/*.test.ts', 'test/importer/MusicXml*.test.ts'];
 
 export default mergeConfig(base, {
     plugins: [
