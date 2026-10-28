@@ -1,7 +1,7 @@
 # Tests left out of the Swift target
 
 Each test the Swift target does not run, and why. A test leaves this list when the module it needs
-is ported. The list in `scripts/transpile.ts` (`excluded`, `excludedTests`) is what applies; this file
+is ported. What applies is `scripts/transpile.ts` (the filter, `excluded`, `excludedTests`, `stubbedMembers`); this file
 holds the reasons.
 
 ## Single test cases (`excludedTests`)
@@ -36,12 +36,13 @@ None. The renderer-only cases (`TabBarRendererFactory.canCreate` x4, `hamonics-r
 | `ExternalMediaPlayer` (same) | `synth/ExternalMediaPlayer.ts` | Extends the backing track player, which extends the audio synth. `AlphaTabApiBase` names it for `PlayerMode.EnabledExternalMedia`. |
 | `VisualTestHelper`, `VisualTestOptions`, `VisualTestRun` (`Runtime/VisualTestHelper.swift`) | `test/visualTests/VisualTestHelper.ts` | The TS draws with alphaSkia and compares PNGs. |
 | `EventEmitter`, `EventEmitterOfT` (`Sources/AlphaTab/EventEmitter.swift`) | `EventEmitter.ts` | `off(listener)` compares closures with `!==`; Swift closures have no identity. |
+| `AlphaSkiaCanvas` (`Runtime/VisualTestHelper.swift`) | alphaSkia's raster canvas | Draws nothing; the debug overlays of three visual test files call it (see below). |
 | `VersionInfo` (same file as `SkiaCanvas`) | `generated/VersionInfo.ts` | Written per build with date and commit. |
 
 ## Visual tests (`test/visualTests`): SVG goldens instead of PNGs
 
 The TS visual tests draw with alphaSkia and compare PNGs, which the Swift target cannot do. All 481 cases run
-anyway, through the hand-written `VisualTestHelper` (`Runtime/VisualTestHelper.swift`): it renders with the SVG engine
+anyway (and the MusicXML importer tests that render their reference files, 264 more goldens under `SvgGoldens/test-data/`), through the hand-written `VisualTestHelper` (`Runtime/VisualTestHelper.swift`): it renders with the SVG engine
 and compares the SVG text with a golden in `Tests/AlphaTabTests/SvgGoldens/`. The goldens come from the TS original,
 never from Swift: `npm run svg-goldens` (packages/swift) runs the same test files under Node with
 `scripts/svg-goldens/SvgGoldenHelper.ts` in place of the TS `VisualTestHelper`.
