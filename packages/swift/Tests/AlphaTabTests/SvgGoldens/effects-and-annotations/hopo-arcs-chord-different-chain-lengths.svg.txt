@@ -1,0 +1,44 @@
+total 1300 335
+partial 0 35 1300 14
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1300px" height="14px" class="at-surface-svg">
+<text x="35" y="0" style='stroke: none; font:italic 12px "Noto Serif", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging'>Guitar Standard Tuning</text></svg>
+partial 0 49 1300 239
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1300px" height="239px" class="at-surface-svg">
+<rect x="39.5" y="46.83" width="238" height="1.17" fill="#A5A5A5" />
+<rect x="39.5" y="55.83" width="238" height="1.17" fill="#A5A5A5" />
+<rect x="39.5" y="64.83" width="238" height="1.17" fill="#A5A5A5" />
+<rect x="39.5" y="73.83" width="238" height="1.17" fill="#A5A5A5" />
+<rect x="39.5" y="82.83" width="238" height="1.17" fill="#A5A5A5" />
+<rect x="39.5" y="46.83" width="1.44" height="37.17" fill="#222211" />
+<g transform="translate(59.018 74.41499999999999)" class="at" ><text style="stroke:none" text-anchor="middle">&#57424</text></g><g transform="translate(76.49600000000001 56.41499999999999)" class="at" ><text style="stroke:none">&#57476;</text></g><g transform="translate(76.49600000000001 74.451)" class="at" ><text style="stroke:none">&#57476;</text></g><g class="b0"><rect x="102.91327272727274" y="37.695" width="17.82" height="1.44" fill="#A5A5A5" />
+<g transform="translate(106.51327272727274 38.415)" class="at" ><text style="stroke:none">&#57508</text></g><g transform="translate(106.51327272727274 60.915)" class="at" ><text style="stroke:none">&#57508</text></g><path d=" M111.82327272727274,33.915 C122.39409541135981,17.551562648907254,148.4168832901477,13.05156264890725,163.86884848484848,24.915 C148.01202137164444,10.710310243260679,121.98923349285654,15.210310243260682,111.82327272727274,33.915 z" style="stroke: none"/></g><g class="b1"><rect x="128.9360606060606" y="37.695" width="17.82" height="1.44" fill="#A5A5A5" />
+<g transform="translate(132.5360606060606 33.915)" class="at" ><text style="stroke:none">&#57508</text></g><g transform="translate(132.5360606060606 56.415)" class="at" ><text style="stroke:none">&#57508</text></g></g><g class="b2"><rect x="154.9588484848485" y="37.695" width="17.82" height="1.44" fill="#A5A5A5" />
+<rect x="154.9588484848485" y="28.695" width="17.82" height="1.44" fill="#A5A5A5" />
+<g transform="translate(158.55884848484848 29.415)" class="at" ><text style="stroke:none">&#57508</text></g><g transform="translate(158.55884848484848 56.415)" class="at" ><text style="stroke:none">&#57508</text></g></g><g class="b3"><g transform="translate(185.44563636363637 65.41499999999999)" class="at" ><text style="stroke:none">&#58598</text></g></g><g class="b4"><g transform="translate(210.83842424242425 65.41499999999999)" class="at" ><text style="stroke:none">&#58596</text></g></g><rect x="267.5" y="46.83" width="1.44" height="37.17" fill="#222211" />
+<rect x="272.54" y="46.83" width="4.5" height="37.17" fill="#222211" />
+<rect x="106.51327272727274" y="39.927" width="1.08" height="49.073" fill="#000000" />
+<path d=" M107.5,88.84832873751677 L133.5,84.8518314950067 L133.5,80.3518314950067 L107.5,84.34832873751677 z" style="stroke: none"/><rect x="132.5360606060606" y="35.427" width="1.08" height="49.573" fill="#000000" />
+<rect x="158.55884848484848" y="30.927" width="1.08" height="53.64000000000001" fill="#000000" />
+<g transform="translate(158.55884848484848 84.56700000000001)" class="at" ><text style="stroke:none">&#57921</text></g><text x="35.22" y="20.130000000000003" style='stroke: none; font:11px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' fill="#C80000">1</text><text x="124.83466666666666" y="0.9408310775895288" style='stroke: none; font:italic 12px "Noto Serif", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">H</text><text x="150.85745454545454" y="0.9408310775895288" style='stroke: none; font:italic 12px "Noto Serif", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">H</text><g transform="translate(111.82327272727272 109.984)" class="at" ><text style="stroke:none" text-anchor="middle">&#58658</text></g><rect x="39.5" y="156.83" width="65.70600004291535" height="1.17" fill="#A5A5A5" />
+<rect x="118.44054575061799" y="156.83" width="12.788242171085244" height="1.17" fill="#A5A5A5" />
+<rect x="144.46333362940587" y="156.83" width="12.788242171085244" height="1.17" fill="#A5A5A5" />
+<rect x="170.48612150819375" y="156.83" width="107.01387849180625" height="1.17" fill="#A5A5A5" />
+<rect x="39.5" y="169.82999999999998" width="238" height="1.17" fill="#A5A5A5" />
+<rect x="39.5" y="182.82999999999998" width="65.70600004291535" height="1.17" fill="#A5A5A5" />
+<rect x="118.44054575061799" y="182.82999999999998" width="12.788242171085244" height="1.17" fill="#A5A5A5" />
+<rect x="144.46333362940587" y="182.82999999999998" width="12.788242171085244" height="1.17" fill="#A5A5A5" />
+<rect x="170.48612150819375" y="182.82999999999998" width="107.01387849180625" height="1.17" fill="#A5A5A5" />
+<rect x="39.5" y="195.82999999999998" width="238" height="1.17" fill="#A5A5A5" />
+<rect x="39.5" y="208.82999999999998" width="238" height="1.17" fill="#A5A5A5" />
+<rect x="39.5" y="221.83" width="238" height="1.17" fill="#A5A5A5" />
+<rect x="39.5" y="156.83" width="1.44" height="66.17" fill="#222211" />
+<g transform="translate(59.018 189.915)" class="at" ><text style="stroke:none" text-anchor="middle">&#57453</text></g><g class="b0"><text x="106.376" y="157.415" style='stroke: none; font:14px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: middle'>5</text><text x="106.376" y="183.415" style='stroke: none; font:14px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: middle'>5</text><path d=" M111.82327272727274,150.415 C124.83466666666668,140.4871213400324,150.85745454545454,140.4871213400324,163.86884848484848,150.415 C150.85745454545454,138.11112134003238,124.83466666666668,138.11112134003238,111.82327272727274,150.415 z" style="stroke: none"/></g><g class="b1"><text x="132.39878787878789" y="157.415" style='stroke: none; font:14px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: middle'>7</text><text x="132.39878787878789" y="183.415" style='stroke: none; font:14px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: middle'>7</text></g><g class="b2"><text x="158.42157575757577" y="157.415" style='stroke: none; font:14px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: middle'>8</text><text x="158.42157575757577" y="183.415" style='stroke: none; font:14px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: middle'>7</text></g><g class="b3"></g><g class="b4"></g><rect x="267.5" y="156.83" width="1.44" height="66.17" fill="#222211" />
+<rect x="272.54" y="156.83" width="4.5" height="66.17" fill="#222211" />
+<text x="124.83466666666666" y="125.0800000959334" style='stroke: none; font:italic 12px "Noto Serif", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">H</text><text x="150.85745454545457" y="125.0800000959334" style='stroke: none; font:italic 12px "Noto Serif", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">H</text><rect x="39.5" y="84" width="1.44" height="74" fill="#222211" />
+<rect x="32" y="42.75" width="4.5" height="186" fill="#222211" />
+<g transform="translate(32 45.75)" class="at" ><text style="stroke:none" fill="#222211">&#57347</text></g><g transform="translate(32 225)" class="at" ><text style="stroke:none" fill="#222211">&#57348</text></g></svg>
+partial 0 288 855.4399999999999 12
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="855px" height="12px" class="at-surface-svg">
+<text x="650" y="0" style='stroke: none; font:bold 12px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">rendered by alphaTab</text></svg>
+partial 0 0 0 0
+null
