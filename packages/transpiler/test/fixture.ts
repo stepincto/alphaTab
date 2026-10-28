@@ -137,8 +137,19 @@ export function runFixture(target: Target, dir: string): FixtureRunResult {
     const excludedTests = fs.existsSync(excludedFile)
         ? fs.readFileSync(excludedFile, 'utf-8').split('\n').map(l => l.trim()).filter(l => l)
         : [];
+    // `stubbed-members.txt` (Swift only): one `<path suffix>#<Class>.<method> = <reason>` per line (`stubbedMembers`)
+    const stubbedFile = path.join(dir, 'stubbed-members.txt');
+    const stubbedMembers: Record<string, string> = {};
+    if (fs.existsSync(stubbedFile)) {
+        for (const line of fs.readFileSync(stubbedFile, 'utf-8').split('\n')) {
+            const [member, reason] = line.split(' = ');
+            if (member?.trim() && reason) {
+                stubbedMembers[member.trim()] = reason.trim();
+            }
+        }
+    }
     if (target === 'swift') {
-        swiftCreateEmit(srcOut, testOut, excludedTests)(program, emitDiagnostics);
+        swiftCreateEmit(srcOut, testOut, excludedTests, stubbedMembers)(program, emitDiagnostics);
     } else {
         factory(srcOut, testOut)(program, emitDiagnostics);
     }

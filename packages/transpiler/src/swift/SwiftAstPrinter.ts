@@ -2871,7 +2871,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.write(') ?? Double.nan');
             return;
         }
-        if (this._writePromiseChainHead(expr)) {
+        if (this._writeSuspendToDeferred(expr) || this._writePromiseChainHead(expr)) {
             return;
         }
         this.writeExpression(expr.expression);
@@ -2899,6 +2899,42 @@ export default class SwiftAstPrinter extends AstPrinterBase {
      * `loadFile(path).then(f).catch(g)`: a Swift `async` function is no object to chain on, so the call starts a
      * runtime `Promise` (the Kotlin `Deferred` with `then` and `catch`) and the chain continues on that.
      */
+    private _isSuspendToDeferred(e: cs.Expression): e is cs.InvocationExpression {
+        return (
+            cs.isInvocationExpression(e) &&
+            cs.isMemberAccessExpression(e.expression) &&
+            e.expression.member === 'suspendToDeferred' &&
+            e.arguments.length === 1 &&
+            cs.isLambdaExpression(e.arguments[0])
+        );
+    }
+
+    /**
+     * `read(path)` of an `async` function that nobody awaits: the shared transform wraps it in Kotlin's
+     * `suspendToDeferred { read(path) }`, a started `Deferred`; here that is a runtime `Promise` for the call.
+     */
+    private _writeSuspendToDeferred(expr: cs.InvocationExpression): boolean {
+        if (!this._isSuspendToDeferred(expr)) {
+            return false;
+        }
+        const lambda = expr.arguments[0] as cs.LambdaExpression;
+        let inner: cs.Expression | undefined;
+        if (cs.isBlock(lambda.body)) {
+            const only = lambda.body.statements.length === 1 ? lambda.body.statements[0] : undefined;
+            inner = only && cs.isExpressionStatement(only) ? only.expression : only && cs.isReturnStatement(only) ? only.expression : undefined;
+        } else {
+            inner = lambda.body;
+        }
+        if (!inner) {
+            return false;
+        }
+        const analysis = (this._context as SwiftEmitterContext).throwsAnalysis;
+        this.write(inner.tsNode && analysis.containsThrowingCall(inner.tsNode) ? 'Promise({ try await ' : 'Promise({ await ');
+        this.writeExpression(inner);
+        this.write(' })');
+        return true;
+    }
+
     private _writePromiseChainHead(expr: cs.InvocationExpression): boolean {
         const chain = ['then', 'catch', 'finally'];
         if (!cs.isMemberAccessExpression(expr.expression) || !chain.includes(expr.expression.member)) {
@@ -2908,7 +2944,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         if (cs.isInvocationExpression(receiver) && cs.isMemberAccessExpression(receiver.expression) && chain.includes(receiver.expression.member)) {
             return false;
         }
-        if (this._tsTypeOf(receiver)?.getSymbol()?.name !== 'Promise') {
+        if (this._tsTypeOf(receiver)?.getSymbol()?.name !== 'Promise' || this._isSuspendToDeferred(receiver)) {
             return false;
         }
         const analysis = (this._context as SwiftEmitterContext).throwsAnalysis;
