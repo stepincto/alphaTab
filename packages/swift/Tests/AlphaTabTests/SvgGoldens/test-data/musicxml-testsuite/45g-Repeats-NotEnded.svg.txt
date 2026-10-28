@@ -1,0 +1,25 @@
+total 1300 153
+partial 0 35 1300 71
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1300px" height="71px" class="at-surface-svg">
+<rect x="49" y="13.83" width="146" height="1.17" fill="#A5A5A5" />
+<rect x="49" y="22.83" width="146" height="1.17" fill="#A5A5A5" />
+<rect x="49" y="31.83" width="146" height="1.17" fill="#A5A5A5" />
+<rect x="49" y="40.83" width="146" height="1.17" fill="#A5A5A5" />
+<rect x="49" y="49.83" width="146" height="1.17" fill="#A5A5A5" />
+<rect x="49" y="13.83" width="1.44" height="37.17" fill="#222211" />
+<g transform="translate(68.518 41.415)" class="at" ><text style="stroke:none" text-anchor="middle">&#57424</text></g><g transform="translate(85.99600000000001 32.415)" class="at" ><text style="stroke:none">&#57482</text></g><g class="b0"><g transform="translate(142.424 27.915)" class="at" ><text style="stroke:none">&#57506</text></g></g><rect x="193.56" y="13.83" width="1.44" height="37.17" fill="#222211" />
+<text x="44.72" y="0" style='stroke: none; font:11px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' fill="#C80000">1</text><rect x="195" y="13.83" width="117" height="1.17" fill="#A5A5A5" />
+<rect x="195" y="22.83" width="117" height="1.17" fill="#A5A5A5" />
+<rect x="195" y="31.83" width="117" height="1.17" fill="#A5A5A5" />
+<rect x="195" y="40.83" width="117" height="1.17" fill="#A5A5A5" />
+<rect x="195" y="49.83" width="117" height="1.17" fill="#A5A5A5" />
+<rect x="195" y="13.83" width="4.5" height="37.17" fill="#222211" />
+<rect x="203.1" y="13.83" width="1.44" height="37.17" fill="#222211" />
+<g transform="translate(205.98 27.915)" class="at" ><text style="stroke:none" fill="#222211">&#57412</text></g><g transform="translate(205.98 36.915)" class="at" ><text style="stroke:none" fill="#222211">&#57412</text></g><g class="b1"><g transform="translate(251.42399999999998 27.915)" class="at" ><text style="stroke:none">&#57506</text></g></g><rect x="302.46" y="13.83" width="1.44" height="37.17" fill="#222211" />
+<rect x="307.5" y="13.83" width="4.5" height="37.17" fill="#222211" />
+<g transform="translate(43 ,33) rotate( -90.1)"><text x="0" y="0" style='stroke: none; font:italic 12px "Noto Serif", "Noto Music", "Noto Color Emoji"; dominant-baseline: ideographic' fill="#222211" text-anchor="middle">MusicXML P</text></g></svg>
+partial 0 106 855.4399999999999 12
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="855px" height="12px" class="at-surface-svg">
+<text x="650" y="0" style='stroke: none; font:bold 12px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">rendered by alphaTab</text></svg>
+partial 0 0 0 0
+null

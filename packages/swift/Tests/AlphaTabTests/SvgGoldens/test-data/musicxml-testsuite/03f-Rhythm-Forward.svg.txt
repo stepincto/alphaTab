@@ -1,0 +1,21 @@
+total 1300 153
+partial 0 35 1300 71
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1300px" height="71px" class="at-surface-svg">
+<rect x="35" y="13.83" width="251" height="1.17" fill="#A5A5A5" />
+<rect x="35" y="22.83" width="251" height="1.17" fill="#A5A5A5" />
+<rect x="35" y="31.83" width="251" height="1.17" fill="#A5A5A5" />
+<rect x="35" y="40.83" width="251" height="1.17" fill="#A5A5A5" />
+<rect x="35" y="49.83" width="251" height="1.17" fill="#A5A5A5" />
+<rect x="35" y="13.83" width="1.44" height="37.17" fill="#222211" />
+<g transform="translate(54.518 41.415)" class="at" ><text style="stroke:none" text-anchor="middle">&#57424</text></g><g transform="translate(71.99600000000001 32.415)" class="at" ><text style="stroke:none">&#57482</text></g><g class="b1"><rect x="152.39819142776895" y="58.695" width="17.82" height="1.44" fill="#A5A5A5" />
+<g transform="translate(155.99819142776894 59.415)" class="at" ><text style="stroke:none">&#57508</text></g></g><g class="b3"><rect x="243.21555955230943" y="58.695" width="17.82" height="1.44" fill="#A5A5A5" />
+<g transform="translate(246.81555955230942 59.415)" class="at" ><text style="stroke:none">&#57508</text></g></g><rect x="276.46" y="13.83" width="1.44" height="37.17" fill="#222211" />
+<rect x="281.5" y="13.83" width="4.5" height="37.17" fill="#222211" />
+<rect x="165.53819142776894" y="30.903" width="1.08" height="27" fill="#000000" />
+<rect x="256.3555595523094" y="31.695" width="1.08" height="26.208" fill="#000000" />
+<g transform="translate(256.3555595523094 31.695)" class="at" ><text style="stroke:none">&#57922</text></g><text x="30.72" y="0" style='stroke: none; font:11px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' fill="#C80000">1</text></svg>
+partial 0 106 855.4399999999999 12
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="855px" height="12px" class="at-surface-svg">
+<text x="650" y="0" style='stroke: none; font:bold 12px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">rendered by alphaTab</text></svg>
+partial 0 0 0 0
+null

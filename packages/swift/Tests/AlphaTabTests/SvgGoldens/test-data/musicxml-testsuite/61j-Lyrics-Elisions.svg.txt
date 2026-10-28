@@ -1,0 +1,35 @@
+total 1300 162
+partial 0 35 1300 80
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1300px" height="80px" class="at-surface-svg">
+<rect x="49" y="13.83" width="146" height="1.17" fill="#A5A5A5" />
+<rect x="49" y="22.83" width="146" height="1.17" fill="#A5A5A5" />
+<rect x="49" y="31.83" width="146" height="1.17" fill="#A5A5A5" />
+<rect x="49" y="40.83" width="146" height="1.17" fill="#A5A5A5" />
+<rect x="49" y="49.83" width="146" height="1.17" fill="#A5A5A5" />
+<rect x="49" y="13.83" width="1.44" height="37.17" fill="#222211" />
+<g transform="translate(68.518 41.415)" class="at" ><text style="stroke:none" text-anchor="middle">&#57424</text></g><g transform="translate(85.99600000000001 32.415)" class="at" ><text style="stroke:none">&#57482</text></g><g class="b0"><g transform="translate(142.424 27.915)" class="at" ><text style="stroke:none">&#57506</text></g></g><rect x="193.56" y="13.83" width="1.44" height="37.17" fill="#222211" />
+<text x="44.72" y="0" style='stroke: none; font:11px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' fill="#C80000">1</text><text x="150.01999999999998" y="64" style='stroke: none; font:italic 12px "Noto Serif", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">a</text><rect x="195" y="13.83" width="94" height="1.17" fill="#A5A5A5" />
+<rect x="195" y="22.83" width="94" height="1.17" fill="#A5A5A5" />
+<rect x="195" y="31.83" width="94" height="1.17" fill="#A5A5A5" />
+<rect x="195" y="40.83" width="94" height="1.17" fill="#A5A5A5" />
+<rect x="195" y="49.83" width="94" height="1.17" fill="#A5A5A5" />
+<g class="b1"><g transform="translate(236.684 27.915)" class="at" ><text style="stroke:none">&#57506</text></g></g><rect x="287.56" y="13.83" width="1.44" height="37.17" fill="#222211" />
+<text x="244.28" y="64" style='stroke: none; font:italic 12px "Noto Serif", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">b c</text><rect x="289" y="13.83" width="94" height="1.17" fill="#A5A5A5" />
+<rect x="289" y="22.83" width="94" height="1.17" fill="#A5A5A5" />
+<rect x="289" y="31.83" width="94" height="1.17" fill="#A5A5A5" />
+<rect x="289" y="40.83" width="94" height="1.17" fill="#A5A5A5" />
+<rect x="289" y="49.83" width="94" height="1.17" fill="#A5A5A5" />
+<g class="b2"><g transform="translate(330.684 27.915)" class="at" ><text style="stroke:none">&#57506</text></g></g><rect x="381.56" y="13.83" width="1.44" height="37.17" fill="#222211" />
+<text x="338.28" y="64" style='stroke: none; font:italic 12px "Noto Serif", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">d‿ e</text><rect x="383" y="13.83" width="102" height="1.17" fill="#A5A5A5" />
+<rect x="383" y="22.83" width="102" height="1.17" fill="#A5A5A5" />
+<rect x="383" y="31.83" width="102" height="1.17" fill="#A5A5A5" />
+<rect x="383" y="40.83" width="102" height="1.17" fill="#A5A5A5" />
+<rect x="383" y="49.83" width="102" height="1.17" fill="#A5A5A5" />
+<g class="b3"><g transform="translate(424.634 27.915)" class="at" ><text style="stroke:none">&#57506</text></g></g><rect x="475.46000000000004" y="13.83" width="1.44" height="37.17" fill="#222211" />
+<rect x="480.50000000000006" y="13.83" width="4.5" height="37.17" fill="#222211" />
+<text x="432.23" y="64" style='stroke: none; font:italic 12px "Noto Serif", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">f‿ g h</text><g transform="translate(43 ,33) rotate( -90.1)"><text x="0" y="0" style='stroke: none; font:italic 12px "Noto Serif", "Noto Music", "Noto Color Emoji"; dominant-baseline: ideographic' fill="#222211" text-anchor="middle">MusicXML P</text></g></svg>
+partial 0 115 855.4399999999999 12
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="855px" height="12px" class="at-surface-svg">
+<text x="650" y="0" style='stroke: none; font:bold 12px "Noto Sans", "Noto Music", "Noto Color Emoji"; dominant-baseline: hanging' text-anchor="middle">rendered by alphaTab</text></svg>
+partial 0 0 0 0
+null
