@@ -42,7 +42,7 @@ None. The renderer-only cases (`TabBarRendererFactory.canCreate` x4, `hamonics-r
 ## Visual tests (`test/visualTests`): SVG goldens instead of PNGs
 
 The TS visual tests draw with alphaSkia and compare PNGs, which the Swift target cannot do. All 481 cases run
-anyway (and the MusicXML importer tests that render their reference files, 264 more goldens under `SvgGoldens/test-data/`), through the hand-written `VisualTestHelper` (`Runtime/VisualTestHelper.swift`): it renders with the SVG engine
+anyway (and the MusicXML importer tests that render their reference files, 190 more goldens under `SvgGoldens/test-data/`), through the hand-written `VisualTestHelper` (`Runtime/VisualTestHelper.swift`): it renders with the SVG engine
 and compares the SVG text with a golden in `Tests/AlphaTabTests/SvgGoldens/`. The goldens come from the TS original,
 never from Swift: `npm run svg-goldens` (packages/swift) runs the same test files under Node with
 `scripts/svg-goldens/SvgGoldenHelper.ts` in place of the TS `VisualTestHelper`.
