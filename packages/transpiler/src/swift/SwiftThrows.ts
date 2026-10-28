@@ -71,6 +71,19 @@ export class SwiftThrows {
         return t ? [t] : [];
     }
 
+    /**
+     * `EventEmitter.trigger`: not generated (the runtime has its own, whose listeners may throw and whose
+     * `trigger` rethrows, as a JS listener error reaches the code that raised the event), so its callers throw.
+     */
+    private static _isEventTrigger(fn: ts.Node): boolean {
+        return (
+            ts.isMethodDeclaration(fn) &&
+            fn.name.getText() === 'trigger' &&
+            ts.isClassDeclaration(fn.parent) &&
+            fn.getSourceFile().fileName.endsWith('/src/EventEmitter.ts')
+        );
+    }
+
     private static _isClosure(n: ts.Node): n is ts.ArrowFunction | ts.FunctionExpression {
         return ts.isArrowFunction(n) || ts.isFunctionExpression(n);
     }
@@ -287,7 +300,7 @@ export class SwiftThrows {
             } else {
                 visit(body);
             }
-            if (throws) {
+            if (throws || SwiftThrows._isEventTrigger(fn)) {
                 seeds.push(fn);
             }
         };
@@ -306,6 +319,18 @@ export class SwiftThrows {
             for (const base of bases) {
                 for (const d of base.getProperty(name)?.declarations ?? []) {
                     edge(member, d);
+                    // Swift wants the same `throws` on a function-typed parameter of the requirement and its implementation
+                    if (ts.isMethodDeclaration(d) || ts.isMethodSignature(d)) {
+                        member.parameters.forEach((p, i) => {
+                            const other = d.parameters[i];
+                            const a = this.functionTypeOf(checker.getTypeAtLocation(p));
+                            const b = other ? this.functionTypeOf(checker.getTypeAtLocation(other)) : undefined;
+                            if (a && b && a !== b) {
+                                edge(a, b);
+                                edge(b, a);
+                            }
+                        });
+                    }
                 }
             }
         };
@@ -330,6 +355,16 @@ export class SwiftThrows {
             if (stored) {
                 const target = this.functionTypeOf(checker.getTypeAtLocation(stored[0]));
                 for (const f of target ? this._functionValues(stored[1] as ts.Expression) : []) {
+                    if (f !== target) {
+                        edge(f, target!);
+                    }
+                }
+            }
+            // an object literal field typed as a function type (`{ renderCallback: callback }`, a record literal)
+            if (ts.isPropertyAssignment(n) || ts.isShorthandPropertyAssignment(n)) {
+                const value = ts.isPropertyAssignment(n) ? n.initializer : n.name;
+                const target = this.functionTypeOf(checker.getContextualType(value));
+                for (const f of target ? this._functionValues(value) : []) {
                     if (f !== target) {
                         edge(f, target!);
                     }

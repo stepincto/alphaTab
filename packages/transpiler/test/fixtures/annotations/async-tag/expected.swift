@@ -7,8 +7,8 @@
 import AlphaTabRuntime
 
 public final class AsyncTag {
-    public func load() -> Promise<Double> {
-        return Promise.resolve(42.0)
+    public func load() async -> Double {
+        return await Promise.resolve(42.0)
     }
 
     public init() {}

@@ -8,7 +8,6 @@ import * as ts from 'typescript';
 import AstPrinterBase from '../AstPrinterBase';
 import type EmitterContextBase from '../EmitterContextBase';
 import * as cs from '../ir/Ir';
-import { hasTag, JsDocTag } from '../jsDocTags';
 import type SwiftEmitterContext from './SwiftEmitterContext';
 
 /**
@@ -100,7 +99,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     /** A `T | null` local that TS narrowed to `T` here: Swift does not smart-cast, so it needs `!`. */
     private _isNarrowedNullableLocal(expr: cs.Identifier): boolean {
         const tsNode = expr.tsNode;
-        if (!tsNode || !ts.isIdentifier(tsNode)) {
+        // the shared transformer builds `TypeHelper` for `isTruthy(x)` on x's TS node: it is not x
+        if (!tsNode || !ts.isIdentifier(tsNode) || tsNode.text !== expr.text) {
             return false;
         }
         const parent = tsNode.parent;
@@ -680,16 +680,17 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return;
         }
 
-        if (d.isAbstract || !d.body) {
+        const stubReason = (this._context as SwiftEmitterContext).stubbedMethods.get(d);
+        if (stubReason !== undefined || d.isAbstract || !d.body) {
             this._openBrace();
-            this.writeLine('fatalError("abstract")');
+            this.writeLine(`fatalError(${JSON.stringify(stubReason ?? 'abstract')})`);
             this._closeBrace();
             return;
         }
 
         if (d.isGeneratorFunction) {
             this._openBrace();
-            this.writeLine('return generator { yield in');
+            this.writeLine(this._throws(d) ? 'return try generator { yield in' : 'return generator { yield in');
             this._indent++;
             for (const s of cs.isBlock(d.body) ? d.body.statements : []) {
                 this.writeStatement(s);
@@ -752,8 +753,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     /** A TS function that returns a `Promise` without `async`: Swift makes it `async`, its returns `await`. */
     private _returnsPromise(d: cs.MethodDeclaration): boolean {
         const tsNode = d.tsNode;
-        // `@async` marks a Promise-returning method alphaTab keeps as a Promise object (Kotlin's `Deferred`)
-        if (!tsNode || !ts.isFunctionLike(tsNode) || hasTag(tsNode as ts.MethodDeclaration, JsDocTag.async)) {
+        // `@async` (Kotlin's `Deferred`) needs nothing here: a Swift `async` function is already awaited by its callers
+        if (!tsNode || !ts.isFunctionLike(tsNode)) {
             return false;
         }
         const checker = this._context.typeChecker;
@@ -782,6 +783,10 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     /** `throws` per the whole-program analysis (`SwiftThrows`). */
     private _throws(d: cs.MethodDeclaration | cs.ConstructorDeclaration): boolean {
+        // `[Symbol.dispose]` runs from a `defer`, which cannot throw: its body traps where JS would throw (see _inAccessor)
+        if (cs.isMethodDeclaration(d) && d.name === 'dispose') {
+            return false;
+        }
         return (this._context as SwiftEmitterContext).throwsAnalysis.throws(d.tsNode);
     }
 
@@ -821,11 +826,70 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             // Swift accessors cannot throw: trap there, where JS would throw
             this.write(this._inAccessor(expr) ? 'try! ' : 'try ');
         }
+        if (expr.tsNode && !this._upcastNodes.has(expr.tsNode) && this._needsSequenceUpcast(expr)) {
+            this._upcastNodes.add(expr.tsNode);
+            // `any Sequence<Derived>` is not an `any Sequence<any Protocol>` in Swift: convert element-wise
+            this.write('jsUpcastSequence(');
+            super.writeExpression(expr);
+            this.write(')');
+            return;
+        }
         super.writeExpression(expr);
+    }
+
+    /**
+     * An array or iterable passed or returned as an `Iterable<Base>` of another element type than its own
+     * (`ContinuationTieGlyph[]` as `Iterable<ITieGlyph>`).
+     */
+    private _needsSequenceUpcast(expr: cs.Expression): boolean {
+        const tsNode = expr.tsNode;
+        const parent = tsNode?.parent;
+        if (
+            !tsNode ||
+            !parent ||
+            ts.isArrayLiteralExpression(tsNode) ||
+            !(((ts.isCallExpression(parent) || ts.isNewExpression(parent)) && parent.arguments?.some(a => a === tsNode)) || ts.isReturnStatement(parent))
+        ) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        const target = ts.isReturnStatement(parent) ? this._returnTypeOfEnclosing(parent) : checker.getContextualType(tsNode as ts.Expression);
+        if (!target || target.getSymbol()?.name !== 'Iterable') {
+            return false;
+        }
+        const targetElement = checker.getTypeArguments(target as ts.TypeReference)[0];
+        const source = checker.getTypeAtLocation(tsNode);
+        let sourceElement: ts.Type | undefined;
+        if (checker.isArrayType(source)) {
+            sourceElement = checker.getTypeArguments(source as ts.TypeReference)[0];
+        } else if (source.getSymbol()?.name === 'Iterable') {
+            sourceElement = checker.getTypeArguments(source as ts.TypeReference)[0];
+        }
+        return (
+            !!targetElement &&
+            !!sourceElement &&
+            targetElement !== sourceElement &&
+            !(targetElement.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter)) &&
+            !!targetElement.getSymbol() &&
+            (targetElement.getSymbol()!.flags & ts.SymbolFlags.Interface) !== 0
+        );
+    }
+
+    private _returnTypeOfEnclosing(node: ts.Node): ts.Type | undefined {
+        for (let p: ts.Node | undefined = node; p; p = p.parent) {
+            if (ts.isFunctionLike(p)) {
+                const signature = this._context.typeChecker.getSignatureFromDeclaration(p);
+                return signature ? this._context.typeChecker.getReturnTypeOfSignature(signature) : undefined;
+            }
+        }
+        return undefined;
     }
 
     /** Swift cannot make this body `throws`: an accessor, an initializer, a static initializer, or an untracked closure. */
     private _inAccessor(n: cs.Node): boolean {
+        if (this._deferDepth > 0) {
+            return true;
+        }
         for (let p = n.parent; p; p = p.parent) {
             if (cs.isPropertyAccessorDeclaration(p) || cs.isPropertyDeclaration(p)) {
                 return true;
@@ -834,6 +898,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 // a closure whose `throws` cannot reach its Swift type (`SwiftThrows.isTrackedClosure`)
                 const c = p.tsNode;
                 return !!c && (ts.isArrowFunction(c) || ts.isFunctionExpression(c)) && !(this._context as SwiftEmitterContext).throwsAnalysis.isTrackedClosure(c);
+            }
+            if (cs.isMethodDeclaration(p) && p.name === 'dispose') {
+                return true;
             }
             if (cs.isMethodDeclaration(p) || cs.isConstructorDeclaration(p) || p.nodeType === cs.SyntaxKind.LocalFunction) {
                 return this._inStaticInit;
@@ -874,13 +941,6 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     private _writeReturnType(t: cs.TypeNode, owner?: cs.Node) {
         // `Promise<T | null>`: the `?` sits on `T`, which the async reference wraps
         const inner = cs.isTypeReference(t) && t.isAsync && typeof t.reference !== 'string' ? (t.reference as cs.TypeNode) : t;
-        // an `@async` method returns the runtime `Promise<T>` itself (see _returnsPromise)
-        if (cs.isTypeReference(t) && t.isAsync && owner?.tsNode && hasTag(owner.tsNode as ts.MethodDeclaration, JsDocTag.async)) {
-            this.write('Promise<');
-            this._writeType(inner, { owner });
-            this.write('>');
-            return;
-        }
         this._writeType(inner, { owner });
     }
 
@@ -948,7 +1008,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 const labelOf = (e: cs.Expression) => (cs.isLabeledExpression(e) ? e.label : '');
                 args = [...args].sort((a, b) => order.indexOf(labelOf(a)) - order.indexOf(labelOf(b)));
             }
-            this.write('super.init(');
+            // the arguments run before the body: a throwing one needs its `try` here
+            const throwingArgument = args.some(
+                e => !!e.tsNode && (this._context as SwiftEmitterContext).throwsAnalysis.containsThrowingCall(e.tsNode)
+            );
+            this.write(throwingArgument ? 'try super.init(' : 'super.init(');
             this.writeCommaSeparated(args, e => this.writeExpression(e));
             this.writeLine(')');
         }
@@ -1782,6 +1846,20 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             return;
         }
 
+        if (expr.operator === '+' && this._writeLongStringConcat(expr)) {
+            return;
+        }
+        if (expr.operator === '+' && this._writeStringConcatWithEnum(expr)) {
+            return;
+        }
+        if (expr.operator === '+=' && this._isStringExpression(expr.left) && this._isDeclaredUnknown(expr.right)) {
+            // `svg += r.renderResult` with an `unknown` result
+            this.writeExpression(expr.left);
+            this.write(' += jsTemplate(');
+            this.writeExpression(expr.right);
+            this.write(')');
+            return;
+        }
         if (expr.operator === '+' && this._writeStringConcatWithUnknown(expr)) {
             return;
         }
@@ -2308,6 +2386,65 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     }
 
     /** `"" + x` (JS `String(x)`) or `"a" + x` with `x` of type `unknown`/`any`: Swift has no `String + Any?`. */
+    /**
+     * `'<rect x="' + x + '" y="' + y + ...`: Swift's type checker gives up on a `+` chain of this many operands,
+     * so the pieces go into an array literal, which it checks one element at a time.
+     */
+    private _writeLongStringConcat(expr: cs.BinaryExpression): boolean {
+        const operands: cs.Expression[] = [];
+        let e: cs.Expression = expr;
+        while (cs.isBinaryExpression(e) && e.operator === '+') {
+            operands.unshift(e.right);
+            e = e.left;
+        }
+        operands.unshift(e);
+        if (operands.length < 7 || !operands.some(o => cs.isStringLiteral(o))) {
+            return false;
+        }
+        this.write('[');
+        this.writeCommaSeparated(operands, o => this.writeExpression(o), false);
+        this.write('].joined()');
+        return true;
+    }
+
+    /** `'&#' + symbol` with a numeric enum: Kotlin's `symbol.toDouble()` is a Double, which Swift does not append to a String. */
+    private _writeStringConcatWithEnum(expr: cs.BinaryExpression): boolean {
+        const isString = (e: cs.Expression) => cs.isStringLiteral(this._unwrapParens(e)) || this._isStringExpression(e);
+        const isEnumNumber = (e: cs.Expression) => {
+            const u = this._unwrapParens(e);
+            // `symbol as number`
+            if (cs.isCastExpression(u)) {
+                return this._isEnumExpression(u.expression) && !this._isOptionalValue(u.expression);
+            }
+            return (
+                cs.isInvocationExpression(u) &&
+                u.arguments.length === 0 &&
+                cs.isMemberAccessExpression(u.expression) &&
+                u.expression.member === 'toDouble' &&
+                this._isEnumExpression(u.expression.expression) &&
+                !this._isOptionalValue(u.expression.expression)
+            );
+        };
+        const leftEnum = isEnumNumber(expr.left) && isString(expr.right);
+        const rightEnum = isEnumNumber(expr.right) && isString(expr.left);
+        if (!leftEnum && !rightEnum) {
+            return false;
+        }
+        const operand = (e: cs.Expression, wrap: boolean) => {
+            if (wrap) {
+                this.write('(');
+                this.writeExpression(e);
+                this.write(').toInvariantString()');
+            } else {
+                this.writeExpression(e);
+            }
+        };
+        operand(expr.left, leftEnum);
+        this.write(' + ');
+        operand(expr.right, rightEnum);
+        return true;
+    }
+
     private _writeStringConcatWithUnknown(expr: cs.BinaryExpression): boolean {
         const isString = (e: cs.Expression) => cs.isStringLiteral(this._unwrapParens(e)) || this._isStringExpression(e);
         const leftUnknown = this._isDeclaredUnknown(expr.left) && isString(expr.right);
@@ -2717,13 +2854,53 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.write(') ?? Double.nan');
             return;
         }
+        if (this._writePromiseChainHead(expr)) {
+            return;
+        }
         this.writeExpression(expr.expression);
         if (expr.nullSafe) {
             this.write('?');
         }
         this.write('(');
+        const isListSplice =
+            cs.isMemberAccessExpression(expr.expression) &&
+            (expr.expression.member === 'push' || expr.expression.member === 'splice');
+        this.writeCommaSeparated(
+            expr.arguments,
+            a => {
+                if (isListSplice && cs.isSpreadExpression(a)) {
+                    this.write('contentsOf: ');
+                }
+                this.writeExpression(a);
+            },
+            false
+        );
+        this.write(')');
+    }
+
+    /**
+     * `loadFile(path).then(f).catch(g)`: a Swift `async` function is no object to chain on, so the call starts a
+     * runtime `Promise` (the Kotlin `Deferred` with `then` and `catch`) and the chain continues on that.
+     */
+    private _writePromiseChainHead(expr: cs.InvocationExpression): boolean {
+        const chain = ['then', 'catch', 'finally'];
+        if (!cs.isMemberAccessExpression(expr.expression) || !chain.includes(expr.expression.member)) {
+            return false;
+        }
+        const receiver = this._unwrapParens(expr.expression.expression);
+        if (cs.isInvocationExpression(receiver) && cs.isMemberAccessExpression(receiver.expression) && chain.includes(receiver.expression.member)) {
+            return false;
+        }
+        if (this._tsTypeOf(receiver)?.getSymbol()?.name !== 'Promise') {
+            return false;
+        }
+        const analysis = (this._context as SwiftEmitterContext).throwsAnalysis;
+        this.write(receiver.tsNode && analysis.containsThrowingCall(receiver.tsNode) ? 'Promise({ try await ' : 'Promise({ await ');
+        this.writeExpression(receiver);
+        this.write(` }).${this.escapeIdentifier(expr.expression.member)}(`);
         this.writeCommaSeparated(expr.arguments, a => this.writeExpression(a), false);
         this.write(')');
+        return true;
     }
 
     private _isTruthyCall(e: cs.Expression): e is cs.InvocationExpression {
@@ -2806,7 +2983,7 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     }
 
     protected override writeSpreadExpression(expr: cs.SpreadExpression) {
-        // shortcut: Swift cannot splat an array into a variadic; needs an array overload when used
+        // Swift cannot splat an array into a variadic (see writeInvocationExpression for the `contentsOf:` of push and splice)
         this.writeExpression(expr.expression);
     }
 
@@ -2892,7 +3069,16 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.writeExpression(s.initializer as cs.Expression);
         }
         this.write(' in ');
+        // a Generator/Iterator is `any IteratorProtocol<T>`, which Swift's for-in rejects: erase it to a Sequence
+        const iterated = this._tsTypeOf(this._unwrapParens(s.expression));
+        const isIterator = !!iterated && /^(Generator|Iterator|IterableIterator|IteratorObject)$/.test(iterated.getSymbol()?.name ?? '');
+        if (isIterator) {
+            this.write('jsSequence(');
+        }
         this.writeExpression(s.expression);
+        if (isIterator) {
+            this.write(')');
+        }
         this._forLoopIncrementors.push(undefined);
         try {
             this._writeEmbeddedStatement(s.statement);
@@ -2963,6 +3149,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.write('!');
         }
         this.writeLine(' {');
+        // an optional subject (`E | undefined`): the case patterns match through the optional, `case E.A?:`
+        const optionalSubject = !this._isImplicitlyUnwrappedField(s.expression) && this._isOptionalValue(s.expression);
 
         let hasDefault = false;
         let pending: cs.Expression[] = [];
@@ -2980,7 +3168,16 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 continue;
             }
             this.write('case ');
-            this.writeCommaSeparated(pending, e => this.writeExpression(e), false);
+            this.writeCommaSeparated(
+                pending,
+                e => {
+                    this.writeExpression(e);
+                    if (optionalSubject) {
+                        this.write('?');
+                    }
+                },
+                false
+            );
             this.writeLine(':');
             pending = [];
             this._writeCaseBody(caseClause.statements);
@@ -3021,7 +3218,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             this.write('do');
             this._openBrace();
             this.write('defer');
-            this._writeEmbeddedStatement(s.finallyBlock);
+            // a `defer` cannot throw: a throwing call in `finally` traps (see _inAccessor)
+            this._deferDepth++;
+            try {
+                this._writeEmbeddedStatement(s.finallyBlock);
+            } finally {
+                this._deferDepth--;
+            }
             this.writeLine();
             if (s.catchClauses && s.catchClauses.length > 0) {
                 this._writeDoCatch(s);
@@ -3069,14 +3272,28 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeLine();
     }
 
+    private _usingCounter = 0;
+    private _deferDepth = 0;
+    private readonly _upcastNodes = new Set<ts.Node>();
+
     protected writeVariableStatement(s: cs.VariableStatement) {
+        const isUsing = s.variableStatementKind === cs.VariableStatementKind.Using;
+        if (isUsing) {
+            // `using _ = x` binds nothing in TS but must stay alive until the scope ends; Swift's `let _` would
+            // release it at once and leaves nothing to dispose
+            for (const d of s.declarationList.declarations) {
+                if (d.name === '_') {
+                    d.name = `_using${this._usingCounter++}`;
+                }
+            }
+        }
         this.writeVariableDeclarationList(s.declarationList, s.variableStatementKind);
-        if (s.variableStatementKind === cs.VariableStatementKind.Using) {
+        if (isUsing) {
             for (const d of s.declarationList.declarations) {
                 this.write('defer');
                 this._openBrace();
                 this.writeIdentifier(d.name);
-                this.writeLine('.dispose()');
+                this.writeLine(d.type.isNullable ? '?.dispose()' : '.dispose()');
                 this._closeBrace();
             }
         }
@@ -3088,7 +3305,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     ) {
         const isLet = declarationList.isConst || kind !== cs.VariableStatementKind.Normal;
         for (const d of declarationList.declarations) {
-            this.write(isLet ? 'let ' : 'var ');
+            // a `const` tuple is a value in Swift: writing one of its elements needs `var`
+            this.write(isLet && !this._tupleElementIsWritten(d) ? 'let ' : 'var ');
             let initializer = d.initializer;
             if (d.deconstructNames) {
                 const names = d.deconstructNames.map(n => this.escapeIdentifier(n));
@@ -3118,6 +3336,54 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             }
             this.writeLine();
         }
+    }
+
+    /** `const t = [a, b]; t[0] = x`: TS tuples are mutable arrays, Swift tuples are values. */
+    private _tupleElementIsWritten(d: cs.VariableDeclaration): boolean {
+        const tsNode = d.tsNode;
+        if (!tsNode || !ts.isVariableDeclaration(tsNode) || !ts.isIdentifier(tsNode.name)) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        if (!checker.isTupleType(checker.getTypeAtLocation(tsNode.name))) {
+            return false;
+        }
+        const symbol = checker.getSymbolAtLocation(tsNode.name);
+        let scope: ts.Node = tsNode;
+        while (scope.parent && !ts.isFunctionLike(scope) && !ts.isSourceFile(scope)) {
+            scope = scope.parent;
+        }
+        const isTarget = (n: ts.Node) => {
+            while (ts.isParenthesizedExpression(n)) {
+                n = n.expression;
+            }
+            return (
+                ts.isElementAccessExpression(n) &&
+                ts.isIdentifier(n.expression) &&
+                checker.getSymbolAtLocation(n.expression) === symbol
+            );
+        };
+        let written = false;
+        const visit = (n: ts.Node) => {
+            if (written) {
+                return;
+            }
+            if (
+                (ts.isBinaryExpression(n) &&
+                    n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+                    n.operatorToken.kind <= ts.SyntaxKind.LastAssignment &&
+                    isTarget(n.left)) ||
+                ((ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n)) &&
+                    (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken) &&
+                    isTarget(n.operand))
+            ) {
+                written = true;
+                return;
+            }
+            ts.forEachChild(n, visit);
+        };
+        visit(scope);
+        return written;
     }
 
     protected writeLocalFunction(expr: cs.LocalFunctionDeclaration) {

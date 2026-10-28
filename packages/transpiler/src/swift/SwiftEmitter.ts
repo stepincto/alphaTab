@@ -78,7 +78,40 @@ function excludeTests(context: SwiftEmitterContext, excludedTests: string[]) {
     }
 }
 
-export default function createEmit(srcOutDir: string, testOutDir: string, excludedTests: string[] = []) {
+/**
+ * Replaces the body of single methods with a trap, named `<path suffix>#<Class>.<method>` -> reason: a member of a
+ * file that otherwise translates whose body needs a module the Swift target does not have (the audio synth in
+ * a test facade). The signature stays, so the class still conforms to its interface.
+ */
+function stubMembers(context: SwiftEmitterContext, stubbedMembers: Record<string, string>) {
+    const visit = (node: cs.Node, fileName: string, className: string) => {
+        if (cs.isMethodDeclaration(node)) {
+            for (const [key, reason] of Object.entries(stubbedMembers)) {
+                const [file, member] = key.split('#');
+                if (fileName.endsWith(file) && member === `${className}.${node.name}`) {
+                    context.stubbedMethods.set(node, reason);
+                }
+            }
+        }
+        const name = cs.isClassDeclaration(node) ? node.name : className;
+        for (const m of (node as { members?: cs.Node[] }).members ?? []) {
+            visit(m, fileName, name);
+        }
+    };
+    for (const file of context.sourceFiles) {
+        const fileName = (file.tsNode as ts.SourceFile).fileName.replaceAll('\\', '/');
+        for (const d of file.namespace.declarations) {
+            visit(d, fileName, '');
+        }
+    }
+}
+
+export default function createEmit(
+    srcOutDir: string,
+    testOutDir: string,
+    excludedTests: string[] = [],
+    stubbedMembers: Record<string, string> = {}
+) {
     return (program: ts.Program, diagnostics: ts.Diagnostic[]) => {
         const context = new SwiftEmitterContext(program, srcOutDir, testOutDir, ctx => new SwiftTargetStrategy(ctx));
 
@@ -90,6 +123,7 @@ export default function createEmit(srcOutDir: string, testOutDir: string, exclud
         }
 
         excludeTests(context, excludedTests);
+        stubMembers(context, stubbedMembers);
 
         const pipeline = new PassPipeline(SWIFT_PASSES, msg => console.log(`[Swift] ${msg}`));
         pipeline.run(context.sourceFiles, context);

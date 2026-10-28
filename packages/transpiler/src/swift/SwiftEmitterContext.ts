@@ -16,6 +16,8 @@ import { SwiftThrows } from './SwiftThrows';
  */
 export default class SwiftEmitterContext extends EmitterContextBase {
     public readonly partialSuffixExpressions: Set<cs.Node> = new Set();
+    /** Methods whose body the printer replaces with a trap (`createEmit`'s `stubbedMembers`), with the reason. */
+    public readonly stubbedMethods: Map<cs.Node, string> = new Map();
     private _throws: SwiftThrows | undefined;
     private readonly _tsProgram: ts.Program;
 

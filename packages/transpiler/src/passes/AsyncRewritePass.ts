@@ -129,6 +129,11 @@ export class AsyncRewritePass implements IrPass {
             return;
         }
 
+        // Swift: `new Promise(...)` lowers to the async `TypeHelper.createPromise`, which is awaited as it stands
+        if (this._promiseFunctionsAreAsync && ts.isNewExpression(expression)) {
+            return;
+        }
+
         const method = context.typeChecker.getSymbolAtLocation(expression.expression);
         if ((method as any)?.parent?.name === TsBuiltin.Promise) {
             // Calling `.then()` / `.catch()` on a Promise — leave alone.
