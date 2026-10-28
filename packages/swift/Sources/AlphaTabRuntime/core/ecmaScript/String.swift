@@ -242,6 +242,16 @@ extension String {
         }
     }
 
+    /// JS `localeCompare` with the default locale: negative, 0 or positive. shortcut: the "en" collation, where JS uses
+    /// the host's; alphaTab compares ASCII identifiers only.
+    public func localeCompare(_ other: String) -> Double {
+        switch self.compare(other, options: [], range: nil, locale: Locale(identifier: "en")) {
+        case .orderedAscending: return -1
+        case .orderedSame: return 0
+        case .orderedDescending: return 1
+        }
+    }
+
     /// JS `replace(string, string)`: the first occurrence only. The replacement is literal (JS also expands `$&`
     /// and friends, which alphaTab never passes here).
     public func replace(_ search: String, _ replacement: String) -> String {

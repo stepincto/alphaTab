@@ -7,6 +7,7 @@
     "scripts": {
         "clean": "rimraf Sources/AlphaTab/Generated && rimraf Tests/AlphaTabTests/Generated",
         "transpile": "tsx scripts/transpile.ts",
+        "svg-goldens": "rm -rf Tests/AlphaTabTests/SvgGoldens && cd ../alphatab && vitest run --no-file-parallelism --config ../swift/scripts/svg-goldens/vitest.svg-goldens.config.ts",
         "build": "npm run transpile && cd ../.. && swift build",
         "test": "cd ../.. && swift test --no-parallel"
     }

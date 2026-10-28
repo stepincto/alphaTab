@@ -42,9 +42,8 @@ internal final class FontSizesPartials {
             return
         }
         // shortcut: the Kotlin target measures through alphaSkia, a browser through a canvas; the Swift target has
-        // neither, so a font without a prebuilt table gets the same 8x10 box the Kotlin target uses before alphaSkia
-        // is loaded. Rendering text in such a font gives wrong widths; the families alphaTab ships have tables.
-        Logger.warning("Rendering", "Generating font lookup without a text measurer, SVG sizes will be wrong")
+        // neither, so a font without a prebuilt table gets the 8x10 box the TS uses under Node. Text in such a font
+        // has wrong widths (as in Node); the families alphaTab ships have tables.
         FontSizes.fontSizeLookupTables.set(family, FontSizeDefinition(Uint8Array(List<Double>(8.0)), Uint8Array(List<Double>(10.0))))
     }
 }

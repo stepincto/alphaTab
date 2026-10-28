@@ -117,7 +117,11 @@ const sources = [
     '/alphatab/src/synth/AlphaSynthWrapper.ts',
     '/alphatab/src/synth/IAudioExporter.ts',
     '/alphatab/test/visualTests/TestUiFacade.ts',
-    '/alphatab/test/importer/MusicXmlImporterTestHelper.ts'
+    '/alphatab/test/importer/MusicXmlImporterTestHelper.ts',
+    // the visual tests, drawn as SVG and compared with goldens the TS wrote (see svg-goldens/); by feature group
+    '/alphatab/test/visualTests/features/',
+    '/alphatab/test/visualTests/issues/',
+    '/alphatab/test/visualTests/skyline/'
 ];
 // files inside the source list left out: whole test files (each reason is in Tests/AlphaTabTests/SKIPPED.md),
 // and VersionInfo, which only Environment reads and whose build date and commit would change the

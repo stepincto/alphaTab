@@ -180,57 +180,57 @@ public protocol IAlphaSynth: AnyObject {
     /**
      * This event is fired when the player is ready to be interacted with.
      */
-    var ready: IEventEmitter { get }
+    var ready: any IEventEmitter { get }
 
     /**
      * This event is fired when all required data for playback is loaded and ready.
      */
-    var readyForPlayback: IEventEmitter { get }
+    var readyForPlayback: any IEventEmitter { get }
 
     /**
      * This event is fired when the playback of the whole song finished.
      */
-    var finished: IEventEmitter { get }
+    var finished: any IEventEmitter { get }
 
     /**
      * This event is fired when the SoundFont needed for playback was loaded.
      */
-    var soundFontLoaded: IEventEmitter { get }
+    var soundFontLoaded: any IEventEmitter { get }
 
     /**
      * This event is fired when the loading of the SoundFont failed.
      */
-    var soundFontLoadFailed: IEventEmitterOfT<JsError> { get }
+    var soundFontLoadFailed: any IEventEmitterOfT<JsError> { get }
 
     /**
      * This event is fired when the Midi file needed for playback was loaded.
      */
-    var midiLoaded: IEventEmitterOfT<PositionChangedEventArgs> { get }
+    var midiLoaded: any IEventEmitterOfT<PositionChangedEventArgs> { get }
 
     /**
      * This event is fired when the loading of the Midi file failed.
      */
-    var midiLoadFailed: IEventEmitterOfT<JsError> { get }
+    var midiLoadFailed: any IEventEmitterOfT<JsError> { get }
 
     /**
      * This event is fired when the playback state changed.
      */
-    var stateChanged: IEventEmitterOfT<PlayerStateChangedEventArgs> { get }
+    var stateChanged: any IEventEmitterOfT<PlayerStateChangedEventArgs> { get }
 
     /**
      * This event is fired when the current playback position of/ the song changed.
      */
-    var positionChanged: IEventEmitterOfT<PositionChangedEventArgs> { get }
+    var positionChanged: any IEventEmitterOfT<PositionChangedEventArgs> { get }
 
     /**
      * The event is fired when certain midi events were sent to the audio output device for playback.
      */
-    var midiEventsPlayed: IEventEmitterOfT<MidiEventsPlayedEventArgs> { get }
+    var midiEventsPlayed: any IEventEmitterOfT<MidiEventsPlayedEventArgs> { get }
 
     /**
      * The event is fired when the playback range within the player was updated.
      */
-    var playbackRangeChanged: IEventEmitterOfT<PlaybackRangeChangedEventArgs> { get }
+    var playbackRangeChanged: any IEventEmitterOfT<PlaybackRangeChangedEventArgs> { get }
 }
 
 /**

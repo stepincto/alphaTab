@@ -22,7 +22,8 @@ let package = Package(
         .testTarget(
             name: "AlphaTabTests",
             dependencies: ["AlphaTab", "AlphaTabRuntime"],
-            path: "packages/swift/Tests/AlphaTabTests"
+            path: "packages/swift/Tests/AlphaTabTests",
+            exclude: ["SKIPPED.md", "SvgGoldens"]
         )
     ],
     swiftLanguageModes: [.v6]

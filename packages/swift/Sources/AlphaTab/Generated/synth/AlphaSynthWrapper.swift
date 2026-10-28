@@ -440,9 +440,9 @@ internal final class AlphaSynthWrapper: IAlphaSynth {
     /**
      * This event is fired when the player is ready to be interacted with.
      */
-    private var __ready: IEventEmitter!
+    private var __ready: (any IEventEmitter)!
 
-    public var ready: IEventEmitter {
+    public var ready: any IEventEmitter {
         get {
             return self.__ready
         }
@@ -454,9 +454,9 @@ internal final class AlphaSynthWrapper: IAlphaSynth {
     /**
      * This event is fired when all required data for playback is loaded and ready.
      */
-    private var __readyForPlayback: IEventEmitter!
+    private var __readyForPlayback: (any IEventEmitter)!
 
-    public var readyForPlayback: IEventEmitter {
+    public var readyForPlayback: any IEventEmitter {
         get {
             return self.__readyForPlayback
         }
@@ -468,24 +468,24 @@ internal final class AlphaSynthWrapper: IAlphaSynth {
     /**
      * This event is fired when the playback of the whole song finished.
      */
-    public var finished: IEventEmitter = EventEmitter()
+    public var finished: any IEventEmitter = EventEmitter()
 
     /**
      * This event is fired when the SoundFont needed for playback was loaded.
      */
-    public var soundFontLoaded: IEventEmitter = EventEmitter()
+    public var soundFontLoaded: any IEventEmitter = EventEmitter()
 
     /**
      * This event is fired when the loading of the SoundFont failed.
      */
-    public var soundFontLoadFailed: IEventEmitterOfT<JsError> = EventEmitterOfT<JsError>()
+    public var soundFontLoadFailed: any IEventEmitterOfT<JsError> = EventEmitterOfT<JsError>()
 
     /**
      * This event is fired when the Midi file needed for playback was loaded.
      */
-    private var __midiLoaded: IEventEmitterOfT<PositionChangedEventArgs>!
+    private var __midiLoaded: (any IEventEmitterOfT<PositionChangedEventArgs>)!
 
-    public var midiLoaded: IEventEmitterOfT<PositionChangedEventArgs> {
+    public var midiLoaded: any IEventEmitterOfT<PositionChangedEventArgs> {
         get {
             return self.__midiLoaded
         }
@@ -497,14 +497,14 @@ internal final class AlphaSynthWrapper: IAlphaSynth {
     /**
      * This event is fired when the loading of the Midi file failed.
      */
-    public var midiLoadFailed: IEventEmitterOfT<JsError> = EventEmitterOfT<JsError>()
+    public var midiLoadFailed: any IEventEmitterOfT<JsError> = EventEmitterOfT<JsError>()
 
     /**
      * This event is fired when the playback state changed.
      */
-    private var __stateChanged: IEventEmitterOfT<PlayerStateChangedEventArgs>!
+    private var __stateChanged: (any IEventEmitterOfT<PlayerStateChangedEventArgs>)!
 
-    public var stateChanged: IEventEmitterOfT<PlayerStateChangedEventArgs> {
+    public var stateChanged: any IEventEmitterOfT<PlayerStateChangedEventArgs> {
         get {
             return self.__stateChanged
         }
@@ -516,9 +516,9 @@ internal final class AlphaSynthWrapper: IAlphaSynth {
     /**
      * This event is fired when the current playback position of/ the song changed.
      */
-    private var __positionChanged: IEventEmitterOfT<PositionChangedEventArgs>!
+    private var __positionChanged: (any IEventEmitterOfT<PositionChangedEventArgs>)!
 
-    public var positionChanged: IEventEmitterOfT<PositionChangedEventArgs> {
+    public var positionChanged: any IEventEmitterOfT<PositionChangedEventArgs> {
         get {
             return self.__positionChanged
         }
@@ -530,14 +530,14 @@ internal final class AlphaSynthWrapper: IAlphaSynth {
     /**
      * The event is fired when certain midi events were sent to the audio output device for playback.
      */
-    public var midiEventsPlayed: IEventEmitterOfT<MidiEventsPlayedEventArgs> = EventEmitterOfT<MidiEventsPlayedEventArgs>()
+    public var midiEventsPlayed: any IEventEmitterOfT<MidiEventsPlayedEventArgs> = EventEmitterOfT<MidiEventsPlayedEventArgs>()
 
     /**
      * The event is fired when the playback range within the player was updated.
      */
-    private var __playbackRangeChanged: IEventEmitterOfT<PlaybackRangeChangedEventArgs>!
+    private var __playbackRangeChanged: (any IEventEmitterOfT<PlaybackRangeChangedEventArgs>)!
 
-    public var playbackRangeChanged: IEventEmitterOfT<PlaybackRangeChangedEventArgs> {
+    public var playbackRangeChanged: any IEventEmitterOfT<PlaybackRangeChangedEventArgs> {
         get {
             return self.__playbackRangeChanged
         }

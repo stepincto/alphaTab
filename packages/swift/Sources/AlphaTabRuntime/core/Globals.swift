@@ -34,6 +34,11 @@ extension Double {
     public func toTemplate() -> String {
         return jsNumberToString(self)
     }
+
+    /// JS `n.toString()`.
+    public func toString() -> String {
+        return jsNumberToString(self)
+    }
 }
 
 extension Int {

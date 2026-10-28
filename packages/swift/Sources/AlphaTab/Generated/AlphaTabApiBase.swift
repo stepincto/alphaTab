@@ -1011,7 +1011,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired when the played beat changed.
      */
-    public var playedBeatChanged: IEventEmitterOfT<Beat>!
+    public var playedBeatChanged: (any IEventEmitterOfT<Beat>)!
 
     private func _onPlayedBeatChanged(_ beat: Beat) throws {
         if self._isDestroyed {
@@ -1024,7 +1024,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired when the currently active beats across all tracks change.
      */
-    public var activeBeatsChanged: IEventEmitterOfT<ActiveBeatsChangedEventArgs>!
+    public var activeBeatsChanged: (any IEventEmitterOfT<ActiveBeatsChangedEventArgs>)!
 
     private func _onActiveBeatsChanged(_ e: ActiveBeatsChangedEventArgs) throws {
         if self._isDestroyed {
@@ -1045,32 +1045,32 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired whenever a the user presses the mouse button on a beat.
      */
-    public var beatMouseDown: IEventEmitterOfT<Beat> = EventEmitterOfT<Beat>()
+    public var beatMouseDown: any IEventEmitterOfT<Beat> = EventEmitterOfT<Beat>()
 
     /**
      * This event is fired whenever the user moves the mouse over a beat after the user already pressed the button on a beat.
      */
-    public var beatMouseMove: IEventEmitterOfT<Beat> = EventEmitterOfT<Beat>()
+    public var beatMouseMove: any IEventEmitterOfT<Beat> = EventEmitterOfT<Beat>()
 
     /**
      * This event is fired whenever the user releases the mouse after a mouse press on a beat.
      */
-    public var beatMouseUp: IEventEmitterOfT<Beat?> = EventEmitterOfT<Beat?>()
+    public var beatMouseUp: any IEventEmitterOfT<Beat?> = EventEmitterOfT<Beat?>()
 
     /**
      * This event is fired whenever a the user presses the mouse button on a note head/number.
      */
-    public var noteMouseDown: IEventEmitterOfT<Note> = EventEmitterOfT<Note>()
+    public var noteMouseDown: any IEventEmitterOfT<Note> = EventEmitterOfT<Note>()
 
     /**
      * This event is fired whenever the user moves the mouse over a note after the user already pressed the button on a note.
      */
-    public var noteMouseMove: IEventEmitterOfT<Note> = EventEmitterOfT<Note>()
+    public var noteMouseMove: any IEventEmitterOfT<Note> = EventEmitterOfT<Note>()
 
     /**
      * This event is fired whenever the user releases the mouse after a mouse press on a note.
      */
-    public var noteMouseUp: IEventEmitterOfT<Note?> = EventEmitterOfT<Note?>()
+    public var noteMouseUp: any IEventEmitterOfT<Note?> = EventEmitterOfT<Note?>()
 
     private var _hasCursor: Bool {
         get {
@@ -1344,7 +1344,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired the shown highlights for the selected playback range changes.
      */
-    public var playbackRangeHighlightChanged: IEventEmitterOfT<PlaybackHighlightChangeEventArgs> = EventEmitterOfT<PlaybackHighlightChangeEventArgs>()
+    public var playbackRangeHighlightChanged: any IEventEmitterOfT<PlaybackHighlightChangeEventArgs> = EventEmitterOfT<PlaybackHighlightChangeEventArgs>()
 
     private func _cursorSelectRange(_ startBeat: SelectionInfo?, _ endBeat: SelectionInfo?) throws {
         var paramstartBeat = try startBeat
@@ -1426,7 +1426,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired whenever a new song is loaded.
      */
-    public var scoreLoaded: IEventEmitterOfT<Score>!
+    public var scoreLoaded: (any IEventEmitterOfT<Score>)!
 
     private func _onScoreLoaded(_ score: Score) throws {
         if self._isDestroyed {
@@ -1442,7 +1442,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired when alphaTab was resized and is about to rerender the music notation.
      */
-    public var resize: IEventEmitterOfT<ResizeEventArgs> = EventEmitterOfT<ResizeEventArgs>()
+    public var resize: any IEventEmitterOfT<ResizeEventArgs> = EventEmitterOfT<ResizeEventArgs>()
 
     private func _onResize(_ e: ResizeEventArgs) throws {
         if self._isDestroyed {
@@ -1455,7 +1455,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired when the rendering of the whole music sheet is starting.
      */
-    public var renderStarted: IEventEmitterOfT<Bool> = EventEmitterOfT<Bool>()
+    public var renderStarted: any IEventEmitterOfT<Bool> = EventEmitterOfT<Bool>()
 
     private func _onRenderStarted(_ resize: Bool) throws {
         if self._isDestroyed {
@@ -1468,7 +1468,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired when the rendering of the whole music sheet is finished.
      */
-    public var renderFinished: IEventEmitterOfT<RenderFinishedEventArgs> = EventEmitterOfT<RenderFinishedEventArgs>()
+    public var renderFinished: any IEventEmitterOfT<RenderFinishedEventArgs> = EventEmitterOfT<RenderFinishedEventArgs>()
 
     private func _onRenderFinished(_ renderingResult: RenderFinishedEventArgs) throws {
         if self._isDestroyed {
@@ -1481,7 +1481,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired when the rendering of the whole music sheet is finished, and all handlers of `renderFinished` ran.
      */
-    public var postRenderFinished: IEventEmitter = EventEmitter()
+    public var postRenderFinished: any IEventEmitter = EventEmitter()
 
     private func _onPostRenderFinished() throws {
         if self._isDestroyed {
@@ -1498,7 +1498,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired when an error within alphatab occurred.
      */
-    public var error: IEventEmitterOfT<JsError> = EventEmitterOfT<JsError>()
+    public var error: any IEventEmitterOfT<JsError> = EventEmitterOfT<JsError>()
 
     internal func onError(_ error: JsError) throws {
         if self._isDestroyed {
@@ -1509,7 +1509,7 @@ public final class AlphaTabApiBase<TSettings> {
         try self.uiFacade.triggerEvent(self.container, "error", error)
     }
 
-    public var playerReady: IEventEmitter {
+    public var playerReady: any IEventEmitter {
         get {
             return self._player.readyForPlayback
         }
@@ -1522,7 +1522,7 @@ public final class AlphaTabApiBase<TSettings> {
         try self.uiFacade.triggerEvent(self.container, "playerReady", nil)
     }
 
-    public var playerFinished: IEventEmitter {
+    public var playerFinished: any IEventEmitter {
         get {
             return self._player.finished
         }
@@ -1535,7 +1535,7 @@ public final class AlphaTabApiBase<TSettings> {
         try self.uiFacade.triggerEvent(self.container, "playerFinished", nil)
     }
 
-    public var soundFontLoaded: IEventEmitter {
+    public var soundFontLoaded: any IEventEmitter {
         get {
             return self._player.soundFontLoaded
         }
@@ -1551,7 +1551,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired when a Midi file is being loaded.
      */
-    public var midiLoad: IEventEmitterOfT<MidiFile> = EventEmitterOfT<MidiFile>()
+    public var midiLoad: any IEventEmitterOfT<MidiFile> = EventEmitterOfT<MidiFile>()
 
     private func _onMidiLoad(_ e: MidiFile) throws {
         if self._isDestroyed {
@@ -1564,7 +1564,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired when the Midi file needed for playback was loaded.
      */
-    public var midiLoaded: IEventEmitterOfT<PositionChangedEventArgs>!
+    public var midiLoaded: (any IEventEmitterOfT<PositionChangedEventArgs>)!
 
     private func _onMidiLoaded(_ e: PositionChangedEventArgs) throws {
         if self._isDestroyed {
@@ -1574,7 +1574,7 @@ public final class AlphaTabApiBase<TSettings> {
         try self.uiFacade.triggerEvent(self.container, "midiFileLoaded", e)
     }
 
-    public var playerStateChanged: IEventEmitterOfT<PlayerStateChangedEventArgs> {
+    public var playerStateChanged: any IEventEmitterOfT<PlayerStateChangedEventArgs> {
         get {
             return self._player.stateChanged
         }
@@ -1595,7 +1595,7 @@ public final class AlphaTabApiBase<TSettings> {
         try self.uiFacade.triggerEvent(self.container, "playerStateChanged", e)
     }
 
-    public var playerPositionChanged: IEventEmitterOfT<PositionChangedEventArgs> {
+    public var playerPositionChanged: any IEventEmitterOfT<PositionChangedEventArgs> {
         get {
             return self._player.positionChanged
         }
@@ -1612,7 +1612,7 @@ public final class AlphaTabApiBase<TSettings> {
         try self.uiFacade.triggerEvent(self.container, "playerPositionChanged", e)
     }
 
-    public var midiEventsPlayed: IEventEmitterOfT<MidiEventsPlayedEventArgs> {
+    public var midiEventsPlayed: any IEventEmitterOfT<MidiEventsPlayedEventArgs> {
         get {
             return self._player.midiEventsPlayed
         }
@@ -1625,7 +1625,7 @@ public final class AlphaTabApiBase<TSettings> {
         try self.uiFacade.triggerEvent(self.container, "midiEventsPlayed", e)
     }
 
-    public var playbackRangeChanged: IEventEmitterOfT<PlaybackRangeChangedEventArgs> {
+    public var playbackRangeChanged: any IEventEmitterOfT<PlaybackRangeChangedEventArgs> {
         get {
             return self._player.playbackRangeChanged
         }
@@ -1641,7 +1641,7 @@ public final class AlphaTabApiBase<TSettings> {
     /**
      * This event is fired when a settings update was requested.
      */
-    public var settingsUpdated: IEventEmitter = EventEmitter()
+    public var settingsUpdated: any IEventEmitter = EventEmitter()
 
     private func _onSettingsUpdated() throws {
         if self._isDestroyed {

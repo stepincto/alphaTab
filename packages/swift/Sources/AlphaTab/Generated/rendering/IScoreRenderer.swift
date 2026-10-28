@@ -53,32 +53,32 @@ public protocol IScoreRenderer: AnyObject {
     /**
      * Occurs before the rendering of the tracks starts
      */
-    var preRender: IEventEmitterOfT<Bool> { get }
+    var preRender: any IEventEmitterOfT<Bool> { get }
 
     /**
      * This event is fired when the rendering of the whole music sheet is finished.
      */
-    var renderFinished: IEventEmitterOfT<RenderFinishedEventArgs> { get }
+    var renderFinished: any IEventEmitterOfT<RenderFinishedEventArgs> { get }
 
     /**
      * Occurs whenever a part of the whole music sheet is rendered and can be displayed.
      */
-    var partialRenderFinished: IEventEmitterOfT<RenderFinishedEventArgs> { get }
+    var partialRenderFinished: any IEventEmitterOfT<RenderFinishedEventArgs> { get }
 
     /**
      * Occurs whenever a part of the whole music sheet is layed out but not yet rendered.
      */
-    var partialLayoutFinished: IEventEmitterOfT<RenderFinishedEventArgs> { get }
+    var partialLayoutFinished: any IEventEmitterOfT<RenderFinishedEventArgs> { get }
 
     /**
      * This event is fired when the rendering of the whole music sheet is finished, and all handlers of  ran.
      */
-    var postRenderFinished: IEventEmitter { get }
+    var postRenderFinished: any IEventEmitter { get }
 
     /**
      * This event is fired when an error within alphatab occurred.
      */
-    var error: IEventEmitterOfT<JsError> { get }
+    var error: any IEventEmitterOfT<JsError> { get }
 }
 
 public extension IScoreRenderer {

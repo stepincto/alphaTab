@@ -54,17 +54,17 @@ public protocol ISynthOutput: AnyObject {
     /**
      * Fired when the output has been successfully opened and is ready to play samples.
      */
-    var ready: IEventEmitter { get }
+    var ready: any IEventEmitter { get }
 
     /**
      * Fired when a certain number of samples have been played.
      */
-    var samplesPlayed: IEventEmitterOfT<Double> { get }
+    var samplesPlayed: any IEventEmitterOfT<Double> { get }
 
     /**
      * Fired when the output needs more samples to be played.
      */
-    var sampleRequest: IEventEmitter { get }
+    var sampleRequest: any IEventEmitter { get }
 
     /**
      * Loads and lists the available output devices. Will request permissions if needed.

@@ -169,12 +169,12 @@ public protocol IUiFacade<TSettings>: AnyObject {
     /**
      * This events is fired when the  property changes.
      */
-    var canRenderChanged: IEventEmitter { get }
+    var canRenderChanged: any IEventEmitter { get }
 
     /**
      * This event is fired when  became visible when it was invisible at the time rendering was initiated.
      */
-    var rootContainerBecameVisible: IEventEmitter { get }
+    var rootContainerBecameVisible: any IEventEmitter { get }
 }
 
 public extension IUiFacade {

@@ -8,6 +8,7 @@
 @testable import AlphaTab
 import AlphaTabRuntime
 import Foundation
+import Testing
 
 /// The hand-written `@partial` members of test/TestPlatform.ts (Kotlin's TestPlatformPartialsImpl.kt),
 /// only those the generated code calls.
@@ -73,6 +74,90 @@ enum TestPlatformPartials {
     static func throttle(_ action: @escaping () throws -> Void, _ delay: Double) -> () -> Void {
         let debounce = Debounce()
         return { debounce.call(action, after: delay) }
+    }
+
+    /// `TestPlatform.enumValues(E)`: the numeric members in declaration order, as `Object.values` keeps them.
+    static func enumValues<T: CaseIterable>(_ type: T.Type) -> List<T> {
+        return List<T>(contentsOf: Swift.Array(T.allCases))
+    }
+
+    /// The `it(...)` title of the running test, as the TS `beforeEach` hook stores it.
+    static var currentTestName: String {
+        return Test.current?.displayName ?? ""
+    }
+
+    /// `loadFile` + `JSON.parse`. shortcut: the Kotlin runtime deserializes any `T` by reflection; here only
+    /// `SmuflMetadata` (a font's metadata file, the one type the tests load) is built.
+    static func loadFileAsJson<T>(_ path: String) async -> T {
+        guard T.self == SmuflMetadata.self else {
+            fatalError("TestPlatform.loadFileAsJson: only SmuflMetadata is supported, not \(T.self)")
+        }
+        let data = loadFileSync(path)
+        guard let root = try? JSONSerialization.jsonObject(with: Data(data.bytes)) as? [String: Any] else {
+            fatalError("TestPlatform.loadFileAsJson: \(path) is not a JSON object")
+        }
+        return parseSmuflMetadata(root) as! T
+    }
+
+    private static func point(_ any: Any?) -> (Double, Double)? {
+        guard let pair = any as? [Any], pair.count == 2, let x = (pair[0] as? NSNumber)?.doubleValue,
+              let y = (pair[1] as? NSNumber)?.doubleValue else {
+            return nil
+        }
+        return (x, y)
+    }
+
+    private static func parseSmuflMetadata(_ root: [String: Any]) -> SmuflMetadata {
+        let d = root["engravingDefaults"] as? [String: Any] ?? [:]
+        func n(_ key: String) -> Double {
+            return (d[key] as? NSNumber)?.doubleValue ?? 0
+        }
+        let defaults = SmuflEngravingDefaults(
+            arrowShaftThickness: n("arrowShaftThickness"), barlineSeparation: n("barlineSeparation"),
+            beamSpacing: n("beamSpacing"), beamThickness: n("beamThickness"), bracketThickness: n("bracketThickness"),
+            dashedBarlineDashLength: n("dashedBarlineDashLength"), dashedBarlineGapLength: n("dashedBarlineGapLength"),
+            dashedBarlineThickness: n("dashedBarlineThickness"), hairpinThickness: n("hairpinThickness"),
+            legerLineExtension: n("legerLineExtension"), legerLineThickness: n("legerLineThickness"),
+            lyricLineThickness: n("lyricLineThickness"), octaveLineThickness: n("octaveLineThickness"),
+            pedalLineThickness: n("pedalLineThickness"), repeatBarlineDotSeparation: n("repeatBarlineDotSeparation"),
+            repeatEndingLineThickness: n("repeatEndingLineThickness"), slurEndpointThickness: n("slurEndpointThickness"),
+            slurMidpointThickness: n("slurMidpointThickness"), staffLineThickness: n("staffLineThickness"),
+            stemThickness: n("stemThickness"), subBracketThickness: n("subBracketThickness"),
+            textEnclosureThickness: n("textEnclosureThickness"), thickBarlineThickness: n("thickBarlineThickness"),
+            thinBarlineThickness: n("thinBarlineThickness"), tieEndpointThickness: n("tieEndpointThickness"),
+            tieMidpointThickness: n("tieMidpointThickness"), tupletBracketThickness: n("tupletBracketThickness"),
+            thinThickBarlineSeparation: (d["thinThickBarlineSeparation"] as? NSNumber)?.doubleValue
+        )
+
+        let anchors = Record<String, SmuflGlyphWithAnchor>()
+        let anchorKeys: [(String, WritableKeyPath<SmuflGlyphWithAnchor, (Double, Double)?>)] = [
+            ("splitStemUpSE", \.splitStemUpSE), ("splitStemUpSW", \.splitStemUpSW),
+            ("splitStemDownNE", \.splitStemDownNE), ("splitStemDownNW", \.splitStemDownNW),
+            ("stemUpSE", \.stemUpSE), ("stemDownNW", \.stemDownNW), ("stemUpNW", \.stemUpNW),
+            ("stemDownSW", \.stemDownSW), ("nominalWidth", \.nominalWidth), ("numeralTop", \.numeralTop),
+            ("numeralBottom", \.numeralBottom), ("cutOutNE", \.cutOutNE), ("cutOutSE", \.cutOutSE),
+            ("cutOutSW", \.cutOutSW), ("cutOutNW", \.cutOutNW), ("graceNoteSlashSW", \.graceNoteSlashSW),
+            ("graceNoteSlashNE", \.graceNoteSlashNE), ("graceNoteSlashNW", \.graceNoteSlashNW),
+            ("graceNoteSlashSE", \.graceNoteSlashSE), ("repeatOffset", \.repeatOffset),
+            ("noteheadOrigin", \.noteheadOrigin), ("opticalCenter", \.opticalCenter)
+        ]
+        for (name, entry) in (root["glyphsWithAnchors"] as? [String: Any] ?? [:]) {
+            var glyph = SmuflGlyphWithAnchor()
+            for (key, path) in anchorKeys {
+                glyph[keyPath: path] = point((entry as? [String: Any])?[key])
+            }
+            anchors.set(name, glyph)
+        }
+
+        var boxes: Record<String, SmuflGlyphBoundingBox>?
+        if let raw = root["glyphBBoxes"] as? [String: Any] {
+            boxes = Record<String, SmuflGlyphBoundingBox>()
+            for (name, entry) in raw {
+                let e = entry as? [String: Any] ?? [:]
+                boxes!.set(name, SmuflGlyphBoundingBox(bBoxNE: point(e["bBoxNE"]) ?? (0, 0), bBoxSW: point(e["bBoxSW"]) ?? (0, 0)))
+            }
+        }
+        return SmuflMetadata(engravingDefaults: defaults, glyphsWithAnchors: anchors, glyphBBoxes: boxes)
     }
 
     static func typedArrayAsUnknownArray(_ array: Any?) -> List<Any?> {

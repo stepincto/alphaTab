@@ -33,7 +33,9 @@ internal enum TabWhammyEffectInfoGlobals {
         band.height = top + bottom
     }, onAlignGlyphs: { (band: EffectBand) in
         var info: (Double, Double) = try jsNonNull(band.renderer.staff).getSharedLayoutData(offsetSharedDataKey, (0.0, 0.0))
-        try jsNonNull(band.renderer.staff).setSharedLayoutData(offsetSharedDataKey, info)
+        defer {
+            try! jsNonNull(band.renderer.staff).setSharedLayoutData(offsetSharedDataKey, info)
+        }
         for voiceGlyphs in band.glyphsByVoice {
             do {
                 var i: Double = 0.0

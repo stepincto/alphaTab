@@ -63,20 +63,20 @@ public protocol IContainer: AnyObject {
     /**
      * This event occurs when the control was resized.
      */
-    var resize: IEventEmitter { get set }
+    var resize: any IEventEmitter { get set }
 
     /**
      * This event occurs when a mouse/finger press happened on the control.
      */
-    var mouseDown: IEventEmitterOfT<any IMouseEventArgs> { get set }
+    var mouseDown: any IEventEmitterOfT<any IMouseEventArgs> { get set }
 
     /**
      * This event occurs when a mouse/finger moves on top of the control.
      */
-    var mouseMove: IEventEmitterOfT<any IMouseEventArgs> { get set }
+    var mouseMove: any IEventEmitterOfT<any IMouseEventArgs> { get set }
 
     /**
      * This event occurs when a mouse/finger is released from the control.
      */
-    var mouseUp: IEventEmitterOfT<any IMouseEventArgs> { get set }
+    var mouseUp: any IEventEmitterOfT<any IMouseEventArgs> { get set }
 }

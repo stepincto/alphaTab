@@ -323,12 +323,12 @@ internal final class TestUiFacade: IUiFacade {
     /**
      * This events is fired when the  property changes.
      */
-    public var canRenderChanged: IEventEmitter = EventEmitter()
+    public var canRenderChanged: any IEventEmitter = EventEmitter()
 
     /**
      * This event is fired when  became visible when it was invisible at the time rendering was initiated.
      */
-    public var rootContainerBecameVisible: IEventEmitter = EventEmitter()
+    public var rootContainerBecameVisible: any IEventEmitter = EventEmitter()
 }
 
 internal final class TestUiContainer: IContainer {
@@ -461,22 +461,22 @@ internal final class TestUiContainer: IContainer {
     /**
      * This event occurs when the control was resized.
      */
-    public var resize: IEventEmitter = EventEmitter()
+    public var resize: any IEventEmitter = EventEmitter()
 
     /**
      * This event occurs when a mouse/finger press happened on the control.
      */
-    public var mouseDown: IEventEmitterOfT<any IMouseEventArgs> = EventEmitterOfT<any IMouseEventArgs>()
+    public var mouseDown: any IEventEmitterOfT<any IMouseEventArgs> = EventEmitterOfT<any IMouseEventArgs>()
 
     /**
      * This event occurs when a mouse/finger moves on top of the control.
      */
-    public var mouseMove: IEventEmitterOfT<any IMouseEventArgs> = EventEmitterOfT<any IMouseEventArgs>()
+    public var mouseMove: any IEventEmitterOfT<any IMouseEventArgs> = EventEmitterOfT<any IMouseEventArgs>()
 
     /**
      * This event occurs when a mouse/finger is released from the control.
      */
-    public var mouseUp: IEventEmitterOfT<any IMouseEventArgs> = EventEmitterOfT<any IMouseEventArgs>()
+    public var mouseUp: any IEventEmitterOfT<any IMouseEventArgs> = EventEmitterOfT<any IMouseEventArgs>()
 
     public init() {}
 }

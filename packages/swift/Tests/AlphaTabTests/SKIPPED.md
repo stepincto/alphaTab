@@ -28,6 +28,26 @@ None.
 | `EventEmitter`, `EventEmitterOfT` (`Sources/AlphaTab/EventEmitter.swift`) | `EventEmitter.ts` | `off(listener)` compares closures with `!==`; Swift closures have no identity. |
 | `VersionInfo` (same file as `SkiaCanvas`) | `generated/VersionInfo.ts` | Written per build with date and commit. |
 
+## Visual tests (`test/visualTests`): SVG goldens instead of PNGs
+
+The TS visual tests draw with alphaSkia and compare PNGs, which the Swift target cannot do. All 481 cases run
+anyway, through the hand-written `VisualTestHelper` (`Runtime/VisualTestHelper.swift`): it renders with the SVG engine
+and compares the SVG text with a golden in `Tests/AlphaTabTests/SvgGoldens/`. The goldens come from the TS original,
+never from Swift: `npm run svg-goldens` (packages/swift) runs the same test files under Node with
+`scripts/svg-goldens/SvgGoldenHelper.ts` in place of the TS `VisualTestHelper`.
+
+- Golden file = `total <w> <h>` plus, per partial result, `partial <x> <y> <w> <h>` and its SVG. A reference image
+  that several tests name keeps every distinct rendering; the Swift side accepts any of them.
+- Comparison is exact. If it differs, the texts are compared again with every decimal number that has a fraction
+  (`-?[0-9]+\.[0-9]+(e[+-]?[0-9]+)?`) rounded to 2 decimals (`%.2f`, `-0.00` as `0.00`), everything else
+  (integers, ids, code points, text, markup) untouched. A pass by that fallback prints `note: <golden> equals its
+  golden only after rounding numbers to 2 decimals`. Cause: V8 computes sin/cos/pow/atan2 with its own fdlibm
+  port and glibc rounds the last bit differently, so a curve coordinate differs by one ulp.
+- What the SVG cannot show is not compared: the overlays the tests draw on the finished PNG with
+  `prepareFullImage` (bounds lookup rectangles in `BoundsLookup.test.ts`, skyline outlines in `skyline/Skyline*Coverage`).
+  The Swift `AlphaSkiaCanvas` stand-in draws nothing; the overlay code still runs on the rendered result.
+- Both helpers apply the same settings (`engine = svg`, scale 1, Noto font families) and start the render ids at 0.
+
 ## Test cases not emitted (`@target web`)
 
 `rendering/ScaleToWidthCallCount.test.ts` is `@target web` as a whole (it monkey-patches a prototype), so the

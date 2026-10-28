@@ -137,32 +137,32 @@ internal final class ScoreRendererWrapper: IScoreRenderer {
     /**
      * Occurs before the rendering of the tracks starts
      */
-    public var preRender: IEventEmitterOfT<Bool> = EventEmitterOfT<Bool>()
+    public var preRender: any IEventEmitterOfT<Bool> = EventEmitterOfT<Bool>()
 
     /**
      * This event is fired when the rendering of the whole music sheet is finished.
      */
-    public var renderFinished: IEventEmitterOfT<RenderFinishedEventArgs> = EventEmitterOfT<RenderFinishedEventArgs>()
+    public var renderFinished: any IEventEmitterOfT<RenderFinishedEventArgs> = EventEmitterOfT<RenderFinishedEventArgs>()
 
     /**
      * Occurs whenever a part of the whole music sheet is rendered and can be displayed.
      */
-    public var partialRenderFinished: IEventEmitterOfT<RenderFinishedEventArgs> = EventEmitterOfT<RenderFinishedEventArgs>()
+    public var partialRenderFinished: any IEventEmitterOfT<RenderFinishedEventArgs> = EventEmitterOfT<RenderFinishedEventArgs>()
 
     /**
      * Occurs whenever a part of the whole music sheet is layed out but not yet rendered.
      */
-    public var partialLayoutFinished: IEventEmitterOfT<RenderFinishedEventArgs> = EventEmitterOfT<RenderFinishedEventArgs>()
+    public var partialLayoutFinished: any IEventEmitterOfT<RenderFinishedEventArgs> = EventEmitterOfT<RenderFinishedEventArgs>()
 
     /**
      * This event is fired when the rendering of the whole music sheet is finished, and all handlers of  ran.
      */
-    public var postRenderFinished: IEventEmitter = EventEmitter()
+    public var postRenderFinished: any IEventEmitter = EventEmitter()
 
     /**
      * This event is fired when an error within alphatab occurred.
      */
-    public var error: IEventEmitterOfT<JsError> = EventEmitterOfT<JsError>()
+    public var error: any IEventEmitterOfT<JsError> = EventEmitterOfT<JsError>()
 
     public init() {}
 }
