@@ -200,11 +200,11 @@ public final class List<T>: Sequence {
     }
 
     @discardableResult
-    public func splice(_ start: Double, _ deleteCount: Double, contentsOf items: some Collection<T>) -> List<T> {
+    public func splice(_ start: Double, _ deleteCount: Double, contentsOf items: some Sequence<T>) -> List<T> {
         let s = _relativeIndex(start)
         let count = Swift.max(0, Swift.min(deleteCount.toInt(), _data.count - s))
         let removed = List(contentsOf: _data[s..<(s + count)])
-        _data.replaceSubrange(s..<(s + count), with: items)
+        _data.replaceSubrange(s..<(s + count), with: Swift.Array(items))
         return removed
     }
 
@@ -261,6 +261,19 @@ extension List where T: AnyObject {
 /// (or make the slot optional) when another one appears.
 public protocol JsArrayHole {
     static var hole: Self { get }
+    /// Whether this value is the hole itself: a slot `new Array(n)` never wrote, which JS reads as `undefined`.
+    var isJsHole: Bool { get }
+}
+
+extension JsArrayHole {
+    public var isJsHole: Bool { false }
+}
+
+extension JsArrayHole where Self: AnyObject {
+    /// shortcut: a class has no value to stand for `undefined`, so the slot holds a null reference. That is
+    /// safe while the array is filled before it is read (every generated site but one); a class that is read
+    /// before it is filled declares its own `hole` sentinel, which `TypeHelper.isTruthy` treats as falsy.
+    public static var hole: Self { unsafeBitCast(0 as Int, to: Self.self) }
 }
 
 extension String: JsArrayHole {

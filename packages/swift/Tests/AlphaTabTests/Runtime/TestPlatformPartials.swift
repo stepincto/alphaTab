@@ -51,6 +51,30 @@ enum TestPlatformPartials {
         return List<String>(contentsOf: files.sorted())
     }
 
+    private final class Debounce: @unchecked Sendable {
+        private let lock = NSLock()
+        private var pending: Task<Void, Never>?
+
+        func call(_ action: @escaping () throws -> Void, after delay: Double) {
+            nonisolated(unsafe) let action = action
+            lock.lock()
+            pending?.cancel()
+            pending = Task {
+                try? await Task.sleep(nanoseconds: UInt64(max(0, delay) * 1_000_000))
+                if !Task.isCancelled {
+                    try? action()
+                }
+            }
+            lock.unlock()
+        }
+    }
+
+    /// Debounce, as Kotlin's `throttle`: every call restarts the delay and only the last one runs.
+    static func throttle(_ action: @escaping () throws -> Void, _ delay: Double) -> () -> Void {
+        let debounce = Debounce()
+        return { debounce.call(action, after: delay) }
+    }
+
     static func typedArrayAsUnknownArray(_ array: Any?) -> List<Any?> {
         return List<Any?>(contentsOf: jsElements(array) ?? [])
     }

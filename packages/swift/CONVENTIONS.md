@@ -119,7 +119,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 ## Statements
 
 - `for (init; cond; step)` -> scope `do { init; while cond { ...; step } }` (Kotlin uses `if (true) { }`; Swift's scope block is `do`).
-- `for (const x of xs)` -> `for x in xs`.
+- `for (const x of xs)` -> `for x in xs`; over a `Generator`/`Iterator` -> `for x in jsSequence(it)` (runtime; Swift's for-in rejects `any IteratorProtocol`). A generator that throws is `return try generator { ... }`.
 - `switch` -> `switch`; a `switch` without `default` gets `default: break` (Swift switches must be exhaustive). A switch on a field declared `T!` (no initializer, no zero value) unwraps it: `switch self.kind! {`, since a pattern cannot match an optional.
 
 ## Errors
@@ -148,6 +148,7 @@ gains nothing from it; each difference says why. Swift 6 language mode.
 - `describe('X')` -> `@Suite("X") final class X` with `init() {}` (a nested `describe('X')` becomes `final class XSuite`, so it cannot shadow a model type `X`); `it('does y')` -> `@Test("does y") func doesY() async throws`.
 - Test files import `Testing`, `@testable import AlphaTab` and `AlphaTabRuntime`.
 - `test/TestPlatform.ts` is generated; its `@partial` members (file IO, typed-array views) are hand-written in `Tests/AlphaTabTests/Runtime/TestPlatformPartials.swift`. Relative paths (`test-data/...`) resolve against `packages/alphatab`, where vitest runs; a file that cannot be read traps with its path (JS rejects the promise, and the generated callers carry no `try`).
+- `createEmit(..., stubbedMembers)` (`<path>#<Class>.<method>` -> reason, in `scripts/transpile.ts`) replaces the body of one method with `fatalError(reason)`: a member of a file that otherwise translates whose body needs the audio synth. Each is listed in `Tests/AlphaTabTests/SKIPPED.md`.
 - A single `it(...)` that needs an unported module is left out by name (`createEmit(..., excludedTests)`, `<path>#<test name>`, or `<path>#<describe> > <test name>` when the bare name repeats in the file (`tests/swift-excluded-test-path/` fixture, via `excluded-tests.txt`), listed in `scripts/transpile.ts`), with its reason in `Tests/AlphaTabTests/SKIPPED.md`; the rest of its file still runs.
 - Tests run serially (`npm test` passes `--no-parallel`): alphaTab keeps process-wide id counters (`Bar._globalBarId`, `Note`, `Voice`, reset by `Score.resetIds()` at each import), so imports in parallel tests change each other's ids and snapshots differ. vitest runs a file's tests one after another.
 - `expect(a).toBe(b)` and the other chai chains -> the runtime `Expector` (port of Kotlin's `TestGlobals`), which reports through Swift Testing's `#expect`/`Issue.record`. The chains (`toBe`, `toEqual`, `toBeCloseTo`, `toThrow`, snapshots) do not map one to one onto the `#expect` macro.
@@ -173,6 +174,12 @@ Choices the `expressions/` and `statements/` fixtures pin that the sections abov
 - A narrowing cast to a non-optional type TS already proved (`instanceof`) -> `as!`, one that can fail -> `jsCast` (see Errors) (Kotlin's `as` also throws): `item as SpecialItem` and `<SpecialItem>item` -> `(item as! SpecialItem)`; an upcast -> `(item as BaseItem)`. A value declared `unknown`/`any` is never an upcast, even where TS narrowed it (`instanceof`): `expected as Map<string, unknown>` -> `(expected as! Map<String, Any?>)`. A cast the transformer adds from `T[]` to `(T | undefined)[]` -> `List<T?>(widening: x)` (a copy: Swift classes are invariant, so `as!` would trap; shortcut: a callee that mutates it no longer changes the caller's array). `as?` only where the target is optional.
 - A nullable local narrowed by a `=== null` check -> `!` at the use (Swift does not smart-cast): `return mode` -> `return mode!`. The same for a `T | null` getter TS narrowed (the shared smart cast covers fields only): `!lazy.value || lazy.value.x` -> `... || lazy.value!.x`.
 - `this.m.bind(this)` -> `self.m`.
+- `xs.push(...ys)`, `xs.splice(i, n, ...ys)` -> `xs.push(contentsOf: ys)`, `xs.splice(i, n, contentsOf: ys)`.
+- An array or `Iterable<Derived>` passed or returned as `Iterable<Interface>` -> `jsUpcastSequence(x)` (runtime): `any Sequence<A>` is not an `any Sequence<any P>`.
+- A string `+` chain of 7 or more operands with a literal -> `[a, b, ...].joined()`: Swift's type checker gives up on the `+` chain. A numeric enum in a string concat -> `(Double(e.rawValue)).toInvariantString()`.
+- A `const` tuple whose element is written (`t[0] = x`) -> `var`; any other `const` stays `let`.
+- `switch` on an optional enum -> `case E.A?:` patterns.
+- `new Promise(...)` is awaited as it stands (`createPromise` is `async`); `p.then(f).catch(g)` on a Promise (only in a test helper) -> `Promise({ await call }).then(f).catch(g)`, the runtime `Promise` that runs the call as a task. `@async` is a plain `async` function, not a Promise object.
 - Array literal -> runtime variadic init: `[1, 2, 3]` -> `List<Double>(1.0, 2.0, 3.0)`; `[]` -> `List<Double>()`. An array literal passed as an `Iterable` -> a Swift array literal: `new Set<number>([0])` -> `Set<Double>([0.0])`, `new Map([[k, v]])` -> `Map<K, V>([(k, v)])` (runtime `Map` builds from a sequence of tuples and iterates `(key, value)` tuples, so `for (const [k, v] of m)` -> `for (k, v) in m`). `arr?.[i]` -> `arr?[(i).toInt()]`.
 - `Record<K, V>` -> runtime `Record<K, V>`; an object literal of it -> `Record<String, Double>(("alice", 95.0), ("bob", 80.0))`.
 - Regex literal -> `TypeHelper.createRegex("\\d+", "")`, typed `RegExp`, as Kotlin.
@@ -187,5 +194,6 @@ Choices the `expressions/` and `statements/` fixtures pin that the sections abov
 - In a lowered C-style `for`, the step goes before every `continue` that targets that loop, including one inside a `switch` (as Kotlin); a `switch` case body needs no trailing `break`.
 - `switch` on a number -> `case 0.0:` patterns.
 - `try { } finally { f }` -> `do { defer { f } ... }`; with a `catch`, the `do`/`catch` nests inside that scope after the `defer`. A bare `catch` -> `catch { }` with no `let e`.
-- `using r = x` -> `let r` plus `defer { r.dispose() }` right after it. `await using` -> only the binding, as Kotlin: Swift's `defer` cannot `await`. Shortcut: the async dispose never runs; give it a `do`/`catch` lowering when alphaTab uses `await using` outside tests.
+- `using r = x` -> `let r` plus `defer { r.dispose() }` right after it (`r?.dispose()` for an optional; a `using _ = x` gets the name `_using0`, since `let _` would release it at once). `await using` -> only the binding, as Kotlin: Swift's `defer` cannot `await`. Shortcut: the async dispose never runs; give it a `do`/`catch` lowering when alphaTab uses `await using` outside tests.
+- A `defer` (a `finally`, a `using`, and any `dispose()` body) cannot throw: a throwing call there is `try!`, and `dispose()` is never `throws`; the process traps where JS would throw. Runtime `Disposable` is the TS `Disposable`.
 - No `expressions/` or `statements/` case needs a Swift-only diagnostic: each construct Kotlin accepts there has a Swift form above.

@@ -5,6 +5,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import Dispatch
+import Foundation
+
 extension Double {
     /// Kotlin's `Double.toInt()`: NaN -> 0, saturating at the bounds (Swift's `Int(x)` traps).
     /// Swift's `Int` is 64-bit where Kotlin's is 32-bit, so it saturates at +-2^63, not +-2^31.
@@ -254,4 +257,52 @@ public final class Console: Sendable {
 /// JS globals the generated code calls (`console`).
 public enum Globals {
     public static let console = Console()
+    public static let performance = Performance()
+
+    /// JS `setImmediate`: the Kotlin runtime runs the action at once, so does this.
+    public static func setImmediate(_ action: () throws -> Void) rethrows {
+        try action()
+    }
+
+    /// JS `setTimeout`: runs the action on a task after the delay; the result cancels it.
+    @discardableResult
+    public static func setTimeout(_ action: @escaping () throws -> Void, _ millis: Double) -> Task<Void, Never> {
+        // alphaTab is single-threaded by contract: the action is handed to the task as it is
+        nonisolated(unsafe) let action = action
+        return Task {
+            try? await Task.sleep(nanoseconds: UInt64(Swift.max(0, millis) * 1_000_000))
+            if !Task.isCancelled {
+                try? action()
+            }
+        }
+    }
+}
+
+/// JS `performance`: milliseconds on a monotonic clock.
+public final class Performance: Sendable {
+    public func now() -> Double {
+        return Double(DispatchTime.now().uptimeNanoseconds) / 1_000_000.0
+    }
+}
+
+/// `for (const x of iterator)`: Swift's for-in needs a `Sequence`, and `any IteratorProtocol<T>` is none.
+public func jsSequence<T>(_ iterator: any IteratorProtocol<T>) -> AnyIterator<T> {
+    var it = iterator
+    return AnyIterator { it.next() }
+}
+
+/// JS `ArrayBuffer`. shortcut: a `Uint8Array`; alphaTab names `ArrayBuffer` only to pass font data to alphaSkia.
+public typealias ArrayBuffer = Uint8Array
+
+/// A sequence of derived elements as `Iterable<Base>`: Swift has no covariance between `any Sequence<A>` and
+/// `any Sequence<any P>`, so the elements convert one by one.
+public func jsUpcastSequence<S: Sequence, T>(_ sequence: S) -> AnySequence<T> {
+    return AnySequence(sequence.lazy.map { $0 as! T })
+}
+
+/// JS `Date`: only `Date.now()`, milliseconds since the epoch. Foundation's `Date` is not in scope of generated files.
+public enum Date {
+    public static func now() -> Double {
+        return (Foundation.Date().timeIntervalSince1970 * 1000.0).rounded(.down)
+    }
 }

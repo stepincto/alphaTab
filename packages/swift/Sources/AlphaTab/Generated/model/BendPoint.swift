@@ -10,7 +10,7 @@ import AlphaTabRuntime
  * A single point of a bending graph. Used to
  * describe WhammyBar and String Bending effects.
  */
-public final class BendPoint {
+open class BendPoint {
     public static let MaxPosition: Double = 60.0
 
     public static let MaxValue: Double = 12.0

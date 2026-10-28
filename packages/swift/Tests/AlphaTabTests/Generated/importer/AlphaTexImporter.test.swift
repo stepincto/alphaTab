@@ -254,6 +254,30 @@ final class AlphaTexImporterTest {
         })).toEqual(List<Double>(60.0, 60.0, 60.0))
     }
 
+    @Test("hamonics-rendering-text-issue79")
+    func hamonicsRenderingTextIssue79() async throws {
+        let tex: String = ":8 3.3{nh} 3.3{ah} 3.3{th} 3.3{ph} 3.3{sh}"
+        let score: Score = try AlphaTexImporterTest.parseTex(tex)
+        try await VisualTestHelper.prepareAlphaSkia()
+        let settings: Settings = Settings()
+        settings.core.engine = "svg"
+        settings.core.enableLazyLoading = false
+        settings.display.staveProfile = StaveProfile.ScoreTab
+        let renderer: ScoreRenderer = try ScoreRenderer(settings)
+        renderer.width = 970.0
+        var svg: String = ""
+        try renderer.partialRenderFinished.on({ (r: RenderFinishedEventArgs) in
+            svg += jsTemplate(r.renderResult)
+        })
+        try renderer.renderScore(score, List<Double>(0.0))
+        let regexTemplate: String = "<text[^>]+>\\s*{0}\\s*</text>"
+        TestGlobals.expect(RegExp(regexTemplate.replace("{0}", HarmonicsEffectInfoGlobals.harmonicToString(HarmonicType.Natural))).exec(svg)).toBeTruthy()
+        TestGlobals.expect(RegExp(regexTemplate.replace("{0}", HarmonicsEffectInfoGlobals.harmonicToString(HarmonicType.Artificial))).exec(svg)).toBeTruthy()
+        TestGlobals.expect(RegExp(regexTemplate.replace("{0}", HarmonicsEffectInfoGlobals.harmonicToString(HarmonicType.Tap))).exec(svg)).toBeTruthy()
+        TestGlobals.expect(RegExp(regexTemplate.replace("{0}", HarmonicsEffectInfoGlobals.harmonicToString(HarmonicType.Pinch))).exec(svg)).toBeTruthy()
+        TestGlobals.expect(RegExp(regexTemplate.replace("{0}", HarmonicsEffectInfoGlobals.harmonicToString(HarmonicType.Semi))).exec(svg)).toBeTruthy()
+    }
+
     @Test("grace-issue79")
     func graceIssue79() async throws {
         let tex: String = ":8 3.3{gr} 3.3{gr ob}"

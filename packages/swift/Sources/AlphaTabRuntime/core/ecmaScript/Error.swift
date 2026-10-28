@@ -21,6 +21,12 @@ open class JsError: Swift.Error, @unchecked Sendable, CustomStringConvertible {
         return message.isEmpty ? "Error" : "Error: \(message)"
     }
 
+    /// JS `Error.stack`. shortcut: there is no stack text, so it is the message line (the shared transformer prints
+    /// the property read as a call).
+    open func stack() -> String {
+        return description
+    }
+
     /// JS `Error.prototype.toString`: same text as `description`.
     open func toString() -> String {
         return description

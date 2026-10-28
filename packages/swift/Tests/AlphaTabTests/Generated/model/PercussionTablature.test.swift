@@ -104,6 +104,34 @@ final class PercussionTablature {
             return (track, staff)
         }
 
+        @Test("allows creation for percussion staff with virtual tuning and showTablature")
+        func allowsCreationForPercussionStaffWithVirtualTuningAndShowTablature() async throws {
+            let factory: TabBarRendererFactory = TabBarRendererFactory(List<EffectBandInfo>())
+            let (track, staff) = TabBarRendererFactory_canCreateSuite.createStaff(true, true, List<Double>(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
+            TestGlobals.expect(factory.canCreate(track, staff)).toBe(true)
+        }
+
+        @Test("rejects percussion staff when showTablature is false")
+        func rejectsPercussionStaffWhenShowTablatureIsFalse() async throws {
+            let factory: TabBarRendererFactory = TabBarRendererFactory(List<EffectBandInfo>())
+            let (track, staff) = TabBarRendererFactory_canCreateSuite.createStaff(true, false, List<Double>(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
+            TestGlobals.expect(factory.canCreate(track, staff)).toBe(false)
+        }
+
+        @Test("rejects percussion staff without tuning")
+        func rejectsPercussionStaffWithoutTuning() async throws {
+            let factory: TabBarRendererFactory = TabBarRendererFactory(List<EffectBandInfo>())
+            let (track, staff) = TabBarRendererFactory_canCreateSuite.createStaff(true, true, List<Double>())
+            TestGlobals.expect(factory.canCreate(track, staff)).toBe(false)
+        }
+
+        @Test("allows creation for regular guitar staff")
+        func allowsCreationForRegularGuitarStaff() async throws {
+            let factory: TabBarRendererFactory = TabBarRendererFactory(List<EffectBandInfo>())
+            let (track, staff) = TabBarRendererFactory_canCreateSuite.createStaff(false, true, List<Double>(64.0, 59.0, 55.0, 50.0, 45.0, 40.0))
+            TestGlobals.expect(factory.canCreate(track, staff)).toBe(true)
+        }
+
         init() {}
     }
 

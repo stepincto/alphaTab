@@ -211,7 +211,7 @@ internal final class AlphaTexWriter {
 
     public func writeString(_ text: String) {
         self._preWrite()
-        self.tex += Environment.quoteJsonString(text)
+        self.tex += EnvironmentPartials.quoteJsonString(text)
     }
 
     public func writeLine(_ text: String? = nil) {

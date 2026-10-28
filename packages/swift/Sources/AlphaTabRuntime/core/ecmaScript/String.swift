@@ -9,6 +9,8 @@
 /// with JS semantics: indices are UTF-16 code units, ranges clamp instead of throwing.
 /// shortcut: Swift strings cannot hold a lone surrogate, so a slice that splits a surrogate pair
 /// becomes U+FFFD; alphaTab only slices ASCII-ish text, revisit if that changes.
+import Foundation
+
 extension String {
     @usableFromInline
     internal var _u16: [UInt16] {
@@ -238,6 +240,15 @@ extension String {
         default:
             return false
         }
+    }
+
+    /// JS `replace(string, string)`: the first occurrence only. The replacement is literal (JS also expands `$&`
+    /// and friends, which alphaTab never passes here).
+    public func replace(_ search: String, _ replacement: String) -> String {
+        guard let range = self.range(of: search) else {
+            return self
+        }
+        return self.replacingCharacters(in: range, with: replacement)
     }
 
     /// `replaceAll(string, string)`. shortcut: an empty search returns self unchanged (JS inserts

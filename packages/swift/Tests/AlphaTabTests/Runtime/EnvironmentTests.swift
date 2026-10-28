@@ -9,14 +9,14 @@ import Testing
 @testable import AlphaTab
 import AlphaTabRuntime
 
-/// Hand-written stand-ins in Settings.swift: `Environment.quoteJsonString` is JS `JSON.stringify(string)`
+/// `Json.quoteJsonString` (what `EnvironmentPartials.quoteJsonString` calls) is JS `JSON.stringify(string)`
 /// (ECMA-262 25.5.2.3 QuoteJSONString), `ScoreLoader.loadAlphaTex` reads alphaTex like JS.
 @Suite struct EnvironmentTests {
     @Test func quoteJsonStringEscapesLikeJsonStringify() {
-        #expect(Environment.quoteJsonString("a\"b\\c") == "\"a\\\"b\\\\c\"")
-        #expect(Environment.quoteJsonString("\n\r\t\u{08}\u{0C}") == "\"\\n\\r\\t\\b\\f\"")
-        #expect(Environment.quoteJsonString("\u{01}\u{1F}/\u{7F}") == "\"\\u0001\\u001f/\u{7F}\"")
-        #expect(Environment.quoteJsonString("\u{1F3B5}é") == "\"\u{1F3B5}é\"")
+        #expect(EnvironmentPartials.quoteJsonString("a\"b\\c") == "\"a\\\"b\\\\c\"")
+        #expect(EnvironmentPartials.quoteJsonString("\n\r\t\u{08}\u{0C}") == "\"\\n\\r\\t\\b\\f\"")
+        #expect(EnvironmentPartials.quoteJsonString("\u{01}\u{1F}/\u{7F}") == "\"\\u0001\\u001f/\u{7F}\"")
+        #expect(EnvironmentPartials.quoteJsonString("\u{1F3B5}é") == "\"\u{1F3B5}é\"")
     }
 
     @Test func exporterSettingsDefaults() {

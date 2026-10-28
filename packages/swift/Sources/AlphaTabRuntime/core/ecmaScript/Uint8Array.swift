@@ -45,6 +45,11 @@ public class TypedArray<E: TypedArrayElement>: Sequence {
         self.init(storage: TypedArrayStorage([E](repeating: E(js: 0), count: Int(n))), offset: 0, count: Int(n))
     }
 
+    /// `new XArray()`: empty.
+    public convenience init() {
+        self.init(0.0)
+    }
+
     /// `new XArray(arrayLike)`: each value converted as on write.
     public convenience init(_ values: some Sequence<Double>) {
         self.init(values.map { E(js: $0) })

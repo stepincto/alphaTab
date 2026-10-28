@@ -1779,9 +1779,9 @@ internal final class GpifParser {
                     }
                 case "VibratoWTremBar":
                     switch c.findChildElement("Strength")?.innerText {
-                    case "Wide":
+                    case "Wide"?:
                         beat.vibrato = VibratoType.Wide
-                    case "Slight":
+                    case "Slight"?:
                         beat.vibrato = VibratoType.Slight
                     default:
                         break
@@ -1820,50 +1820,50 @@ internal final class GpifParser {
                     beat.barreFret = GpifParser._parseIntSafe(c.findChildElement("Fret")?.innerText, 0.0)
                 case "BarreString":
                     switch c.findChildElement("String")?.innerText {
-                    case "0":
+                    case "0"?:
                         beat.barreShape = BarreShape.Full
-                    case "1":
+                    case "1"?:
                         beat.barreShape = BarreShape.Half
                     default:
                         break
                     }
                 case "Rasgueado":
                     switch c.findChildElement("Rasgueado")?.innerText {
-                    case "ii_1":
+                    case "ii_1"?:
                         beat.rasgueado = Rasgueado.Ii
-                    case "mi_1":
+                    case "mi_1"?:
                         beat.rasgueado = Rasgueado.Mi
-                    case "mii_1":
+                    case "mii_1"?:
                         beat.rasgueado = Rasgueado.MiiTriplet
-                    case "mii_2":
+                    case "mii_2"?:
                         beat.rasgueado = Rasgueado.MiiAnapaest
-                    case "pmp_1":
+                    case "pmp_1"?:
                         beat.rasgueado = Rasgueado.PmpTriplet
-                    case "pmp_2":
+                    case "pmp_2"?:
                         beat.rasgueado = Rasgueado.PmpAnapaest
-                    case "pei_1":
+                    case "pei_1"?:
                         beat.rasgueado = Rasgueado.PeiTriplet
-                    case "pei_2":
+                    case "pei_2"?:
                         beat.rasgueado = Rasgueado.PeiAnapaest
-                    case "pai_1":
+                    case "pai_1"?:
                         beat.rasgueado = Rasgueado.PaiTriplet
-                    case "pai_2":
+                    case "pai_2"?:
                         beat.rasgueado = Rasgueado.PaiAnapaest
-                    case "ami_1":
+                    case "ami_1"?:
                         beat.rasgueado = Rasgueado.AmiTriplet
-                    case "ami_2":
+                    case "ami_2"?:
                         beat.rasgueado = Rasgueado.AmiAnapaest
-                    case "ppp_1":
+                    case "ppp_1"?:
                         beat.rasgueado = Rasgueado.Ppp
-                    case "amii_1":
+                    case "amii_1"?:
                         beat.rasgueado = Rasgueado.Amii
-                    case "amip_1":
+                    case "amip_1"?:
                         beat.rasgueado = Rasgueado.Amip
-                    case "eami_1":
+                    case "eami_1"?:
                         beat.rasgueado = Rasgueado.Eami
-                    case "eamii_1":
+                    case "eamii_1"?:
                         beat.rasgueado = Rasgueado.Eamii
-                    case "peami_1":
+                    case "peami_1"?:
                         beat.rasgueado = Rasgueado.Peami
                     default:
                         break

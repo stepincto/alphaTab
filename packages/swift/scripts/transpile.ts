@@ -13,8 +13,8 @@ import url from 'node:url';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-// shortcut: the skyline spike (spec 027 T016) generates one self-contained module; widen this list
-// module by module until the filter goes away and the whole of alphaTab is generated.
+// The tiers generated so far; widen this list until the filter goes away and the whole of alphaTab is generated.
+// Not generated: the audio synth engine (synth/), the browser and worker platform, alphaSkia (see SKIPPED.md).
 const sources = [
     '/alphatab/src/rendering/skyline/',
     '/alphatab/src/rendering/utils/ObjectPool.ts',
@@ -60,10 +60,7 @@ const sources = [
     '/alphatab/src/exporter/AlphaTexExporter.ts',
     '/alphatab/src/exporter/ScoreExporter.ts',
     // tier "settings-importers": the real Settings (all groups and their generated serializers), every
-    // importer, ScoreLoader, xml/, zip/ and test/TestPlatform, for the model tests that load files. Cut at
-    // Environment (its import closure is the whole library: renderers, synth, workers), which stays a
-    // hand-written stand-in in Sources/AlphaTab/Environment.swift. MusicXmlImporter names one static of
-    // rendering/utils/AccidentalHelper (a renderer class); Sources/AlphaTab/AccidentalHelper.swift stands in.
+    // importer, ScoreLoader, xml/, zip/ and test/TestPlatform, for the model tests that load files.
     '/alphatab/src/Settings.ts',
     '/alphatab/src/CoreSettings.ts',
     '/alphatab/src/DisplaySettings.ts',
@@ -86,21 +83,52 @@ const sources = [
     '/alphatab/src/rendering/utils/MasterBarBounds.ts',
     '/alphatab/src/rendering/utils/NoteBounds.ts',
     '/alphatab/src/rendering/utils/StaffSystemBounds.ts',
-    '/alphatab/test/TestPlatform.ts'
+    '/alphatab/test/TestPlatform.ts',
+    // tier "rendering": the layout and drawing engine, the canvases, Environment and the rendering tests.
+    // Left out: platform/javascript, platform/worker, platform/skia (browser, worker, alphaSkia) and synth/.
+    '/alphatab/src/rendering/',
+    '/alphatab/src/platform/ICanvas.ts',
+    '/alphatab/src/platform/svg/',
+    '/alphatab/src/platform/Json.ts',
+    '/alphatab/src/Environment.ts',
+    '/alphatab/src/midi/',
+    '/alphatab/src/profiling/',
+    // the data and interface types of the player that the midi generator and the UI facade name
+    '/alphatab/src/synth/IAlphaSynth.ts',
+    '/alphatab/src/synth/ISynthOutput.ts',
+    '/alphatab/src/synth/PlaybackRange.ts',
+    '/alphatab/src/synth/PlayerState.ts',
+    '/alphatab/src/synth/PlayerStateChangedEventArgs.ts',
+    '/alphatab/src/synth/PlaybackRangeChangedEventArgs.ts',
+    '/alphatab/src/synth/PositionChangedEventArgs.ts',
+    '/alphatab/src/synth/MidiEventsPlayedEventArgs.ts',
+    '/alphatab/src/synth/ActiveBeatsChangedEventArgs.ts',
+    '/alphatab/test/rendering/',
+    // the API object the rendering tests drive (through TestUiFacade), with the player-facing types it names
+    '/alphatab/src/AlphaTabApiBase.ts',
+    '/alphatab/src/CursorHandler.ts',
+    '/alphatab/src/ScrollHandlers.ts',
+    '/alphatab/src/ResizeEventArgs.ts',
+    '/alphatab/src/ProgressEventArgs.ts',
+    '/alphatab/src/platform/Cursors.ts',
+    '/alphatab/src/platform/IContainer.ts',
+    '/alphatab/src/platform/IMouseEventArgs.ts',
+    '/alphatab/src/platform/IUiFacade.ts',
+    '/alphatab/src/synth/AlphaSynthWrapper.ts',
+    '/alphatab/src/synth/IAudioExporter.ts',
+    '/alphatab/test/visualTests/TestUiFacade.ts',
+    '/alphatab/test/importer/MusicXmlImporterTestHelper.ts'
 ];
 // files inside the source list left out: whole test files (each reason is in Tests/AlphaTabTests/SKIPPED.md),
 // and VersionInfo, which only Environment reads and whose build date and commit would change the
 // generated output on every fresh clone
-const excluded: string[] = ['/alphatab/src/generated/VersionInfo.ts'];
+const excluded: string[] = ['/alphatab/src/generated/VersionInfo.ts', '/alphatab/src/EventEmitter.ts'];
 // single test cases left out of files whose other tests run; each reason is in Tests/AlphaTabTests/SKIPPED.md
-const excludedTests = [
-    '/alphatab/test/importer/AlphaTexImporter.test.ts#hamonics-rendering-text-issue79',
-    // TabBarRendererFactory is a renderer (BarRendererFactory, TabBarRenderer, ScoreRenderer)
-    '/alphatab/test/model/PercussionTablature.test.ts#TabBarRendererFactory.canCreate > allows creation for percussion staff with virtual tuning and showTablature',
-    '/alphatab/test/model/PercussionTablature.test.ts#TabBarRendererFactory.canCreate > rejects percussion staff when showTablature is false',
-    '/alphatab/test/model/PercussionTablature.test.ts#TabBarRendererFactory.canCreate > rejects percussion staff without tuning',
-    '/alphatab/test/model/PercussionTablature.test.ts#TabBarRendererFactory.canCreate > allows creation for regular guitar staff'
-];
+const excludedTests: string[] = [];
+// members of generated files whose body the Swift target traps instead of translating; reasons in SKIPPED.md
+const stubbedMembers: Record<string, string> = {
+    '/alphatab/test/visualTests/TestUiFacade.ts#TestUiFacade.createWorkerPlayer': 'the audio synth is not part of the Swift target'
+};
 const fileFilter = (fileName: string) => {
     const f = fileName.replaceAll('\\', '/');
     return sources.some(s => f.includes(s)) && !excluded.some(s => f.endsWith(s));
@@ -175,7 +203,7 @@ transpiler(
     [
         {
             name: 'Swift',
-            emit: createEmit(scratch(srcOut), scratch(testOut), excludedTests)
+            emit: createEmit(scratch(srcOut), scratch(testOut), excludedTests, stubbedMembers)
         }
     ],
     true,
