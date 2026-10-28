@@ -1676,7 +1676,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     }
 
     /** Runtime types that are Swift protocols, used as existentials (`any Disposable`). */
-    private static readonly _runtimeProtocols = new Set(['Disposable', 'AsyncDisposable']);
+    // protocols the Swift module or its runtime declares by hand (EventEmitter.swift is not generated)
+    private static readonly _runtimeProtocols = new Set(['Disposable', 'AsyncDisposable', 'IEventEmitter', 'IEventEmitterOfT']);
 
     private static readonly _bitOperators = new Set(['&', '|', '^', '<<', '>>']);
 
@@ -3340,13 +3341,18 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     /** `const t = [a, b]; t[0] = x`: TS tuples are mutable arrays, Swift tuples are values. */
     private _tupleElementIsWritten(d: cs.VariableDeclaration): boolean {
+        return this._firstTupleWrite(d) !== undefined;
+    }
+
+    /** The position of the first element write to the tuple a declaration holds, if any. */
+    private _firstTupleWrite(d: cs.VariableDeclaration): number | undefined {
         const tsNode = d.tsNode;
         if (!tsNode || !ts.isVariableDeclaration(tsNode) || !ts.isIdentifier(tsNode.name)) {
-            return false;
+            return undefined;
         }
         const checker = this._context.typeChecker;
         if (!checker.isTupleType(checker.getTypeAtLocation(tsNode.name))) {
-            return false;
+            return undefined;
         }
         const symbol = checker.getSymbolAtLocation(tsNode.name);
         let scope: ts.Node = tsNode;
@@ -3363,9 +3369,9 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 checker.getSymbolAtLocation(n.expression) === symbol
             );
         };
-        let written = false;
+        let first: number | undefined;
         const visit = (n: ts.Node) => {
-            if (written) {
+            if (first !== undefined) {
                 return;
             }
             if (
@@ -3377,13 +3383,58 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                     (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken) &&
                     isTarget(n.operand))
             ) {
-                written = true;
+                first = n.getStart();
                 return;
             }
             ts.forEachChild(n, visit);
         };
         visit(scope);
-        return written;
+        return first;
+    }
+
+    /**
+     * `setShared(key, info); ... info[0] = x`: the call hands `info` to a store while TS goes on mutating the same
+     * array. A Swift tuple is copied into the store, so the call moves to the end of the scope (`defer`), where
+     * it publishes the final value; nothing between reads the store (TabWhammyEffectInfo.onAlignGlyphs).
+     */
+    private _isTuplePublish(s: cs.ExpressionStatement): boolean {
+        const call = s.expression.tsNode;
+        if (!call || !ts.isCallExpression(call) || !ts.isExpressionStatement(call.parent)) {
+            return false;
+        }
+        const checker = this._context.typeChecker;
+        return call.arguments.some(a => {
+            if (!ts.isIdentifier(a)) {
+                return false;
+            }
+            const declaration = checker.getSymbolAtLocation(a)?.valueDeclaration;
+            if (!declaration || !ts.isVariableDeclaration(declaration) || declaration.getSourceFile() !== a.getSourceFile()) {
+                return false;
+            }
+            // the declaration's cs node is not at hand: rebuild the position test from the TS side
+            const write = this._firstTupleWriteOf(declaration);
+            return write !== undefined && write > a.getStart();
+        });
+    }
+
+    private _firstTupleWriteOf(declaration: ts.VariableDeclaration): number | undefined {
+        return this._firstTupleWrite({ tsNode: declaration } as unknown as cs.VariableDeclaration);
+    }
+
+    protected override writeExpressionStatement(s: cs.ExpressionStatement) {
+        if (this._isTuplePublish(s)) {
+            this.write('defer');
+            this._openBrace();
+            this._deferDepth++;
+            try {
+                super.writeExpressionStatement(s);
+            } finally {
+                this._deferDepth--;
+            }
+            this._closeBrace();
+            return;
+        }
+        super.writeExpressionStatement(s);
     }
 
     protected writeLocalFunction(expr: cs.LocalFunctionDeclaration) {
