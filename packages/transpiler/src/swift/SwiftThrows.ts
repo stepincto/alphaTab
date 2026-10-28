@@ -137,6 +137,16 @@ export class SwiftThrows {
      * (a closure passed to `new Lazy(...)`) may throw and JS lets that error reach the reader.
      */
     public isThrowingRead(n: ts.Node): boolean {
+        // `await promise` on a Promise object (a variable, a property): the runtime's `await()` throws the rejection
+        if (ts.isAwaitExpression(n)) {
+            const operand = n.expression;
+            return (
+                !ts.isCallExpression(operand) &&
+                !ts.isNewExpression(operand) &&
+                this._program.getTypeChecker().getTypeAtLocation(operand).getSymbol()?.name === 'Promise' &&
+                this._canThrowHere(n)
+            );
+        }
         if (!ts.isPropertyAccessExpression(n) || n.name.text !== 'value') {
             return false;
         }

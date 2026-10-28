@@ -131,6 +131,13 @@ export default class SwiftAstPrinter extends AstPrinterBase {
 
     // ── file ──────────────────────────────────────────────────────────────
 
+    private _importsVitest(sourceFile: cs.SourceFile): boolean {
+        const tsFile = sourceFile.tsNode as ts.SourceFile | undefined;
+        return !!tsFile?.statements.some(
+            s => ts.isImportDeclaration(s) && ts.isStringLiteral(s.moduleSpecifier) && s.moduleSpecifier.text === 'vitest'
+        );
+    }
+
     private _importsLibrary(sourceFile: cs.SourceFile): boolean {
         const tsFile = sourceFile.tsNode as ts.SourceFile | undefined;
         if (!tsFile?.fileName.includes('/test/')) {
@@ -154,7 +161,8 @@ export default class SwiftAstPrinter extends AstPrinterBase {
         this.writeLine('// </auto-generated>');
         this.writeLine();
         const hasTests = sourceFile.namespace.declarations.some(d => this._isTestClass(d));
-        if (hasTests) {
+        // a test helper that calls vitest's `expect` reports through Swift Testing's macros too
+        if (hasTests || this._importsVitest(sourceFile)) {
             this.writeLine('import Testing');
         }
         // a test helper without a describe (ComparisonHelpers) still names AlphaTab's types when it imports them
@@ -1887,8 +1895,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
             case '==':
             case '!=': {
                 const negated = expr.operator.startsWith('!');
-                if (this._isAnyValue(expr.left) && this._isAnyValue(expr.right)) {
-                    // two `Any?` values: Swift has no `==` on them
+                if (
+                    (this._isAnyValue(expr.left) && (this._isAnyValue(expr.right) || this._isReference(expr.right))) ||
+                    (this._isAnyValue(expr.right) && this._isReference(expr.left))
+                ) {
+                    // an `Any?` value against another or against an instance (`obj === this`): Swift has no `==` on them
                     this.write(negated ? '!TypeHelper.strictEquals(' : 'TypeHelper.strictEquals(');
                     this.writeExpression(expr.left);
                     this.write(', ');
@@ -2209,6 +2220,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     }
 
     protected writeCastExpression(expr: cs.CastExpression) {
+        // Kotlin's `x.promise as Deferred<T>` before `.await()`: the Promise object is already the runtime's Promise
+        if (cs.isTypeReference(expr.type) && expr.type.isAsync) {
+            this.writeExpression(expr.expression);
+            return;
+        }
         if (cs.isPrimitiveTypeNode(expr.type)) {
             switch (expr.type.type) {
                 case cs.PrimitiveType.Double: {
