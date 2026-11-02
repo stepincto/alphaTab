@@ -122,7 +122,9 @@ const sources = [
     // the visual tests, drawn as SVG and compared with goldens the TS wrote (see svg-goldens/); by feature group
     '/alphatab/test/visualTests/features/',
     '/alphatab/test/visualTests/issues/',
-    '/alphatab/test/visualTests/skyline/'
+    '/alphatab/test/visualTests/skyline/',
+    // the image comparison of the Core Graphics PNG check (Tests/AlphaTabTests/CoreGraphics/)
+    '/alphatab/test/visualTests/PixelMatch.ts'
 ];
 // files inside the source list left out: whole test files (each reason is in Tests/AlphaTabTests/SKIPPED.md),
 // and VersionInfo, which only Environment reads and whose build date and commit would change the
