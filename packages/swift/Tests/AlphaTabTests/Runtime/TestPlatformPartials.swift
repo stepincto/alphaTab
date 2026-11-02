@@ -48,7 +48,7 @@ enum TestPlatformPartials {
         .deletingLastPathComponent() // packages/
         .appendingPathComponent("alphatab")
 
-    private static func resolve(_ path: String) -> URL {
+    static func resolve(_ path: String) -> URL {
         return path.hasPrefix("/") ? URL(fileURLWithPath: path) : projectRoot.appendingPathComponent(path)
     }
 

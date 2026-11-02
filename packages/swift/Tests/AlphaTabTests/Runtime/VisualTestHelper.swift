@@ -8,6 +8,9 @@
 @testable import AlphaTab
 import AlphaTabRuntime
 import Foundation
+#if canImport(CoreGraphics)
+import CoreGraphics
+#endif
 
 // Hand-written stand-in for test/visualTests/VisualTestHelper.ts: that file draws with alphaSkia and compares
 // PNGs, which the Swift target cannot do (it renders SVG). The members the tests call keep their names.
@@ -23,18 +26,44 @@ final class VisualTestRun {
 }
 
 /// Stand-in for alphaSkia's `AlphaSkiaCanvas`, the raster canvas the TS tests draw debug overlays on (bounds
-/// lookups, skylines) before comparing PNGs. It draws nothing: the SVG goldens cover the score, the overlay
-/// code still runs against the rendered result, but the overlay pixels are not compared (see SKIPPED.md).
+/// lookups, skylines) before comparing PNGs. With no context it draws nothing: the SVG goldens cover the score,
+/// and the overlay code still runs against the rendered result. On macOS the PNG check (`PngVisualCheck`) hands it
+/// the Core Graphics bitmap of the full image, so the overlays land in the compared pixels as in the TS.
 final class AlphaSkiaCanvas {
     var color: Double = 0
     var lineWidth: Double = 1
+    #if canImport(CoreGraphics)
+    let context: CGContext?
+
+    init(_ context: CGContext? = nil) {
+        self.context = context
+    }
+
+    private var cgColor: CGColor {
+        let argb = Int(color)
+        func channel(_ shift: Int) -> CGFloat { CGFloat((argb >> shift) & 0xff) / 255 }
+        return CGColor(srgbRed: channel(16), green: channel(8), blue: channel(0), alpha: channel(24))
+    }
+    #endif
 
     static func rgbaToColor(_ r: Double, _ g: Double, _ b: Double, _ a: Double) -> Double {
         return Double((Int(a) << 24) | (Int(r) << 16) | (Int(g) << 8) | Int(b))
     }
 
-    func fillRect(_ x: Double, _ y: Double, _ w: Double, _ h: Double) {}
-    func strokeRect(_ x: Double, _ y: Double, _ w: Double, _ h: Double) {}
+    func fillRect(_ x: Double, _ y: Double, _ w: Double, _ h: Double) {
+        #if canImport(CoreGraphics)
+        context?.setFillColor(cgColor)
+        context?.fill(CGRect(x: x, y: y, width: w, height: h))
+        #endif
+    }
+
+    func strokeRect(_ x: Double, _ y: Double, _ w: Double, _ h: Double) {
+        #if canImport(CoreGraphics)
+        context?.setStrokeColor(cgColor)
+        context?.setLineWidth(lineWidth)
+        context?.stroke(CGRect(x: x, y: y, width: w, height: h))
+        #endif
+    }
 }
 
 final class VisualTestOptions {
@@ -118,14 +147,49 @@ enum VisualTestHelper {
     }
 
     /// Renders every run with the SVG engine and compares the text with the golden the TS wrote
-    /// (scripts/svg-goldens/SvgGoldenHelper.ts renders the same options through the TS original).
+    /// (scripts/svg-goldens/SvgGoldenHelper.ts renders the same options through the TS original). On macOS the
+    /// same runs are then drawn with the Core Graphics engine and compared with the TS reference PNGs
+    /// (`PngVisualCheck`).
     static func runVisualTestFull(_ options: VisualTestOptions) async throws {
+        prepareSettingsForTest(options.settings)
+        let rendered = try await render(options)
+        defer {
+            try? rendered.api.destroy()
+        }
+
+        var failures: [String] = []
+        for i in 0..<rendered.results.count {
+            try options.prepareFullImage?(options.runs[i], rendered.api, AlphaSkiaCanvas())
+            let actual = goldenText(rendered.totalWidths[i], rendered.totalHeights[i], rendered.results[i])
+            if let failure = SvgGolden.compare(actual, options.runs[i].referenceFileName) {
+                failures.append(failure)
+            }
+        }
+        #if canImport(CoreGraphics) && canImport(CoreText)
+        // opt in (ALPHATAB_PNG_CHECK=1): a Core Graphics render plus pixel compare per case makes the suite ~6x
+        // slower and skews timing tests such as color-performance
+        if PngVisualCheck.enabled {
+            failures += try await PngVisualCheck.run(options)
+        }
+        #endif
+        if !failures.isEmpty {
+            throw JsError(failures.joined(separator: "\n"))
+        }
+    }
+
+    struct Rendered {
+        var api: AlphaTabApiBase<Any?>
+        var results: [[RenderFinishedEventArgs]]
+        var totalWidths: [Double]
+        var totalHeights: [Double]
+    }
+
+    /// Renders every run of `options` with the engine in its settings, as the TS `runVisualTestFull`.
+    static func render(_ options: VisualTestOptions) async throws -> Rendered {
         let settings = options.settings
         let tracks = options.tracks ?? List<Double>(0.0)
         let runs = options.runs
         var runIndex = 0
-
-        prepareSettingsForTest(settings)
 
         var results: [[RenderFinishedEventArgs]] = []
         var totalWidths: [Double] = []
@@ -135,59 +199,50 @@ enum VisualTestHelper {
         runIndex += 1
 
         let api = try AlphaTabApiBase<Any?>(uiFacade, settings)
-        defer {
-            try? api.destroy()
-        }
 
         let timeout = 2000.0 * runs.length
-        try await TypeHelper.createPromise({ (resolve: @escaping () -> Void, reject: @escaping (Any) -> Void) in
-            api.renderStarted.on({ (_: Bool) in
-                results.append([])
-                totalWidths.append(0)
-                totalHeights.append(0)
-            })
-            try api.renderer.partialRenderFinished.on({ (e: RenderFinishedEventArgs) in
-                results[results.count - 1].append(e)
-            })
-            try api.renderer.renderFinished.on({ (e: RenderFinishedEventArgs) in
-                totalWidths[totalWidths.count - 1] = e.totalWidth
-                totalHeights[totalHeights.count - 1] = e.totalHeight
-                results[results.count - 1].append(e)
-            })
-            try api.renderer.postRenderFinished.on({ () in
-                if runIndex < runs.length.toInt() {
-                    uiFacade.rootContainer.width = runs[runIndex].width
-                    runIndex += 1
-                    try api.triggerResize()
-                } else {
-                    resolve()
-                }
-            })
-            api.error.on({ (e: JsError) in
-                reject(JsError("Failed to render image (\(e.message) \(e.stack()))", e))
-            })
+        do {
+            try await TypeHelper.createPromise({ (resolve: @escaping () -> Void, reject: @escaping (Any) -> Void) in
+                api.renderStarted.on({ (_: Bool) in
+                    results.append([])
+                    totalWidths.append(0)
+                    totalHeights.append(0)
+                })
+                try api.renderer.partialRenderFinished.on({ (e: RenderFinishedEventArgs) in
+                    results[results.count - 1].append(e)
+                })
+                try api.renderer.renderFinished.on({ (e: RenderFinishedEventArgs) in
+                    totalWidths[totalWidths.count - 1] = e.totalWidth
+                    totalHeights[totalHeights.count - 1] = e.totalHeight
+                    results[results.count - 1].append(e)
+                })
+                try api.renderer.postRenderFinished.on({ () in
+                    if runIndex < runs.length.toInt() {
+                        uiFacade.rootContainer.width = runs[runIndex].width
+                        runIndex += 1
+                        try api.triggerResize()
+                    } else {
+                        resolve()
+                    }
+                })
+                api.error.on({ (e: JsError) in
+                    reject(JsError("Failed to render image (\(e.message) \(e.stack()))", e))
+                })
 
-            // as the TS: the score goes through the serializer once, so both sides render the same objects
-            // the render ids (`class="b12"`) count up from the last import: start from zero, as the TS helper does
-            Score.resetIds()
-            let renderScore = try JsonConverter.jsObjectToScore(JsonConverter.scoreToJsObject(options.score), settings)
-            try api.renderScore(renderScore, tracks)
-            Globals.setTimeout({ () in
-                reject(JsError("Rendering did not complete after \(timeout)ms"))
-            }, timeout)
-        })
-
-        var failures: [String] = []
-        for i in 0..<results.count {
-            try options.prepareFullImage?(runs[i], api, AlphaSkiaCanvas())
-            let actual = goldenText(totalWidths[i], totalHeights[i], results[i])
-            if let failure = SvgGolden.compare(actual, runs[i].referenceFileName) {
-                failures.append(failure)
-            }
+                // as the TS: the score goes through the serializer once, so both sides render the same objects
+                // the render ids (`class="b12"`) count up from the last import: start from zero, as the TS helper does
+                Score.resetIds()
+                let renderScore = try JsonConverter.jsObjectToScore(JsonConverter.scoreToJsObject(options.score), settings)
+                try api.renderScore(renderScore, tracks)
+                Globals.setTimeout({ () in
+                    reject(JsError("Rendering did not complete after \(timeout)ms"))
+                }, timeout)
+            })
+        } catch {
+            try? api.destroy()
+            throw error
         }
-        if !failures.isEmpty {
-            throw JsError(failures.joined(separator: "\n"))
-        }
+        return Rendered(api: api, results: results, totalWidths: totalWidths, totalHeights: totalHeights)
     }
 
     /// The text the TS `goldenText` writes: the size line, then a header line and the SVG per partial result.

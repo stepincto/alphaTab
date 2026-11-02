@@ -38,6 +38,10 @@ alphaSkia on the other targets, so here they render the same input as SVG and mu
 renders in Node (`Tests/AlphaTabTests/SKIPPED.md`). The audio synth, the browser/worker platform and alphaSkia are
 not part of the Swift target.
 
+`AlphaTabIOS` (macOS/iOS only) draws with Core Graphics and Core Text, with Bravura bundled:
+`CoreGraphicsRenderer.enable()`, then `CoreGraphicsRenderer.render(...)` gives a CGImage and the BoundsLookup.
+`ALPHATAB_PNG_CHECK=1 swift test --no-parallel` also compares its renders with the TS reference PNGs (SKIPPED.md).
+
 The emitter is driven by the transpiler's fixture tests: every fixture folder under
 `packages/transpiler/test/fixtures/` with an `expected.swift` is checked against the Swift
 emitter (`npx vitest run` in `packages/transpiler`).

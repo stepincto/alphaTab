@@ -62,6 +62,22 @@ never from Swift: `npm run svg-goldens` (packages/swift) runs the same test file
   The Swift `AlphaSkiaCanvas` stand-in draws nothing; the overlay code still runs on the rendered result.
 - Both helpers apply the same settings (`engine = svg`, scale 1, Noto font families) and start the render ids at 0.
 
+## Visual tests on Core Graphics: PNG check (macOS, opt in)
+
+`CoreGraphics/PngVisualCheck.swift` renders every visual case again with the Core Graphics engine (`AlphaTabIOS`)
+and compares it with the TS reference PNG through the translated PixelMatch with the TS options (threshold 0.3,
+anti-aliasing ignored, the case's tolerance, 0 by default). It runs only with `ALPHATAB_PNG_CHECK=1` (writes
+`packages/swift/.visual-png/results.tsv` and diff images) or `ALPHATAB_PNG_STRICT=1` (also fails the case); the
+SVG goldens stay the pass/fail check. Known limits, measured 2026-11-02 on macOS (685 cases, none within 0%):
+414 differ by under 0.5%, 151 by 0.5-1%, 99 by 1-2%, 15 by 2-5%, 6 by 5% or more.
+- Text: widths and heights equal alphaSkia's (all 203 distinct measureText calls of notation-legend replayed in
+  Node), but FreeType hints glyph outlines to whole pixels vertically and Core Graphics cannot, so text pixels
+  differ slightly on every page with text.
+- Emoji: Noto Color Emoji holds only CBDT bitmaps, which Core Text cannot draw; Apple Color Emoji stands in
+  (`general/font-fallback`, 18%).
+- Not yet investigated: `musicxml-samples/Echigo` (1026 px high, reference 1007) and `musicxml-testsuite/32a-Notations`
+  (793 vs 792), `musicxml3/chord-diagram` (9.9%), `32b-Articulations-Texts` (14.7%), `staff-display-config/cascade-numbered-only` (5.5%).
+
 ## Test cases not emitted (`@target web`)
 
 `rendering/ScaleToWidthCallCount.test.ts` is `@target web` as a whole (it monkey-patches a prototype), so the
