@@ -18,10 +18,16 @@ let package = Package(
     targets: [
         .target(name: "AlphaTabRuntime", path: "packages/swift/Sources/AlphaTabRuntime"),
         .target(name: "AlphaTab", dependencies: ["AlphaTabRuntime"], path: "packages/swift/Sources/AlphaTab"),
-        .target(name: "AlphaTabIOS", dependencies: ["AlphaTab"], path: "packages/swift/Sources/AlphaTabIOS"),
+        // Core Graphics drawing; every file is inside `#if canImport(CoreGraphics)`, so on Linux it builds empty
+        .target(
+            name: "AlphaTabIOS",
+            dependencies: ["AlphaTab", "AlphaTabRuntime"],
+            path: "packages/swift/Sources/AlphaTabIOS",
+            resources: [.copy("Resources/Bravura.otf"), .copy("Resources/Bravura-OFL.txt")]
+        ),
         .testTarget(
             name: "AlphaTabTests",
-            dependencies: ["AlphaTab", "AlphaTabRuntime"],
+            dependencies: ["AlphaTab", "AlphaTabRuntime", "AlphaTabIOS"],
             path: "packages/swift/Tests/AlphaTabTests",
             exclude: ["SKIPPED.md", "SvgGoldens", "Runtime/Ieee754Vectors.txt"]
         )

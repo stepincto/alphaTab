@@ -148,3 +148,18 @@ internal final class ExternalMediaPlayer: IAlphaSynth {
     var midiEventsPlayed: IEventEmitterOfT<MidiEventsPlayedEventArgs> { unavailable() }
     var playbackRangeChanged: IEventEmitterOfT<PlaybackRangeChangedEventArgs> { unavailable() }
 }
+
+/// The members the platform layer (`AlphaTabIOS`, a separate module, like the Kotlin target's
+/// `alphaTab.platform.android`) needs that the TS marks internal, so the generated code keeps them internal.
+public enum PlatformBridge {
+    /// `Environment.highDpiFactor`: the device pixels per point a raster canvas draws at.
+    public static var highDpiFactor: Double {
+        get { Environment.highDpiFactor }
+        set { Environment.highDpiFactor = newValue }
+    }
+
+    /// `RenderingResources.smuflFontFamilyName`: the music font a score asks for, nil for the default (Bravura).
+    public static func smuflFontFamilyName(_ settings: Settings) -> String? {
+        return settings.display.resources.smuflFontFamilyName
+    }
+}
