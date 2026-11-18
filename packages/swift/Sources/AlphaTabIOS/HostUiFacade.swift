@@ -128,6 +128,8 @@ public final class HostUiFacade: IUiFacade {
 
     /// The cursors alphaTab drives; the host view draws them.
     public private(set) var cursors: Cursors?
+    /// Called when a whole render has been laid out and every page handed over (alphaTab's end-of-results signal).
+    public var onRenderComplete: (() -> Void)?
     private var api: AlphaTabApiBase<Any?>!
     private var placeholders: [String: HostContainer] = [:]
     private var resultCount = 0
@@ -158,6 +160,7 @@ public final class HostUiFacade: IUiFacade {
             // a null result ends the list: drop placeholders left over from a longer previous layout
             if canvas.children.count > resultCount { canvas.children.removeLast(canvas.children.count - resultCount) }
             canvas.onChange?()
+            onRenderComplete?()
             return
         }
         let placeholder: HostContainer
