@@ -382,7 +382,13 @@ export enum NotationElement {
     /**
      * The slide text shown on slurs.
      */
-    EffectSlideText = 57
+    EffectSlideText = 57,
+
+    /**
+     * The lyrics above a standard notation staff (they are always shown above the tab). Hidden by default, so a
+     * score without it renders as before; set it visible to put the sung words above the staff, under the chords.
+     */
+    EffectLyricsOnScore = 58
 }
 
 /**
@@ -454,7 +460,7 @@ export class NotationSettings {
      * Whether music notation elements are visible or not.
      * @since 0.9.8
      * @category Notation
-     * @defaultValue `[[NotationElement.ZerosOnDiveWhammys, false]]`
+     * @defaultValue `[[NotationElement.ZerosOnDiveWhammys, false], [NotationElement.EffectLyricsOnScore, false]]`
      * @remarks
      * AlphaTab has quite a set of notation elements that are usually shown by default or only shown when using
      * the `SongBook` notation mode. This setting allows showing/hiding individual notation elements like the
@@ -502,7 +508,8 @@ export class NotationSettings {
      * If items are not listed explicitly in this list, they are considered visible.
      */
     public static defaultElements: Map<NotationElement, boolean> = new Map([
-        [NotationElement.ZerosOnDiveWhammys, false]
+        [NotationElement.ZerosOnDiveWhammys, false],
+        [NotationElement.EffectLyricsOnScore, false]
     ]);
 
     /**

@@ -32,3 +32,30 @@ export const lyricsEffectInfo: EffectInfo = {
     },
     canExpand: (_from: Beat, _to: Beat): boolean => true
 };
+
+/**
+ * The same lyrics row (same `effectId`, so it is one shared band with the tab's) on a standard notation staff, shown only
+ * when {@link NotationElement.EffectLyricsOnScore} is set visible.
+ * @internal
+ */
+export const lyricsOnScoreEffectInfo: EffectInfo = {
+    effectId: 'EffectLyrics',
+    notationElement: NotationElement.EffectLyricsOnScore,
+    hideOnMultiTrack: false,
+    sizingMode: EffectBarGlyphSizing.SingleOnBeat,
+    placementCategory: EffectBandPlacementCategory.HorizontalRow,
+    overlayRodPolicy: OverlayRodPolicy.Centered,
+    shouldCreateGlyph: (_renderer: BarRendererBase, beat: Beat): boolean => {
+        return !!beat.lyrics;
+    },
+    createNewGlyph: (renderer: BarRendererBase, beat: Beat): EffectGlyph => {
+        return new LyricsGlyph(
+            0,
+            0,
+            beat.lyrics!,
+            renderer.resources.elementFonts.get(NotationElement.EffectLyrics)!,
+            TextAlign.Center
+        );
+    },
+    canExpand: (_from: Beat, _to: Beat): boolean => true
+};

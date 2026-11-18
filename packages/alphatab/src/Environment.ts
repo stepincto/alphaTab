@@ -43,7 +43,7 @@ import { createGolpeEffectInfo } from '@coderline/alphatab/rendering/effects/Gol
 import { createHarmonicsEffectInfo } from '@coderline/alphatab/rendering/effects/HarmonicsEffectInfo';
 import { leftHandTapEffectInfo } from '@coderline/alphatab/rendering/effects/LeftHandTapEffectInfo';
 import { letRingEffectInfo } from '@coderline/alphatab/rendering/effects/LetRingEffectInfo';
-import { lyricsEffectInfo } from '@coderline/alphatab/rendering/effects/LyricsEffectInfo';
+import { lyricsEffectInfo, lyricsOnScoreEffectInfo } from '@coderline/alphatab/rendering/effects/LyricsEffectInfo';
 import { markerEffectInfo } from '@coderline/alphatab/rendering/effects/MarkerEffectInfo';
 import { noteOrnamentEffectInfo } from '@coderline/alphatab/rendering/effects/NoteOrnamentEffectInfo';
 import { numberedBarKeySignatureEffectInfo } from '@coderline/alphatab/rendering/effects/NumberedBarKeySignatureEffectInfo';
@@ -475,6 +475,7 @@ export class Environment {
         //
         // Score (standard notation)
         new ScoreBarRendererFactory([
+            { effect: lyricsOnScoreEffectInfo, mode: EffectBandMode.SharedTop },
             { effect: capoEffectInfo, mode: EffectBandMode.SharedTop },
             { effect: fermataEffectInfo, mode: EffectBandMode.SharedTop },
             { effect: beatBarreEffectInfo, mode: EffectBandMode.SharedTop },

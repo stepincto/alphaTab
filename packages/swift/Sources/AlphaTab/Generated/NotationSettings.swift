@@ -30,7 +30,7 @@ public final class NotationSettings {
      * this map as it might not result in the expected side effects.
      * If items are not listed explicitly in this list, they are considered visible.
      */
-    nonisolated(unsafe) public static var defaultElements: Map<NotationElement, Bool> = Map<NotationElement, Bool>([((NotationElement.ZerosOnDiveWhammys as! NotationElement), false)])
+    nonisolated(unsafe) public static var defaultElements: Map<NotationElement, Bool> = Map<NotationElement, Bool>([(NotationElement.ZerosOnDiveWhammys, false), (NotationElement.EffectLyricsOnScore, false)])
 
     /**
      * Controls how the rhythm notation is rendered for tab staves.
@@ -410,4 +410,9 @@ public enum NotationElement: Int, IAlphaTabEnum, CaseIterable {
      * The slide text shown on slurs.
      */
     case EffectSlideText = 57
+    /**
+     * The lyrics above a standard notation staff (they are always shown above the tab). Hidden by default, so a
+     * score without it renders as before; set it visible to put the sung words above the staff, under the chords.
+     */
+    case EffectLyricsOnScore = 58
 }

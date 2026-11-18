@@ -14,4 +14,16 @@ internal enum LyricsEffectInfoGlobals {
     }, canExpand: { (_from: Beat, _to: Beat) -> Bool in
         return true
     }, placementCategory: EffectBandPlacementCategory.HorizontalRow, overlayRodPolicy: OverlayRodPolicy.Centered)
+
+    /**
+     * The same lyrics row (same `effectId`, so it is one shared band with the tab's) on a standard notation staff, shown only
+     * when  is set visible.
+     */
+    nonisolated(unsafe) internal static let lyricsOnScoreEffectInfo: EffectInfo = EffectInfo(effectId: "EffectLyrics", notationElement: NotationElement.EffectLyricsOnScore, hideOnMultiTrack: false, shouldCreateGlyph: { (_renderer: BarRendererBase, beat: Beat) -> Bool in
+        return TypeHelper.isTruthy(beat.lyrics)
+    }, sizingMode: EffectBarGlyphSizing.SingleOnBeat, createNewGlyph: { (renderer: BarRendererBase, beat: Beat) -> EffectGlyph in
+        return try LyricsGlyph(0.0, 0.0, jsNonNull(beat.lyrics), jsNonNull(renderer.resources.elementFonts.get(NotationElement.EffectLyrics)), TextAlign.Center)
+    }, canExpand: { (_from: Beat, _to: Beat) -> Bool in
+        return true
+    }, placementCategory: EffectBandPlacementCategory.HorizontalRow, overlayRodPolicy: OverlayRodPolicy.Centered)
 }
