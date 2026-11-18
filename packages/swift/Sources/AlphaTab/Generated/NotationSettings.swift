@@ -30,7 +30,7 @@ public final class NotationSettings {
      * this map as it might not result in the expected side effects.
      * If items are not listed explicitly in this list, they are considered visible.
      */
-    nonisolated(unsafe) public static var defaultElements: Map<NotationElement, Bool> = Map<NotationElement, Bool>([(NotationElement.ZerosOnDiveWhammys, false), (NotationElement.EffectLyricsOnScore, false)])
+    nonisolated(unsafe) public static var defaultElements: Map<NotationElement, Bool> = Map<NotationElement, Bool>([(NotationElement.ZerosOnDiveWhammys, false), (NotationElement.EffectLyricsOnScore, false), (NotationElement.TabStemsBelowStaff, false)])
 
     /**
      * Controls how the rhythm notation is rendered for tab staves.
@@ -415,4 +415,9 @@ public enum NotationElement: Int, IAlphaTabEnum, CaseIterable {
      * score without it renders as before; set it visible to put the sung words above the staff, under the chords.
      */
     case EffectLyricsOnScore = 58
+    /**
+     * Where the tab's rhythm stems start: below the lowest string, as printed tab books and apps draw them. Hidden by
+     * default, where the stems start at the top note of the beat and run through the strings.
+     */
+    case TabStemsBelowStaff = 59
 }

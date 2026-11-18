@@ -537,6 +537,11 @@ internal final class TabBarRenderer: LineBarRenderer {
         defer {
             _using1?.dispose()
         }
+        if try self.settings.notation.isNotationElementVisible(NotationElement.TabStemsBelowStaff) {
+            let staffBottom: Double = cy + self.y + self.getLineY(self.bar.staff.tuning.length - 1.0)
+            canvas.fillRect(x, Math.max(paramtopY, staffBottom), self.smuflMetrics.stemThickness, parambottomY - Math.max(paramtopY, staffBottom))
+            return
+        }
         var holes: List<ReservedLayoutAreaSlot> = List<ReservedLayoutAreaSlot>()
         if self.helpers.collisionHelper.reservedLayoutAreasByDisplayTime.has(beat.displayStart) {
             try holes = jsNonNull(self.helpers.collisionHelper.reservedLayoutAreasByDisplayTime.get(beat.displayStart)).slots.slice()

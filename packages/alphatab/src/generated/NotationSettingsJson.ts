@@ -75,7 +75,7 @@ export interface NotationSettingsJson {
      * Whether music notation elements are visible or not.
      * @since 0.9.8
      * @category Notation
-     * @defaultValue `[[NotationElement.ZerosOnDiveWhammys, false]]`
+     * @defaultValue `[[NotationElement.ZerosOnDiveWhammys, false], [NotationElement.EffectLyricsOnScore, false]]`
      * @remarks
      * AlphaTab has quite a set of notation elements that are usually shown by default or only shown when using
      * the `SongBook` notation mode. This setting allows showing/hiding individual notation elements like the

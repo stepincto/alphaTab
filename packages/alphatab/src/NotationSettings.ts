@@ -388,7 +388,13 @@ export enum NotationElement {
      * The lyrics above a standard notation staff (they are always shown above the tab). Hidden by default, so a
      * score without it renders as before; set it visible to put the sung words above the staff, under the chords.
      */
-    EffectLyricsOnScore = 58
+    EffectLyricsOnScore = 58,
+
+    /**
+     * Where the tab's rhythm stems start: below the lowest string, as printed tab books and apps draw them. Hidden by
+     * default, where the stems start at the top note of the beat and run through the strings.
+     */
+    TabStemsBelowStaff = 59
 }
 
 /**
@@ -509,7 +515,8 @@ export class NotationSettings {
      */
     public static defaultElements: Map<NotationElement, boolean> = new Map([
         [NotationElement.ZerosOnDiveWhammys, false],
-        [NotationElement.EffectLyricsOnScore, false]
+        [NotationElement.EffectLyricsOnScore, false],
+        [NotationElement.TabStemsBelowStaff, false]
     ]);
 
     /**

@@ -5,7 +5,7 @@ import { GraceType } from '@coderline/alphatab/model/GraceType';
 import type { Note } from '@coderline/alphatab/model/Note';
 import type { BarNumberDisplay } from '@coderline/alphatab/model/RenderStylesheet';
 import type { Voice } from '@coderline/alphatab/model/Voice';
-import { TabRhythmMode } from '@coderline/alphatab/NotationSettings';
+import { NotationElement, TabRhythmMode } from '@coderline/alphatab/NotationSettings';
 import type { ICanvas } from '@coderline/alphatab/platform/ICanvas';
 import { NoteYPosition } from '@coderline/alphatab/rendering/BarRendererBase';
 import { BeatXPosition } from '@coderline/alphatab/rendering/BeatXPosition';
@@ -554,6 +554,13 @@ export class TabBarRenderer extends LineBarRenderer {
         }
 
         using _ = ElementStyleHelper.beat(canvas, BeatSubElement.GuitarTabStem, beat);
+
+        // opt-in: the stem starts under the lowest string, so it never crosses the staff or the fret numbers
+        if (this.settings.notation.isNotationElementVisible(NotationElement.TabStemsBelowStaff)) {
+            const staffBottom = cy + this.y + this.getLineY(this.bar.staff.tuning.length - 1);
+            canvas.fillRect(x, Math.max(topY, staffBottom), this.smuflMetrics.stemThickness, bottomY - Math.max(topY, staffBottom));
+            return;
+        }
 
         let holes: ReservedLayoutAreaSlot[] = [];
         if (this.helpers.collisionHelper.reservedLayoutAreasByDisplayTime.has(beat.displayStart)) {

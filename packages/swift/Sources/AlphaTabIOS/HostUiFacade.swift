@@ -263,7 +263,10 @@ public final class ExternalClock: IExternalMediaHandler {
     public var onPause: (() -> Void)?
 
     public init(duration: Double) { backingTrackDuration = duration }
-    public func seekTo(_ time: Double) { onSeek?(time) }
+    /// True while the host itself moves alphaTab's position (a seek that came from the host's own transport): alphaTab
+    /// then asks the clock to seek too, and that echo must not go back to the host.
+    public var isFollowingHost = false
+    public func seekTo(_ time: Double) { if !isFollowingHost { onSeek?(time) } }
     public func play() { onPlay?() }
     public func pause() { onPause?() }
 }
