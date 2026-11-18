@@ -175,12 +175,14 @@ public final class HostUiFacade: IUiFacade {
         placeholders[result.id] = placeholder
         try api.renderer.renderResult(result.id)
         resultCount += 1
+        canvas.onChange?()
     }
 
     public func beginUpdateRenderResults(_ renderResult: RenderFinishedEventArgs) throws {
         guard let placeholder = placeholders[renderResult.id] else { return }
         placeholder.body = renderResult.renderResult
-        placeholder.onChange?()
+        // a drawn partial arrived (first layout or a re-render after a settings change): the host view redraws
+        (api.canvasElement as? HostContainer)?.onChange?()
     }
 
     public func createWorkerRenderer() throws -> any IScoreRenderer { throw JsError("Not supported") }
