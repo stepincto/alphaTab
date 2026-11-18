@@ -110,7 +110,11 @@ private final class MainBox: @unchecked Sendable {
 }
 
 public final class HostUiFacade: IUiFacade {
+    /// alphaTab's own element: the score sits in it at the top of the scrolled content.
     public let root = HostContainer()
+    /// What scrolls (the host view's scroll view), as the web has the viewport element around alphaTab's: a
+    /// separate container, so the offset of the score inside it stays 0 whatever the scroll position.
+    public let viewport = HostContainer()
     public var rootContainer: any IContainer { root }
     public let areWorkersSupported = false
     public var canRender = true
@@ -206,20 +210,15 @@ public final class HostUiFacade: IUiFacade {
     public func removeHighlights() {}
     public func highlightElements(_ groupId: String, _ masterBarIndex: Double) throws {}
     public func createSelectionElement() -> (any IContainer)? { HostContainer() }
-    public func getScrollContainer() throws -> any IContainer { root }
+    public func getScrollContainer() throws -> any IContainer { viewport }
 
+    /// The element's position in the scrolled content (the web adds the scroll back onto the viewport-relative
+    /// rectangle, which cancels out): the score sits at the top of the content, so its offset is its own left and top.
     public func getOffset(_ scrollElement: (any IContainer)?, _ container: any IContainer) throws -> Bounds {
         let element = container as! HostContainer
-        var top = element.top
-        var left = element.left
-        if let scroll = scrollElement as? HostContainer {
-            let origin = try getOffset(nil, scroll)
-            top += scroll.scrollTop - origin.y
-            left += scroll.scrollLeft - origin.x
-        }
         let b = Bounds()
-        b.x = left
-        b.y = top
+        b.x = element.left
+        b.y = element.top
         b.w = element.width
         b.h = element.height
         return b
