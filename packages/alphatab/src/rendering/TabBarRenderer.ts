@@ -557,7 +557,7 @@ export class TabBarRenderer extends LineBarRenderer {
 
         // opt-in: the stem starts under the lowest string, so it never crosses the staff or the fret numbers
         if (this.settings.notation.isNotationElementVisible(NotationElement.TabStemsBelowStaff)) {
-            const staffBottom = cy + this.y + this.getLineY(this.bar.staff.tuning.length - 1);
+            const staffBottom = cy + this.getLineY(this.bar.staff.tuning.length - 1);
             canvas.fillRect(x, Math.max(topY, staffBottom), this.smuflMetrics.stemThickness, bottomY - Math.max(topY, staffBottom));
             return;
         }

@@ -538,7 +538,7 @@ internal final class TabBarRenderer: LineBarRenderer {
             _using1?.dispose()
         }
         if try self.settings.notation.isNotationElementVisible(NotationElement.TabStemsBelowStaff) {
-            let staffBottom: Double = cy + self.y + self.getLineY(self.bar.staff.tuning.length - 1.0)
+            let staffBottom: Double = cy + self.getLineY(self.bar.staff.tuning.length - 1.0)
             canvas.fillRect(x, Math.max(paramtopY, staffBottom), self.smuflMetrics.stemThickness, parambottomY - Math.max(paramtopY, staffBottom))
             return
         }
