@@ -790,6 +790,22 @@ export default class SwiftAstPrinter extends AstPrinterBase {
     }
 
     /** `throws` per the whole-program analysis (`SwiftThrows`). */
+    private _superCallThrows(d: cs.ConstructorDeclaration, analysis: SwiftEmitterContext['throwsAnalysis']): boolean {
+        let found = false;
+        const visit = (n: ts.Node) => {
+            if (ts.isCallExpression(n) && n.expression.kind === ts.SyntaxKind.SuperKeyword && analysis.callThrows(n)) {
+                found = true;
+            }
+            if (!found && !ts.isFunctionLike(n)) {
+                ts.forEachChild(n, visit);
+            }
+        };
+        if (d.tsNode) {
+            ts.forEachChild(d.tsNode, visit);
+        }
+        return found;
+    }
+
     private _throws(d: cs.MethodDeclaration | cs.ConstructorDeclaration): boolean {
         // `[Symbol.dispose]` runs from a `defer`, which cannot throw: its body traps where JS would throw (see _inAccessor)
         if (cs.isMethodDeclaration(d) && d.name === 'dispose') {
@@ -1017,10 +1033,11 @@ export default class SwiftAstPrinter extends AstPrinterBase {
                 args = [...args].sort((a, b) => order.indexOf(labelOf(a)) - order.indexOf(labelOf(b)));
             }
             // the arguments run before the body: a throwing one needs its `try` here
-            const throwingArgument = args.some(
-                e => !!e.tsNode && (this._context as SwiftEmitterContext).throwsAnalysis.containsThrowingCall(e.tsNode)
-            );
-            this.write(throwingArgument ? 'try super.init(' : 'super.init(');
+            const analysis = (this._context as SwiftEmitterContext).throwsAnalysis;
+            const throwingArgument = args.some(e => !!e.tsNode && analysis.containsThrowingCall(e.tsNode));
+            // a base constructor that throws needs the `try` too, whatever its arguments
+            const baseThrows = this._superCallThrows(d, analysis);
+            this.write(throwingArgument || baseThrows ? 'try super.init(' : 'super.init(');
             this.writeCommaSeparated(args, e => this.writeExpression(e));
             this.writeLine(')');
         }

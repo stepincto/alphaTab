@@ -39,7 +39,7 @@ private func sameClosure<F>(_ a: F, _ b: F) -> Bool {
     return x.0 == y.0 && x.1 == y.1
 }
 
-internal final class EventEmitter: IEventEmitter {
+public final class EventEmitter: IEventEmitter {
     private var _listeners: [(id: Int, fn: () throws -> Void)] = []
     private var _nextId = 0
     private let _fireOnRegister: (() -> Bool)?
@@ -72,7 +72,7 @@ internal final class EventEmitter: IEventEmitter {
     }
 }
 
-internal final class EventEmitterOfT<T>: IEventEmitterOfT {
+public final class EventEmitterOfT<T>: IEventEmitterOfT {
     private var _listeners: [(id: Int, fn: (T) throws -> Void)] = []
     private var _nextId = 0
     private let _fireOnRegister: (() -> T?)?

@@ -94,7 +94,7 @@ const sources = [
     '/alphatab/src/midi/',
     '/alphatab/src/profiling/',
     // the data and interface types of the player that the midi generator and the UI facade name
-    '/alphatab/src/synth/IAlphaSynth.ts',
+    '/alphatab/src/synth/',
     '/alphatab/src/synth/ISynthOutput.ts',
     '/alphatab/src/synth/PlaybackRange.ts',
     '/alphatab/src/synth/PlayerState.ts',

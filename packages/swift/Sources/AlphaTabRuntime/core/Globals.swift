@@ -311,3 +311,10 @@ public enum Date {
         return (Foundation.Date().timeIntervalSince1970 * 1000.0).rounded(.down)
     }
 }
+
+extension Error {
+    /// `${e}` for a caught error.
+    public func toTemplate() -> String {
+        return "\(self)"
+    }
+}

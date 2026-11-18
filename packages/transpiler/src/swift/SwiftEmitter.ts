@@ -16,6 +16,7 @@ import { RecordPostProcessPass } from '../passes/RecordPostProcessPass';
 import { ResolveTypesPass } from '../passes/ResolveTypesPass';
 import { RewriteVisibilitiesPass } from '../passes/RewriteVisibilitiesPass';
 import { SmartCastLoweringPass } from '../passes/SmartCastLoweringPass';
+import { SwiftSynthNamespacePass } from './SwiftSynthNamespacePass';
 import SwiftAstPrinter from './SwiftAstPrinter';
 import SwiftEmitterContext from './SwiftEmitterContext';
 import { SwiftLanguage } from './SwiftLanguage';
@@ -27,6 +28,7 @@ const SWIFT_PASSES: readonly IrPass[] = [
     new RecordPostProcessPass(),
     new SmartCastLoweringPass(),
     new AsyncRewritePass(true),
+    new SwiftSynthNamespacePass(),
     new PartialsPass(),
     new DoubleSuffixPass(),
     new RewriteVisibilitiesPass()

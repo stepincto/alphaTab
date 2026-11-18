@@ -90,65 +90,6 @@ extension Spring: JsArrayHole {
     public var isJsHole: Bool { self === Spring.holeSpring }
 }
 
-/// Stand-in for `ExternalMediaPlayer` (src/synth/ExternalMediaPlayer.ts): it extends the backing track player,
-/// which extends the audio synth, and the Swift target has no audio synth. AlphaTabApiBase creates it for
-/// `player.playerMode = EnabledExternalMedia`; that mode is not available here, so creating it traps and no
-/// member below is ever reached.
-internal final class ExternalMediaPlayer: IAlphaSynth {
-    internal init(_ bufferTimeInMilliseconds: Double) {
-        fatalError("The external media player needs the audio synth, which the Swift target does not have")
-    }
-
-    private func unavailable() -> Never {
-        fatalError("The audio synth is not part of the Swift target")
-    }
-
-    var isReady: Bool { unavailable() }
-    var isReadyForPlayback: Bool { unavailable() }
-    var state: PlayerState { unavailable() }
-    var logLevel: LogLevel { get { unavailable() } set { unavailable() } }
-    var masterVolume: Double { get { unavailable() } set { unavailable() } }
-    var metronomeVolume: Double { get { unavailable() } set { unavailable() } }
-    var playbackSpeed: Double { get { unavailable() } set { unavailable() } }
-    var tickPosition: Double { get { unavailable() } set { unavailable() } }
-    var timePosition: Double { get { unavailable() } set { unavailable() } }
-    var loadedMidiInfo: PositionChangedEventArgs? { unavailable() }
-    var currentPosition: PositionChangedEventArgs { unavailable() }
-    var playbackRange: PlaybackRange? { get { unavailable() } set { unavailable() } }
-    var isLooping: Bool { get { unavailable() } set { unavailable() } }
-    var countInVolume: Double { get { unavailable() } set { unavailable() } }
-    var midiEventsPlayedFilter: List<MidiEventType> { get { unavailable() } set { unavailable() } }
-    var output: any ISynthOutput { unavailable() }
-    func destroy() throws { unavailable() }
-    func play() throws -> Bool { unavailable() }
-    func pause() throws { unavailable() }
-    func playPause() throws { unavailable() }
-    func stop() throws { unavailable() }
-    func playOneTimeMidiFile(_ midi: MidiFile) throws { unavailable() }
-    func loadSoundFont(_ data: Uint8Array, _ append: Bool) throws { unavailable() }
-    func resetSoundFonts() throws { unavailable() }
-    func loadMidiFile(_ midi: MidiFile) throws { unavailable() }
-    func loadBackingTrack(_ score: Score) throws { unavailable() }
-    func updateSyncPoints(_ syncPoints: List<BackingTrackSyncPoint>) { unavailable() }
-    func applyTranspositionPitches(_ transpositionPitches: Map<Double, Double>) throws { unavailable() }
-    func setChannelTranspositionPitch(_ channel: Double, _ semitones: Double) throws { unavailable() }
-    func setChannelMute(_ channel: Double, _ mute: Bool) { unavailable() }
-    func resetChannelStates() throws { unavailable() }
-    func setChannelSolo(_ channel: Double, _ solo: Bool) { unavailable() }
-    func setChannelVolume(_ channel: Double, _ volume: Double) { unavailable() }
-    var ready: IEventEmitter { unavailable() }
-    var readyForPlayback: IEventEmitter { unavailable() }
-    var finished: IEventEmitter { unavailable() }
-    var soundFontLoaded: IEventEmitter { unavailable() }
-    var soundFontLoadFailed: IEventEmitterOfT<JsError> { unavailable() }
-    var midiLoaded: IEventEmitterOfT<PositionChangedEventArgs> { unavailable() }
-    var midiLoadFailed: IEventEmitterOfT<JsError> { unavailable() }
-    var stateChanged: IEventEmitterOfT<PlayerStateChangedEventArgs> { unavailable() }
-    var positionChanged: IEventEmitterOfT<PositionChangedEventArgs> { unavailable() }
-    var midiEventsPlayed: IEventEmitterOfT<MidiEventsPlayedEventArgs> { unavailable() }
-    var playbackRangeChanged: IEventEmitterOfT<PlaybackRangeChangedEventArgs> { unavailable() }
-}
-
 /// The members the platform layer (`AlphaTabIOS`, a separate module, like the Kotlin target's
 /// `alphaTab.platform.android`) needs that the TS marks internal, so the generated code keeps them internal.
 public enum PlatformBridge {
@@ -162,4 +103,11 @@ public enum PlatformBridge {
     public static func smuflFontFamilyName(_ settings: Settings) -> String? {
         return settings.display.resources.smuflFontFamilyName
     }
+}
+
+extension Region: JsArrayHole {
+    // `new Array<Region>(n)` slots are read after they are written; a sentinel stands for the hole.
+    nonisolated(unsafe) internal static let holeRegion = Region()
+    public static var hole: Region { holeRegion }
+    public var isJsHole: Bool { self === Region.holeRegion }
 }

@@ -159,3 +159,27 @@ public final class Uint8Array: TypedArray<UInt8> {
     /// The view's bytes, for platform code (text codecs, file IO).
     public var bytes: [UInt8] { elements }
 }
+
+/// `a.buffer` / `a.byteOffset` for `new DataView(a.buffer, a.byteOffset, n)`: ArrayBuffer is a Uint8Array here.
+extension TypedArray where E == UInt8 {
+    public var buffer: Any { self }
+    public var byteOffset: Double { Double(offset) }
+}
+
+/// JS `DataView` for the reads alphaTab's synth makes.
+public final class DataView {
+    private let bytes: Uint8Array
+    private let start: Int
+    public init(_ buffer: ArrayBuffer, _ byteOffset: Double, _ byteLength: Double) {
+        bytes = buffer
+        start = Int(byteOffset)
+    }
+
+    /// `getInt16(byteOffset, littleEndian)`.
+    public func getInt16(_ byteOffset: Double, _ littleEndian: Bool = false) -> Double {
+        let i = start + Int(byteOffset)
+        let a = UInt16(bytes.storage.data[i]), b = UInt16(bytes.storage.data[i + 1])
+        let v = littleEndian ? (b << 8 | a) : (a << 8 | b)
+        return Double(Int16(bitPattern: v))
+    }
+}
