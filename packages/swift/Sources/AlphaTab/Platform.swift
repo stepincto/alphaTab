@@ -93,6 +93,29 @@ extension Spring: JsArrayHole {
 /// The members the platform layer (`AlphaTabIOS`, a separate module, like the Kotlin target's
 /// `alphaTab.platform.android`) needs that the TS marks internal, so the generated code keeps them internal.
 public enum PlatformBridge {
+    /// Sets one setting by its dotted path (`"player.scrollMode"`) through alphaTab's own settings serializer,
+    /// the one `new AlphaTabApi(el, { player: { scrollMode: ... } })` uses. Enums take their number or name.
+    public static func setSetting(_ settings: Settings, _ path: String, _ value: Any?) throws {
+        let parts = path.split(separator: ".").map(String.init)
+        var node: Any? = value
+        for key in parts.reversed() {
+            let m = Map<String, Any?>()
+            m.set(key.lowercased(), node)
+            node = m
+        }
+        try SettingsSerializer.fromJson(settings, node)
+    }
+
+    /// The current value at a dotted path, through the same serializer (`toJson`); nil when absent.
+    public static func setting(_ settings: Settings, _ path: String) -> Any? {
+        guard var node: Any? = try? SettingsSerializer.toJson(settings) else { return nil }
+        for key in path.split(separator: ".").map(String.init) {
+            guard let m = node as? Map<String, Any?> else { return nil }
+            node = m.get(key) ?? m.get(key.lowercased()) ?? nil
+        }
+        return node
+    }
+
     /// `Environment.highDpiFactor`: the device pixels per point a raster canvas draws at.
     public static var highDpiFactor: Double {
         get { Environment.highDpiFactor }
