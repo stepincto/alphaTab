@@ -18,6 +18,8 @@ public final class HostContainer: IContainer {
     public var isVisible = true
     /// Called after a scroll or bounds change, so the host view follows.
     public var onChange: (() -> Void)?
+    /// Called for each scroll alphaTab asks for: the offset and the milliseconds to glide there (0 = jump).
+    public var onScroll: ((_ to: Double, _ duration: Double) -> Void)?
 
     private var _width: Double = 0
     private var _height: Double = 0
@@ -223,10 +225,17 @@ public final class HostUiFacade: IUiFacade {
         return b
     }
 
-    public func scrollToY(_ scrollElement: any IContainer, _ offset: Double, _ speed: Double) throws { scrollElement.scrollTop = offset }
+    public func scrollToY(_ scrollElement: any IContainer, _ offset: Double, _ speed: Double) throws {
+        scrollElement.scrollTop = offset
+        (scrollElement as? HostContainer)?.onScroll?(offset, speed)
+    }
     public func scrollToX(_ scrollElement: any IContainer, _ offset: Double, _ speed: Double) throws { scrollElement.scrollLeft = offset }
     /// Overflow the smooth-scroll needs so the end can reach the target; the page view sizes its own content.
-    public func setCanvasOverflow(_ canvasElement: any IContainer, _ overflow: Double, _ isVertical: Bool) throws {}
+    public private(set) var canvasOverflow: Double = 0
+    public func setCanvasOverflow(_ canvasElement: any IContainer, _ overflow: Double, _ isVertical: Bool) throws {
+        canvasOverflow = overflow
+        root.onChange?()
+    }
     public func stopScrolling(_ scrollElement: any IContainer) throws {}
 
     public func load(_ data: Any?, _ success: @escaping (Score) throws -> Void, _ error: @escaping (JsError) throws -> Void) throws -> Bool {
