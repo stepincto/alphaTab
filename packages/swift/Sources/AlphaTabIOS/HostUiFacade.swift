@@ -71,6 +71,7 @@ public final class HostContainer: IContainer {
     public func stopAnimation() {}
 
     public func setBounds(_ x: Double, _ y: Double, _ w: Double, _ h: Double) {
+        animation = nil // a jump, not a glide
         left = x.isNaN ? left : x
         top = y.isNaN ? top : y
         if !w.isNaN { _width = w }
