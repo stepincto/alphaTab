@@ -70,7 +70,10 @@ public final class HostContainer: IContainer {
         if let host = child as? HostContainer { children.append(host) }
     }
 
-    public func stopAnimation() {}
+    public func stopAnimation() {
+        animation = nil
+        onChange?()
+    }
 
     public func setBounds(_ x: Double, _ y: Double, _ w: Double, _ h: Double) {
         animation = nil // a jump, not a glide
@@ -85,7 +88,8 @@ public final class HostContainer: IContainer {
     public var animation: (from: Double, to: Double, duration: Double)?
 
     public func transitionToX(_ duration: Double, _ x: Double) {
-        animation = (left, x, duration)
+        // a placement (0 ms) is a jump, and cancels any glide still running toward the old target
+        animation = duration > 0 ? (left, x, duration) : nil
         left = x
         onChange?()
     }
@@ -266,7 +270,10 @@ public final class ExternalClock: IExternalMediaHandler {
     /// True while the host itself moves alphaTab's position (a seek that came from the host's own transport): alphaTab
     /// then asks the clock to seek too, and that echo must not go back to the host.
     public var isFollowingHost = false
-    public func seekTo(_ time: Double) { if !isFollowingHost { onSeek?(time) } }
+    /// alphaTab also asks for seeks of its own (on load, and on pause it puts the position back on the current beat).
+    /// A host with its own transport should take only the seeks a tap on the score caused: it sets this around the tap.
+    public var allowsSeekRequests = false
+    public func seekTo(_ time: Double) { if !isFollowingHost && allowsSeekRequests { onSeek?(time) } }
     public func play() { onPlay?() }
     public func pause() { onPause?() }
 }
