@@ -623,7 +623,7 @@ internal final class BarLayoutingInfo {
         if count < 2.0 || self._timeSortedOverlayRodsByBand.size == 0.0 {
             return
         }
-        var times: [Double] = []
+        var times: Swift.Array<Double> = []
         var index: Double = 0.0
         while index < count {
             times.append(springs[(index).toInt()].timePosition)
@@ -681,7 +681,7 @@ internal final class BarLayoutingInfo {
         }
 
         let gapCount: Int = times.count - 1
-        var minGap: [Double] = Array(repeating: 0.0, count: gapCount)
+        var minGap: Swift.Array<Double> = Swift.Array(repeating: 0.0, count: gapCount)
         for rods in self._timeSortedOverlayRodsByBand.values() {
             if rods.length < 2.0 {
                 continue
@@ -700,7 +700,7 @@ internal final class BarLayoutingInfo {
             }
         }
 
-        var slack: [Double] = Array(repeating: 0.0, count: gapCount)
+        var slack: Swift.Array<Double> = Swift.Array(repeating: 0.0, count: gapCount)
         var totalSlack: Double = 0.0
         var gap: Int = 0
         while gap < gapCount {
