@@ -607,7 +607,127 @@ internal final class BarLayoutingInfo {
                 i += 1
             }
         }
+        // A bar squeezed under its minimum force scales every gap, including a lyric that is already
+        // as wide as its notes, so neighbouring words meet. Hold the overlay gaps and give the space
+        // back from gaps that still have room.
+        self._honorOverlayRods(positions, force)
         return positions
+    }
+
+    /// Keeps overlay rods (lyrics, beat text) from drawing on top of each other when `force` is below
+    /// `minStretchForce`. Pushes a tight pair apart, then pulls the extra width back out of gaps that
+    /// are still wider than their own minimum so the bar stays the width the caller asked for.
+    private func _honorOverlayRods(_ positions: Map<Double, Double>, _ force: Double) {
+        let springs: List<Spring> = self._timeSortedSprings
+        let count: Double = springs.length
+        if count < 2.0 || self._timeSortedOverlayRodsByBand.size == 0.0 {
+            return
+        }
+        var times: [Double] = []
+        var index: Double = 0.0
+        while index < count {
+            times.append(springs[(index).toInt()].timePosition)
+            index += 1
+        }
+        let padding: Double = BarLayoutingInfo._overlayMinPadding
+        var round: Double = 0.0
+        while round < count {
+            var changed = false
+            for rods in self._timeSortedOverlayRodsByBand.values() {
+                if rods.length < 2.0 {
+                    continue
+                }
+                var r: Double = 1.0
+                while r < rods.length {
+                    let earlier: OverlayRod = rods[(r - 1.0).toInt()]
+                    let later: OverlayRod = rods[(r).toInt()]
+                    if later.timePosition <= earlier.timePosition + 0.000001 {
+                        r += 1.0
+                        continue
+                    }
+                    guard let earlierPos = positions.get(earlier.timePosition),
+                          let laterPos = positions.get(later.timePosition) else {
+                        r += 1.0
+                        continue
+                    }
+                    let required: Double = earlier.rightExtent + later.leftExtent + padding
+                    let actual: Double = laterPos - earlierPos
+                    if actual + 0.05 < required {
+                        let deficit: Double = required - actual
+                        for time in times where time + 0.000001 >= later.timePosition {
+                            if let current = positions.get(time) {
+                                positions.set(time, current + deficit)
+                            }
+                        }
+                        changed = true
+                    }
+                    r += 1.0
+                }
+            }
+            if !changed {
+                break
+            }
+            round += 1.0
+        }
+
+        let lastTime: Double = times[times.count - 1]
+        guard let lastPos = positions.get(lastTime) else {
+            return
+        }
+        let tail: Double = self._calculateWidth(force, springs[(count - 1.0).toInt()].springConstant)
+        let overflow: Double = lastPos + tail - self.calculateVoiceWidth(force)
+        if overflow <= 0.5 {
+            return
+        }
+
+        let gapCount: Int = times.count - 1
+        var minGap: [Double] = Array(repeating: 0.0, count: gapCount)
+        for rods in self._timeSortedOverlayRodsByBand.values() {
+            if rods.length < 2.0 {
+                continue
+            }
+            var r: Double = 1.0
+            while r < rods.length {
+                let earlier: OverlayRod = rods[(r - 1.0).toInt()]
+                let later: OverlayRod = rods[(r).toInt()]
+                let required: Double = earlier.rightExtent + later.leftExtent + padding
+                let earlierIndex = times.firstIndex { abs($0 - earlier.timePosition) < 0.000001 }
+                let laterIndex = times.firstIndex { abs($0 - later.timePosition) < 0.000001 }
+                if let earlierIndex, let laterIndex, laterIndex == earlierIndex + 1 {
+                    minGap[earlierIndex] = max(minGap[earlierIndex], required)
+                }
+                r += 1.0
+            }
+        }
+
+        var slack: [Double] = Array(repeating: 0.0, count: gapCount)
+        var totalSlack: Double = 0.0
+        var gap: Int = 0
+        while gap < gapCount {
+            let left: Double = positions.get(times[gap]) ?? 0.0
+            let right: Double = positions.get(times[gap + 1]) ?? 0.0
+            let gapWidth: Double = right - left
+            // A lyric pair keeps its measured width. Any other gap keeps 4pt, or whatever it already
+            // had when that was less, so noteheads that were already close are not pulled together.
+            let floor: Double = minGap[gap] > 0.0 ? minGap[gap] : min(gapWidth, 4.0)
+            let room: Double = max(0.0, gapWidth - floor)
+            slack[gap] = room
+            totalSlack += room
+            gap += 1
+        }
+        if totalSlack <= 0.01 {
+            return
+        }
+        let remove: Double = min(overflow, totalSlack)
+        var removedBefore: Double = 0.0
+        gap = 0
+        while gap < gapCount {
+            removedBefore += remove * (slack[gap] / totalSlack)
+            if let current = positions.get(times[gap + 1]) {
+                positions.set(times[gap + 1], current - removedBefore)
+            }
+            gap += 1
+        }
     }
 }
 
