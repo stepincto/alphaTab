@@ -681,7 +681,19 @@ internal final class BarLayoutingInfo {
         }
 
         let gapCount: Int = times.count - 1
-        var minGap: Swift.Array<Double> = Swift.Array(repeating: 0.0, count: gapCount)
+        var gapWidth: Swift.Array<Double> = Swift.Array(repeating: 0.0, count: gapCount)
+        var floor: Swift.Array<Double> = Swift.Array(repeating: 0.0, count: gapCount)
+        var gap: Int = 0
+        while gap < gapCount {
+            let left: Double = positions.get(times[gap]) ?? 0.0
+            let right: Double = positions.get(times[gap + 1]) ?? 0.0
+            let width: Double = right - left
+            gapWidth[gap] = width
+            // A gap with no lyric keeps 4pt, or whatever it already had when that was less, so
+            // noteheads that were already close are not pulled together.
+            floor[gap] = min(width, 4.0)
+            gap += 1
+        }
         for rods in self._timeSortedOverlayRodsByBand.values() {
             if rods.length < 2.0 {
                 continue
@@ -693,8 +705,10 @@ internal final class BarLayoutingInfo {
                 let required: Double = earlier.rightExtent + later.leftExtent + padding
                 let earlierIndex = times.firstIndex { abs($0 - earlier.timePosition) < 0.000001 }
                 let laterIndex = times.firstIndex { abs($0 - later.timePosition) < 0.000001 }
-                if let earlierIndex, let laterIndex, laterIndex == earlierIndex + 1 {
-                    minGap[earlierIndex] = max(minGap[earlierIndex], required)
+                if let earlierIndex, let laterIndex, laterIndex > earlierIndex {
+                    // Neighbouring rods are one gap. A beat between them is several, and the span
+                    // keeps the width those rods already measured.
+                    self._holdOverlaySpan(&floor, gapWidth, earlierIndex, laterIndex, required)
                 }
                 r += 1.0
             }
@@ -702,15 +716,9 @@ internal final class BarLayoutingInfo {
 
         var slack: Swift.Array<Double> = Swift.Array(repeating: 0.0, count: gapCount)
         var totalSlack: Double = 0.0
-        var gap: Int = 0
+        gap = 0
         while gap < gapCount {
-            let left: Double = positions.get(times[gap]) ?? 0.0
-            let right: Double = positions.get(times[gap + 1]) ?? 0.0
-            let gapWidth: Double = right - left
-            // A lyric pair keeps its measured width. Any other gap keeps 4pt, or whatever it already
-            // had when that was less, so noteheads that were already close are not pulled together.
-            let floor: Double = minGap[gap] > 0.0 ? minGap[gap] : min(gapWidth, 4.0)
-            let room: Double = max(0.0, gapWidth - floor)
+            let room: Double = max(0.0, gapWidth[gap] - floor[gap])
             slack[gap] = room
             totalSlack += room
             gap += 1
@@ -729,6 +737,47 @@ internal final class BarLayoutingInfo {
             gap += 1
         }
     }
+
+    /// Raises the floor on every gap in `start..<end` until those floors sum to `required`,
+    /// and never above the gap's current width. `required` is the overlay spacing already
+    /// measured for that rod pair, so a beat between two lyric rods cannot be pulled shut.
+    private func _holdOverlaySpan(
+        _ floor: inout Swift.Array<Double>,
+        _ gapWidth: Swift.Array<Double>,
+        _ start: Int,
+        _ end: Int,
+        _ required: Double
+    ) {
+        var floorSum: Double = 0.0
+        var index: Int = start
+        while index < end {
+            floorSum += floor[index]
+            index += 1
+        }
+        var deficit: Double = required - floorSum
+        while deficit > 0.01 {
+            var room: Double = 0.0
+            index = start
+            while index < end {
+                room += max(0.0, gapWidth[index] - floor[index])
+                index += 1
+            }
+            if room <= 0.01 {
+                return
+            }
+            let take: Double = min(deficit, room)
+            index = start
+            while index < end {
+                let gapRoom: Double = max(0.0, gapWidth[index] - floor[index])
+                if gapRoom > 0.0 {
+                    floor[index] += take * (gapRoom / room)
+                }
+                index += 1
+            }
+            deficit -= take
+        }
+    }
+
 }
 
 internal final class BarLayoutingInfoBeatSizes: IRecord {
