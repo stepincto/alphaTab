@@ -113,6 +113,12 @@ private final class MainBox: @unchecked Sendable {
     init(_ action: @escaping () throws -> Void) { self.action = action }
 }
 
+/// Set on the main queue by `initialize` and `destroy`. A `beginInvoke` block reads it later
+/// on that same queue, so the block can see a destroyed host without capturing the facade.
+private final class HostAlive: @unchecked Sendable {
+    var present = false
+}
+
 public final class HostUiFacade: IUiFacade {
     /// alphaTab's own element: the score sits in it at the top of the scrolled content.
     public let root = HostContainer()
@@ -131,6 +137,7 @@ public final class HostUiFacade: IUiFacade {
     /// Called when a whole render has been laid out and every page handed over (alphaTab's end-of-results signal).
     public var onRenderComplete: (() -> Void)?
     private var api: AlphaTabApiBase<Any?>!
+    private let alive = HostAlive()
     private var placeholders: [String: HostContainer] = [:]
     private var resultCount = 0
 
@@ -138,6 +145,7 @@ public final class HostUiFacade: IUiFacade {
 
     public func initialize(_ api: AlphaTabApiBase<Any?>, _ raw: Any?) throws {
         self.api = api
+        alive.present = true
         api.settings = (raw as? Settings) ?? Settings()
     }
 
@@ -150,6 +158,7 @@ public final class HostUiFacade: IUiFacade {
         root.children = []
         cursors = nil
         onRenderComplete = nil
+        alive.present = false
         api = nil
     }
 
@@ -157,6 +166,9 @@ public final class HostUiFacade: IUiFacade {
     public func triggerEvent(_ container: any IContainer, _ eventName: String, _ details: Any?, _ originalEvent: (any IMouseEventArgs)?) throws {}
 
     public func initialRender() throws {
+        // `AlphaTabApiBase.init` posts this on the next main turn. `destroy()`
+        // nils `api` before that turn; unwrapping it aborted the process.
+        guard api != nil else { return }
         _ = try api.renderer.preRender.on { (_: Bool) in
             self.resultCount = 0
             self.placeholders.removeAll()
@@ -213,7 +225,12 @@ public final class HostUiFacade: IUiFacade {
 
     public func beginInvoke(_ action: @escaping () throws -> Void) throws {
         let box = MainBox(action)
-        DispatchQueue.main.async { try? box.action() }
+        let alive = self.alive
+        DispatchQueue.main.async {
+            // A block queued by `init` must not run after `destroy()`.
+            guard alive.present else { return }
+            try? box.action()
+        }
     }
 
     public func throttle(_ action: @escaping () throws -> Void, _ delay: Double) throws -> () -> Void {
