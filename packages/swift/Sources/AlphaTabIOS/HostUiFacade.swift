@@ -157,6 +157,9 @@ public final class HostUiFacade: IUiFacade {
     public func triggerEvent(_ container: any IContainer, _ eventName: String, _ details: Any?, _ originalEvent: (any IMouseEventArgs)?) throws {}
 
     public func initialRender() throws {
+        // `AlphaTabApiBase.init` posts this on the next main turn. `destroy()`
+        // nils `api` before that turn; unwrapping it aborted the process.
+        guard api != nil else { return }
         _ = try api.renderer.preRender.on { (_: Bool) in
             self.resultCount = 0
             self.placeholders.removeAll()
@@ -213,7 +216,11 @@ public final class HostUiFacade: IUiFacade {
 
     public func beginInvoke(_ action: @escaping () throws -> Void) throws {
         let box = MainBox(action)
-        DispatchQueue.main.async { try? box.action() }
+        DispatchQueue.main.async { [weak self] in
+            // A block queued by `init` must not run after `destroy()` nils `api`.
+            guard let self, self.api != nil else { return }
+            try? box.action()
+        }
     }
 
     public func throttle(_ action: @escaping () throws -> Void, _ delay: Double) throws -> () -> Void {
