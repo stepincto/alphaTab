@@ -141,7 +141,18 @@ public final class HostUiFacade: IUiFacade {
         api.settings = (raw as? Settings) ?? Settings()
     }
 
-    public func destroy() throws {}
+    /// The api and this facade hold each other (`api.uiFacade` and `self.api`), so a destroyed api was never freed and
+    /// kept every drawn page, layout and score alive: about 100-250 MB per replaced view (SheetMuse #858). Break the
+    /// cycle and drop what the layout drew.
+    public func destroy() throws {
+        placeholders.removeAll()
+        (api?.canvasElement as? HostContainer)?.children = []
+        root.children = []
+        cursors = nil
+        onRenderComplete = nil
+        api = nil
+    }
+
     public func createCanvasElement() -> any IContainer { HostContainer() }
     public func triggerEvent(_ container: any IContainer, _ eventName: String, _ details: Any?, _ originalEvent: (any IMouseEventArgs)?) throws {}
 
