@@ -66,6 +66,21 @@ private func makeHost() throws -> (HostUiFacade, AlphaTabApiBase<Any?>) {
         #expect(ran.value == false)
     }
 
+    /// The page attaches its "something changed" hook before the api exists. The canvas is made by the api, so a hook set
+    /// on the canvas then went nowhere and lazily drawn rows never reached the view (SheetMuse #858 follow-up).
+    @MainActor
+    @Test func aChangeHookSetBeforeTheApiExistsReachesTheCanvas() async throws {
+        let facade = HostUiFacade()
+        facade.root.width = 600
+        let called = Flag()
+        facade.onCanvasChange = { called.value = true }
+        let api = try AlphaTabApiBase<Any?>(facade, Settings())
+        await drainMainQueue()
+        (api.canvasElement as? HostContainer)?.onChange?()
+        #expect(called.value)
+        try api.destroy()
+    }
+
     /// `destroy()` twice must not trap.
     @MainActor
     @Test func destroyingTwiceIsHarmless() async throws {

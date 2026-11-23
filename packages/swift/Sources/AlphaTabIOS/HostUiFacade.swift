@@ -144,9 +144,12 @@ public final class HostUiFacade: IUiFacade {
     private let destroyedFlag = DestroyedFlag()
     /// Draw a row only when `drawRows(in:)` asks (alphaTab's lazy loading), not as soon as it is laid out.
     public var rendersOnRequest = false
-    /// The part of the page, in points, that rows are drawn for. Set by `drawRows(in:)`; applied to a new layout when it
-    /// finishes, so the first picture of a key change already has the rows on screen.
-    public var visibleWindow: ClosedRange<Double>?
+    /// What is on screen. Set by `drawRows`; applied to a new layout when it finishes, so the first picture of a key
+    /// change already has the rows on screen.
+    public var shownRows: RowViewport?
+    /// Called when a row's picture arrives or is freed, or a layout ends. Set it any time: the canvas is made later, by
+    /// the api, so a hook set on the canvas itself before then went nowhere.
+    public var onCanvasChange: (() -> Void)?
     private var placeholders: [String: HostContainer] = [:]
     private var resultCount = 0
 
@@ -170,7 +173,11 @@ public final class HostUiFacade: IUiFacade {
         api = nil
     }
 
-    public func createCanvasElement() -> any IContainer { HostContainer() }
+    public func createCanvasElement() -> any IContainer {
+        let canvas = HostContainer()
+        canvas.onChange = { [weak self] in self?.onCanvasChange?() }
+        return canvas
+    }
     public func triggerEvent(_ container: any IContainer, _ eventName: String, _ details: Any?, _ originalEvent: (any IMouseEventArgs)?) throws {}
 
     public func initialRender() throws {
@@ -190,7 +197,7 @@ public final class HostUiFacade: IUiFacade {
             if canvas.children.count > resultCount { canvas.children.removeLast(canvas.children.count - resultCount) }
             if rendersOnRequest {
                 // the rows on screen are drawn before the layout is announced as complete
-                drawRows(in: visibleWindow ?? 0...Self.defaultWindowHeight, evictOthers: true)
+                drawRows(in: shownRows ?? RowViewport(offsetY: 0, height: Self.defaultViewportHeight), maxAhead: .max)
             }
             canvas.onChange?()
             onRenderComplete?()
@@ -226,28 +233,26 @@ public final class HostUiFacade: IUiFacade {
         (api.canvasElement as? HostContainer)?.onChange?()
     }
 
-    /// How much of the page is drawn for a layout that finishes before the host has said what is on screen.
-    private static let defaultWindowHeight: Double = 3000
+    /// The screen height assumed for a layout that finishes before the host has said what is on screen.
+    private static let defaultViewportHeight: Double = 1000
 
-    /// Draws the rows that touch `window` (page points) and, with `evictOthers`, frees the pictures of the rest. A freed
-    /// row is drawn again when it comes back into view: alphaTab keeps each row's draw closure.
-    public func drawRows(in window: ClosedRange<Double>, evictOthers: Bool) {
-        visibleWindow = window
+    /// Draws the rows `RowPlanner` asks for around `view` and frees the far ones. A freed row is drawn again when it
+    /// comes back: alphaTab keeps each row's draw closure. `maxAhead` caps the rows drawn beyond the screen per call;
+    /// the rows on screen are always drawn.
+    public func drawRows(in view: RowViewport, maxAhead: Int = 2) {
+        shownRows = view
         guard rendersOnRequest, let api, !destroyedFlag.value, let canvas = api.canvasElement as? HostContainer else { return }
-        var changed = false
-        for row in canvas.children where !row.layoutResultId.isEmpty {
-            let touches = row.top + row.height >= window.lowerBound && row.top <= window.upperBound
-            if touches {
-                if row.body == nil {
-                    try? api.renderer.renderResult(row.layoutResultId)
-                    changed = true
-                }
-            } else if evictOthers, row.body != nil {
-                row.body = nil
-                changed = true
-            }
+        let rows = canvas.children
+        let plan = RowPlanner.plan(
+            rows: rows.map { RowFrame(top: $0.top, height: $0.height, isDrawn: $0.body != nil) },
+            view: view,
+            maxAhead: maxAhead
+        )
+        for index in plan.draw where !rows[index].layoutResultId.isEmpty {
+            try? api.renderer.renderResult(rows[index].layoutResultId)
         }
-        if changed { canvas.onChange?() }
+        for index in plan.free { rows[index].body = nil }
+        if !plan.isEmpty { canvas.onChange?() }
     }
 
     public func createWorkerRenderer() throws -> any IScoreRenderer { throw JsError("Not supported") }
