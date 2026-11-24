@@ -5,8 +5,13 @@
 // </auto-generated>
 
 import AlphaTabRuntime
+import Foundation
 
 internal final class Profiler {
+    // The profile stack and tables are static, and two layouts on two threads at once (an off-main engrave beside another)
+    // spliced the same list and trapped (SheetMuse crash on opening the player). One lock makes each call atomic.
+    private static let _lock = NSLock()
+
     private static let _stackLimit: Double = 64.0
 
     nonisolated(unsafe) private static let _stages: Map<String, StageStats> = Map<String, StageStats>()
@@ -16,6 +21,8 @@ internal final class Profiler {
     nonisolated(unsafe) private static let _stack: List<ProfilerFrame> = List<ProfilerFrame>()
 
     public static func begin(_ name: String) {
+        Profiler._lock.lock()
+        defer { Profiler._lock.unlock() }
         if Profiler._stack.length >= Profiler._stackLimit {
             Profiler._stack.splice(0.0)
         }
@@ -23,6 +30,8 @@ internal final class Profiler {
     }
 
     public static func end(_ name: String) throws {
+        Profiler._lock.lock()
+        defer { Profiler._lock.unlock() }
         let stack: List<ProfilerFrame> = Profiler._stack
         var index: Double = stack.length - 1.0
         while try index >= 0 && stack.jsElement((index).toInt()).name != name {
@@ -47,11 +56,15 @@ internal final class Profiler {
     }
 
     public static func bump(_ name: String, _ delta: Double = 1.0) throws {
+        Profiler._lock.lock()
+        defer { Profiler._lock.unlock() }
         let current: Double = try Profiler._counters.has(name) ? jsNonNull(Profiler._counters.get(name)) : 0.0
         Profiler._counters.set(name, current + delta)
     }
 
     public static func snapshot() -> ProfilerSnapshot {
+        Profiler._lock.lock()
+        defer { Profiler._lock.unlock() }
         let stages: Map<String, StageStats> = Map<String, StageStats>()
         for (name, stats) in Profiler._stages {
             stages.set(name, StageStats(count: stats.count, totalNs: stats.totalNs, maxNs: stats.maxNs))
@@ -64,6 +77,8 @@ internal final class Profiler {
     }
 
     public static func reset() {
+        Profiler._lock.lock()
+        defer { Profiler._lock.unlock() }
         Profiler._stages.clear()
         Profiler._counters.clear()
         Profiler._stack.splice(0.0)
