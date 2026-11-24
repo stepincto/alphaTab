@@ -107,6 +107,12 @@ public final class HostMouseEvent: IMouseEventArgs {
     public func preventDefault() {}
 }
 
+/// Whether the facade was destroyed, readable from the closures it queues. A flag object, because capturing the facade
+/// itself in a queued closure does not compile under Swift 6.
+private final class DestroyedFlag: @unchecked Sendable {
+    var value = false
+}
+
 /// alphaTab is single-threaded by contract: its closures only ever run on the main queue.
 private final class MainBox: @unchecked Sendable {
     let action: () throws -> Void
@@ -130,7 +136,20 @@ public final class HostUiFacade: IUiFacade {
     public private(set) var cursors: Cursors?
     /// Called when a whole render has been laid out and every page handed over (alphaTab's end-of-results signal).
     public var onRenderComplete: (() -> Void)?
-    private var api: AlphaTabApiBase<Any?>!
+    /// Weak: the api holds this facade (`api.uiFacade`), so a strong link back made a cycle that kept every destroyed
+    /// api, its layout and its drawn pages alive (SheetMuse #858). Web and Android have a garbage collector that frees
+    /// such a pair; Swift needs the link to be weak. Every use goes through `guard let api`, so work still queued after
+    /// the api is gone does nothing instead of trapping (SheetMuse #889).
+    private weak var api: AlphaTabApiBase<Any?>?
+    private let destroyedFlag = DestroyedFlag()
+    /// Draw a row only when `drawRows(in:)` asks (alphaTab's lazy loading), not as soon as it is laid out.
+    public var rendersOnRequest = false
+    /// What is on screen. Set by `drawRows`; applied to a new layout when it finishes, so the first picture of a key
+    /// change already has the rows on screen.
+    public var shownRows: RowViewport?
+    /// Called when a row's picture arrives or is freed, or a layout ends. Set it any time: the canvas is made later, by
+    /// the api, so a hook set on the canvas itself before then went nowhere.
+    public var onCanvasChange: (() -> Void)?
     private var placeholders: [String: HostContainer] = [:]
     private var resultCount = 0
 
@@ -145,6 +164,7 @@ public final class HostUiFacade: IUiFacade {
     /// kept every drawn page, layout and score alive: about 100-250 MB per replaced view (SheetMuse #858). Break the
     /// cycle and drop what the layout drew.
     public func destroy() throws {
+        destroyedFlag.value = true
         placeholders.removeAll()
         (api?.canvasElement as? HostContainer)?.children = []
         root.children = []
@@ -153,10 +173,15 @@ public final class HostUiFacade: IUiFacade {
         api = nil
     }
 
-    public func createCanvasElement() -> any IContainer { HostContainer() }
+    public func createCanvasElement() -> any IContainer {
+        let canvas = HostContainer()
+        canvas.onChange = { [weak self] in self?.onCanvasChange?() }
+        return canvas
+    }
     public func triggerEvent(_ container: any IContainer, _ eventName: String, _ details: Any?, _ originalEvent: (any IMouseEventArgs)?) throws {}
 
     public func initialRender() throws {
+        guard let api, !destroyedFlag.value else { return }
         _ = try api.renderer.preRender.on { (_: Bool) in
             self.resultCount = 0
             self.placeholders.removeAll()
@@ -166,10 +191,14 @@ public final class HostUiFacade: IUiFacade {
     }
 
     public func beginAppendRenderResults(_ renderResult: RenderFinishedEventArgs?) throws {
-        guard let canvas = api.canvasElement as? HostContainer else { return }
+        guard let api, !destroyedFlag.value, let canvas = api.canvasElement as? HostContainer else { return }
         guard let result = renderResult else {
             // a null result ends the list: drop placeholders left over from a longer previous layout
             if canvas.children.count > resultCount { canvas.children.removeLast(canvas.children.count - resultCount) }
+            if rendersOnRequest {
+                // the rows on screen are drawn before the layout is announced as complete
+                drawRows(in: shownRows ?? RowViewport(offsetY: 0, height: Self.defaultViewportHeight), maxAhead: .max)
+            }
             canvas.onChange?()
             onRenderComplete?()
             return
@@ -187,16 +216,43 @@ public final class HostUiFacade: IUiFacade {
         placeholder.height = result.height
         placeholder.layoutResultId = result.id
         placeholders[result.id] = placeholder
-        try api.renderer.renderResult(result.id)
+        if rendersOnRequest {
+            // a reused placeholder must not keep the previous layout's picture
+            placeholder.body = nil
+        } else {
+            try api.renderer.renderResult(result.id)
+        }
         resultCount += 1
         canvas.onChange?()
     }
 
     public func beginUpdateRenderResults(_ renderResult: RenderFinishedEventArgs) throws {
-        guard let placeholder = placeholders[renderResult.id] else { return }
+        guard let api, !destroyedFlag.value, let placeholder = placeholders[renderResult.id] else { return }
         placeholder.body = renderResult.renderResult
         // a drawn partial arrived (first layout or a re-render after a settings change): the host view redraws
         (api.canvasElement as? HostContainer)?.onChange?()
+    }
+
+    /// The screen height assumed for a layout that finishes before the host has said what is on screen.
+    private static let defaultViewportHeight: Double = 1000
+
+    /// Draws the rows `RowPlanner` asks for around `view` and frees the far ones. A freed row is drawn again when it
+    /// comes back: alphaTab keeps each row's draw closure. `maxAhead` caps the rows drawn beyond the screen per call;
+    /// the rows on screen are always drawn.
+    public func drawRows(in view: RowViewport, maxAhead: Int = 2) {
+        shownRows = view
+        guard rendersOnRequest, let api, !destroyedFlag.value, let canvas = api.canvasElement as? HostContainer else { return }
+        let rows = canvas.children
+        let plan = RowPlanner.plan(
+            rows: rows.map { RowFrame(top: $0.top, height: $0.height, isDrawn: $0.body != nil) },
+            view: view,
+            maxAhead: maxAhead
+        )
+        for index in plan.draw where !rows[index].layoutResultId.isEmpty {
+            try? api.renderer.renderResult(rows[index].layoutResultId)
+        }
+        for index in plan.free { rows[index].body = nil }
+        if !plan.isEmpty { canvas.onChange?() }
     }
 
     public func createWorkerRenderer() throws -> any IScoreRenderer { throw JsError("Not supported") }
@@ -213,15 +269,24 @@ public final class HostUiFacade: IUiFacade {
 
     public func beginInvoke(_ action: @escaping () throws -> Void) throws {
         let box = MainBox(action)
-        DispatchQueue.main.async { try? box.action() }
+        let destroyed = destroyedFlag
+        // Work queued before `destroy()` must not run after it: the control it belonged to is gone.
+        DispatchQueue.main.async {
+            guard !destroyed.value else { return }
+            try? box.action()
+        }
     }
 
     public func throttle(_ action: @escaping () throws -> Void, _ delay: Double) throws -> () -> Void {
         let box = MainBox(action)
+        let destroyed = destroyedFlag
         var pending: DispatchWorkItem?
         return {
             pending?.cancel()
-            let item = DispatchWorkItem { try? box.action() }
+            let item = DispatchWorkItem {
+                guard !destroyed.value else { return }
+                try? box.action()
+            }
             pending = item
             DispatchQueue.main.asyncAfter(deadline: .now() + delay / 1000, execute: item)
         }
@@ -263,7 +328,7 @@ public final class HostUiFacade: IUiFacade {
             return true
         }
         if let bytes = data as? Uint8Array {
-            try success(ScoreLoader.loadScoreFromBytes(bytes, api.settings))
+            try success(ScoreLoader.loadScoreFromBytes(bytes, api?.settings ?? Settings()))
             return true
         }
         return false

@@ -5,6 +5,7 @@
 // </auto-generated>
 
 import AlphaTabRuntime
+import Foundation
 
 /**
  * Lists all music font symbols used within alphaTab. The names
@@ -303,7 +304,13 @@ internal final class MusicFontSymbolLookup {
 
     nonisolated(unsafe) private static let _blackNoteHeadGlyphs: Set<MusicFontSymbol> = Set<MusicFontSymbol>()
 
+    // The fill is a check then a push: two engraving settings created on two threads at once raced here and corrupted the
+    // list (a crash on opening the player, SheetMuse). One lock makes it run once.
+    private static let _initializeLock = NSLock()
+
     private static func _initialize() {
+        _initializeLock.lock()
+        defer { _initializeLock.unlock() }
         let all: List<MusicFontSymbol> = MusicFontSymbolLookup._allMusicFontSymbols
         if all.length == 0.0 {
             for v in Object.values(MusicFontSymbol.self).filter({ (k: Any) -> Bool in
