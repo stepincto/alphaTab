@@ -235,3 +235,35 @@ describe('BarLayoutingInfoPowerLawFormula', () => {
         });
     });
 });
+
+
+describe('overlay gaps survive a narrow bar', () => {
+    it('gives short lyric notes the word width by shrinking the held note', () => {
+        const info = new BarLayoutingInfo();
+        // Four sixteenths, then a long note. Each lyric extends 25px either side of its note.
+        const step = 240;
+        for (let i = 0; i < 4; i++) {
+            info.addSpring(i * step, step, 0, 8, 8);
+            info.addOverlayRod('lyrics', i * step, 25, 25);
+        }
+        info.addSpring(4 * step, step * 4, 0, 8, 8);
+        info.finish();
+
+        const required = 25 + 25 + 3;
+        const floors = required * 3 + 80;
+        const natural = info.calculateVoiceWidth(info.minStretchForce);
+        expect(natural).toBeGreaterThan(floors + 100);
+        const fitted = (natural + floors) / 2;
+        const force = info.spaceToForce(fitted);
+        const positions = info.buildOnTimePositions(force);
+
+        for (let i = 0; i < 3; i++) {
+            const gap = positions.get((i + 1) * step)! - positions.get(i * step)!;
+            expect(gap).toBeGreaterThanOrEqual(required - 1);
+        }
+
+        const voice = info.calculateVoiceWidth(force);
+        expect(positions.get(4 * step)!).toBeLessThan(voice);
+        expect(info.overlayContentScale).toBeCloseTo(1);
+    });
+});

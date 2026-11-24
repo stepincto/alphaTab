@@ -236,6 +236,12 @@ export class BarLayoutingInfo {
 
     public postBeatSize: number = 0;
     public minStretchForce: number = 0;
+    /**
+     * 1 when the lyric words fit. Lower when a fitted bar is narrower than the
+     * words: the face shrinks just enough that the gaps still fit, and never
+     * below 0.5.
+     */
+    public overlayContentScale: number = 1;
     public totalSpringConstant: number = 0;
 
     /**
@@ -722,6 +728,205 @@ export class BarLayoutingInfo {
             positions.set(sortedSprings[i].timePosition, springX);
             springX += this._calculateWidth(force, sortedSprings[i].springConstant);
         }
+        this._keepOverlayGaps(positions, force);
         return positions;
+    }
+
+    /**
+     * Keep lyric (and other overlay) gaps when a bar is fitted narrower than
+     * `minStretchForce`. The force pass gives short notes their room and then
+     * the long notes balloon; fitting the bar to the page lowers the force and
+     * the short notes collapse, so the words draw on top of each other while
+     * the held note keeps the spare width. Guitar Pro and MuseScore treat the
+     * overlay gap as a minimum that survives justification: take the missing
+     * width from segments that are wider than their own minimum. When the
+     * words still do not fit, shrink them (down to half) and keep that smaller
+     * gap.
+     */
+    private _keepOverlayGaps(positions: Map<number, number>, force: number): void {
+        this.overlayContentScale = 1;
+        const springs = this._timeSortedSprings;
+        const n = springs.length;
+        if (n === 0 || this._timeSortedOverlayRodsByBand.size === 0) {
+            return;
+        }
+
+        const widths: number[] = new Array<number>(n);
+        const noteMin: number[] = new Array<number>(n);
+        for (let i = 0; i < n; i++) {
+            const spring = springs[i];
+            widths[i] = this._calculateWidth(force, spring.springConstant);
+            const next = i === n - 1 ? null : springs[i + 1];
+            noteMin[i] = next
+                ? spring.postSpringWidth + this.beatContentPadding + next.preSpringWidth
+                : spring.postSpringWidth + this.barlineContentPadding;
+            if (noteMin[i] < 0) {
+                noteMin[i] = 0;
+            }
+        }
+
+        const lyricMin: number[] = new Array<number>(n).fill(0);
+        const spans: { from: number; to: number; required: number }[] = [];
+        const padding = BarLayoutingInfo._overlayMinPadding;
+
+        const indexAt = (time: number): number => {
+            for (let i = 0; i < n; i++) {
+                if (springs[i].timePosition === time) {
+                    return i;
+                }
+            }
+            return -1;
+        };
+
+        let anyShort = false;
+        for (const rods of this._timeSortedOverlayRodsByBand.values()) {
+            for (let r = 1; r < rods.length; r++) {
+                const a = rods[r - 1];
+                const b = rods[r];
+                const ia = indexAt(a.timePosition);
+                const ib = indexAt(b.timePosition);
+                if (ia < 0 || ib <= ia) {
+                    continue;
+                }
+                const required = a.rightExtent + b.leftExtent + padding;
+                if (ib === ia + 1) {
+                    if (required > lyricMin[ia]) {
+                        lyricMin[ia] = required;
+                    }
+                } else {
+                    spans.push({ from: ia, to: ib, required });
+                }
+                const left = positions.get(a.timePosition) ?? 0;
+                const right = positions.get(b.timePosition) ?? 0;
+                if (right - left + 1 < required) {
+                    anyShort = true;
+                }
+            }
+            if (rods.length === 0) {
+                continue;
+            }
+            const last = rods[rods.length - 1];
+            const il = indexAt(last.timePosition);
+            if (il < 0) {
+                continue;
+            }
+            const tail = last.rightExtent + padding;
+            if (il === n - 1) {
+                if (tail > lyricMin[il]) {
+                    lyricMin[il] = tail;
+                }
+                if (widths[il] + 1 < tail) {
+                    anyShort = true;
+                }
+            } else {
+                spans.push({ from: il, to: n, required: tail });
+                let sum = 0;
+                for (let i = il; i < n; i++) {
+                    sum += widths[i];
+                }
+                if (sum + 1 < tail) {
+                    anyShort = true;
+                }
+            }
+        }
+        if (!anyShort) {
+            return;
+        }
+
+        let total = 0;
+        let noteSum = 0;
+        let fixed = 0;
+        let variable = 0;
+        for (let i = 0; i < n; i++) {
+            total += widths[i];
+            noteSum += noteMin[i];
+            if (lyricMin[i] > noteMin[i] + 1) {
+                variable += lyricMin[i];
+            } else {
+                fixed += noteMin[i];
+            }
+        }
+        if (noteSum > total + 1) {
+            return;
+        }
+        // Scale the whole word, not the part that sticks past the notehead.
+        let scale = 1;
+        if (variable > 0 && fixed + variable > total + 1) {
+            scale = Math.max(0.5, (total - fixed) / variable);
+        }
+        this.overlayContentScale = scale;
+        if (scale < 0.999) {
+            for (let i = 0; i < n; i++) {
+                if (lyricMin[i] > noteMin[i] + 1) {
+                    lyricMin[i] *= scale;
+                }
+            }
+            for (const span of spans) {
+                span.required *= scale;
+            }
+        }
+
+        const floor: number[] = new Array<number>(n);
+        let shortfall = 0;
+        let slack = 0;
+        for (let i = 0; i < n; i++) {
+            floor[i] = Math.max(noteMin[i], lyricMin[i]);
+            if (widths[i] < floor[i]) {
+                shortfall += floor[i] - widths[i];
+            } else {
+                slack += widths[i] - floor[i];
+            }
+        }
+
+        const next = widths.slice();
+        const give = Math.min(shortfall, slack);
+        if (shortfall > 0 && give > 0) {
+            for (let i = 0; i < n; i++) {
+                if (widths[i] < floor[i]) {
+                    const need = floor[i] - widths[i];
+                    next[i] = widths[i] + (need / shortfall) * give;
+                } else {
+                    const extra = widths[i] - floor[i];
+                    next[i] = widths[i] - (slack > 0 ? (extra / slack) * give : 0);
+                }
+            }
+        }
+
+        for (const span of spans) {
+            for (let guard = 0; guard < n; guard++) {
+                let sum = 0;
+                for (let i = span.from; i < span.to; i++) {
+                    sum += next[i];
+                }
+                const deficit = span.required - sum;
+                if (deficit <= 1) {
+                    break;
+                }
+                let donor = -1;
+                let room = 0;
+                for (let i = 0; i < n; i++) {
+                    if (i >= span.from && i < span.to) {
+                        continue;
+                    }
+                    const extra = next[i] - floor[i];
+                    if (extra > room) {
+                        room = extra;
+                        donor = i;
+                    }
+                }
+                if (donor < 0 || room <= 1) {
+                    break;
+                }
+                const move = Math.min(deficit, room);
+                next[donor] -= move;
+                next[span.from] += move;
+            }
+        }
+
+        let x = springs[0].preSpringWidth;
+        for (let i = 0; i < n; i++) {
+            positions.set(springs[i].timePosition, x);
+            x += next[i];
+        }
     }
 }

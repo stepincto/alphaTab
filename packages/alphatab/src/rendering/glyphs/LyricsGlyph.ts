@@ -67,7 +67,8 @@ export class LyricsGlyph extends EffectGlyph {
     }
 
     public override paint(cx: number, cy: number, canvas: ICanvas): void {
-        canvas.font = this.font;
+        const fit = this.renderer.layoutingInfo.overlayContentScale;
+        canvas.font = fit < 0.999 ? this.font.withSize(this.font.size * fit) : this.font;
         const old = canvas.textAlign;
         canvas.textAlign = this.textAlign;
         for (let i: number = 0; i < this._lines.length; i++) {

@@ -203,6 +203,11 @@ internal final class BarLayoutingInfo {
 
     public var minStretchForce: Double = 0.0
 
+    /// 1 when the lyric words fit. Lower when a fitted bar is narrower than the
+    /// words: the face shrinks just enough that the gaps still fit, and never
+    /// below 0.5.
+    public var overlayContentScale: Double = 1.0
+
     public var totalSpringConstant: Double = 0.0
 
     public var localMinDuration: Double {
@@ -607,7 +612,202 @@ internal final class BarLayoutingInfo {
                 i += 1
             }
         }
+        self._keepOverlayGaps(positions, force)
         return positions
+    }
+
+    /// Keep lyric gaps when a bar is fitted narrower than `minStretchForce`.
+    /// The force pass gives short notes their room and the long notes balloon;
+    /// fitting the bar to the page lowers the force and the short notes collapse,
+    /// so the words draw on top of each other. Take the missing width from
+    /// segments that are wider than their own minimum.
+    private func _keepOverlayGaps(_ positions: Map<Double, Double>, _ force: Double) {
+        self.overlayContentScale = 1.0
+        let springs = self._timeSortedSprings
+        let n = Int(springs.length)
+        if n == 0 || self._timeSortedOverlayRodsByBand.size == 0.0 {
+            return
+        }
+
+        var widths = [Double](repeating: 0, count: n)
+        var noteMin = [Double](repeating: 0, count: n)
+        for i in 0 ..< n {
+            let spring = springs[i]
+            widths[i] = self._calculateWidth(force, spring.springConstant)
+            if i == n - 1 {
+                noteMin[i] = spring.postSpringWidth + self.barlineContentPadding
+            } else {
+                noteMin[i] = spring.postSpringWidth + self.beatContentPadding + springs[i + 1].preSpringWidth
+            }
+            if noteMin[i] < 0 {
+                noteMin[i] = 0
+            }
+        }
+
+        var lyricMin = [Double](repeating: 0, count: n)
+        var spans: [(from: Int, to: Int, required: Double)] = []
+        let padding = BarLayoutingInfo._overlayMinPadding
+
+        func indexAt(_ time: Double) -> Int {
+            for i in 0 ..< n where springs[i].timePosition == time {
+                return i
+            }
+            return -1
+        }
+
+        var anyShort = false
+        for rods in self._timeSortedOverlayRodsByBand.values() {
+            var r = 1
+            while r < Int(rods.length) {
+                let a = rods[r - 1]
+                let b = rods[r]
+                let ia = indexAt(a.timePosition)
+                let ib = indexAt(b.timePosition)
+                if ia >= 0, ib > ia {
+                    let required = a.rightExtent + b.leftExtent + padding
+                    if ib == ia + 1 {
+                        if required > lyricMin[ia] {
+                            lyricMin[ia] = required
+                        }
+                    } else {
+                        spans.append((from: ia, to: ib, required: required))
+                    }
+                    let left = positions.get(a.timePosition) ?? 0.0
+                    let right = positions.get(b.timePosition) ?? 0.0
+                    if right - left + 1 < required {
+                        anyShort = true
+                    }
+                }
+                r += 1
+            }
+            if rods.length == 0.0 {
+                continue
+            }
+            let last = rods[Int(rods.length) - 1]
+            let il = indexAt(last.timePosition)
+            if il < 0 {
+                continue
+            }
+            let tail = last.rightExtent + padding
+            if il == n - 1 {
+                if tail > lyricMin[il] {
+                    lyricMin[il] = tail
+                }
+                if widths[il] + 1 < tail {
+                    anyShort = true
+                }
+            } else {
+                spans.append((from: il, to: n, required: tail))
+                var sum = 0.0
+                for i in il ..< n {
+                    sum += widths[i]
+                }
+                if sum + 1 < tail {
+                    anyShort = true
+                }
+            }
+        }
+        if !anyShort {
+            return
+        }
+
+        var total = 0.0
+        var noteSum = 0.0
+        var fixed = 0.0
+        var variable = 0.0
+        for i in 0 ..< n {
+            total += widths[i]
+            noteSum += noteMin[i]
+            if lyricMin[i] > noteMin[i] + 1 {
+                variable += lyricMin[i]
+            } else {
+                fixed += noteMin[i]
+            }
+        }
+        if noteSum > total + 1 {
+            return
+        }
+        // Scale the whole word, not the part that sticks past the notehead.
+        // The noteheads of lyric beats are already inside the word width.
+        var scale = 1.0
+        if variable > 0, fixed + variable > total + 1 {
+            scale = Swift.max(0.5, (total - fixed) / variable)
+        }
+        self.overlayContentScale = scale
+        if scale < 0.999 {
+            for i in 0 ..< n where lyricMin[i] > noteMin[i] + 1 {
+                lyricMin[i] *= scale
+            }
+            for s in 0 ..< spans.count {
+                let span = spans[s]
+                spans[s] = (from: span.from, to: span.to, required: span.required * scale)
+            }
+        }
+
+        var floor = [Double](repeating: 0, count: n)
+        var shortfall = 0.0
+        var slack = 0.0
+        for i in 0 ..< n {
+            floor[i] = Swift.max(noteMin[i], lyricMin[i])
+            if widths[i] < floor[i] {
+                shortfall += floor[i] - widths[i]
+            } else {
+                slack += widths[i] - floor[i]
+            }
+        }
+
+        var next = widths
+        let give = Swift.min(shortfall, slack)
+        if shortfall > 0, give > 0 {
+            for i in 0 ..< n {
+                if widths[i] < floor[i] {
+                    let need = floor[i] - widths[i]
+                    next[i] = widths[i] + (need / shortfall) * give
+                } else {
+                    let extra = widths[i] - floor[i]
+                    next[i] = widths[i] - (slack > 0 ? (extra / slack) * give : 0)
+                }
+            }
+        }
+
+        for span in spans {
+            var guardCount = 0
+            while guardCount < n {
+                var sum = 0.0
+                for i in span.from ..< span.to {
+                    sum += next[i]
+                }
+                let deficit = span.required - sum
+                if deficit <= 1 {
+                    break
+                }
+                var donor = -1
+                var room = 0.0
+                for i in 0 ..< n {
+                    if i >= span.from && i < span.to {
+                        continue
+                    }
+                    let extra = next[i] - floor[i]
+                    if extra > room {
+                        room = extra
+                        donor = i
+                    }
+                }
+                if donor < 0 || room <= 1 {
+                    break
+                }
+                let move = Swift.min(deficit, room)
+                next[donor] -= move
+                next[span.from] += move
+                guardCount += 1
+            }
+        }
+
+        var x = springs[0].preSpringWidth
+        for i in 0 ..< n {
+            positions.set(springs[i].timePosition, x)
+            x += next[i]
+        }
     }
 }
 

@@ -406,7 +406,68 @@ export class EffectBand extends Glyph {
                 this._alignGlyph(this.info.sizingMode, voiceGlyphs[i].beat!);
             }
         }
+        this._fitLyricWordsInsideBar();
         this.info.onAlignGlyphs?.(this);
+    }
+
+    /**
+     * When the fitted bar is narrower than the words, note spacing still
+     * stacks them on the short notes. Keep each word on its note and push it
+     * right only as far as the previous word requires. Shrink the face only
+     * when that line would leave the bar.
+     */
+    private _fitLyricWordsInsideBar(): void {
+        if (this.info.effectId !== 'EffectLyrics' || this._uniqueEffectGlyphs.length === 0) {
+            return;
+        }
+        const voiceGlyphs = this._uniqueEffectGlyphs[0];
+        const words = voiceGlyphs.filter(glyph => glyph.width > 1);
+        if (words.length < 2) {
+            return;
+        }
+        const pad = 3;
+        const paintScale = this.renderer.layoutingInfo.overlayContentScale;
+        let overlaps = false;
+        for (let i = 1; i < words.length; i++) {
+            const need = ((words[i - 1].width + words[i].width) / 2) * paintScale + pad;
+            if (words[i].x - words[i - 1].x + 0.5 < need) {
+                overlaps = true;
+                break;
+            }
+        }
+        if (!overlaps) {
+            return;
+        }
+        const contentRight = this.renderer.width - 2;
+        const anchors = words.map(word => word.x);
+        const lastRight = (scale: number): number => {
+            let previousRight = Number.NEGATIVE_INFINITY;
+            let end = 0;
+            for (let index = 0; index < words.length; index++) {
+                const half = (words[index].width * scale) / 2;
+                const center = Math.max(anchors[index], previousRight + pad + half);
+                previousRight = center + half;
+                end = previousRight;
+            }
+            return end;
+        };
+        let scale = Math.min(1, paintScale);
+        if (lastRight(scale) > contentRight) {
+            const packed = words.reduce((sum, word) => sum + word.width, 0) + pad * (words.length - 1);
+            const firstHalf = words[0].width / 2;
+            const room = contentRight - (anchors[0] - firstHalf);
+            scale = Math.max(0.5, Math.min(scale, room / packed));
+        }
+        let previousRight = Number.NEGATIVE_INFINITY;
+        for (let index = 0; index < words.length; index++) {
+            const half = (words[index].width * scale) / 2;
+            const center = Math.max(anchors[index], previousRight + pad + half);
+            words[index].x = center;
+            previousRight = center + half;
+        }
+        if (scale < this.renderer.layoutingInfo.overlayContentScale) {
+            this.renderer.layoutingInfo.overlayContentScale = scale;
+        }
     }
 
     /**

@@ -423,7 +423,69 @@ internal final class EffectBand: Glyph {
                 v += 1
             }
         }
+        self._fitLyricWordsInsideBar()
         try self.info.onAlignGlyphs?(self)
+    }
+
+    /// When the fitted bar is narrower than the words, alphaTab's note spacing
+    /// still stacks them on the short notes. Keep each word on its note and
+    /// push it right only as far as the previous word requires. Shrink the
+    /// face only when that line would leave the bar.
+    private func _fitLyricWordsInsideBar() {
+        if self.info.effectId != "EffectLyrics" || self._uniqueEffectGlyphs.length == 0.0 {
+            return
+        }
+        let voiceGlyphs = self._uniqueEffectGlyphs[0]
+        var words: [EffectGlyph] = []
+        for glyph in voiceGlyphs where glyph.width > 1 {
+            words.append(glyph)
+        }
+        if words.count < 2 {
+            return
+        }
+        let pad = 3.0
+        let paintScale = self.renderer.layoutingInfo.overlayContentScale
+        var overlaps = false
+        for i in 1 ..< words.count {
+            let need = (words[i - 1].width + words[i].width) / 2 * paintScale + pad
+            if words[i].x - words[i - 1].x + 0.5 < need {
+                overlaps = true
+                break
+            }
+        }
+        if !overlaps {
+            return
+        }
+        let contentRight = self.renderer.width - 2
+        let anchors = words.map { $0.x }
+        func lastRight(_ scale: Double) -> Double {
+            var previousRight = -Double.greatestFiniteMagnitude
+            var end = 0.0
+            for index in 0 ..< words.count {
+                let half = words[index].width * scale / 2
+                let center = Swift.max(anchors[index], previousRight + pad + half)
+                previousRight = center + half
+                end = previousRight
+            }
+            return end
+        }
+        var scale = Swift.min(1, paintScale)
+        if lastRight(scale) > contentRight {
+            let packed = words.reduce(0.0) { $0 + $1.width } + pad * Double(words.count - 1)
+            let firstHalf = words[0].width / 2
+            let room = contentRight - (anchors[0] - firstHalf)
+            scale = Swift.max(0.5, Swift.min(scale, room / packed))
+        }
+        var previousRight = -Double.greatestFiniteMagnitude
+        for index in 0 ..< words.count {
+            let half = words[index].width * scale / 2
+            let center = Swift.max(anchors[index], previousRight + pad + half)
+            words[index].x = center
+            previousRight = center + half
+        }
+        if scale < self.renderer.layoutingInfo.overlayContentScale {
+            self.renderer.layoutingInfo.overlayContentScale = scale
+        }
     }
 
     /**

@@ -72,7 +72,8 @@ internal final class LyricsGlyph: EffectGlyph {
     }
 
     public override func paint(_ cx: Double, _ cy: Double, _ canvas: any ICanvas) throws {
-        canvas.font = self.font
+        let fit = self.renderer.layoutingInfo.overlayContentScale
+        canvas.font = fit < 0.999 ? try self.font.withSize(self.font.size * fit) : self.font
         let old: TextAlign = canvas.textAlign
         canvas.textAlign = self.textAlign
         do {
