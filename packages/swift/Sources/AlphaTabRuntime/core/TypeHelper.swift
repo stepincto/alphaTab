@@ -70,6 +70,22 @@ public enum TypeHelper {
         return !d.isNaN && d != 0
     }
 
+    /// A class instance is truthy when it is not nil. The `Any?` overload below boxes it, runs `unwrapAny` (which uses
+    /// `Mirror`, runtime reflection) and tries five casts; the layout code asks this 419 times per engrave, and it was
+    /// 23.6% of an engrave in a Time Profiler run (27 Nov 2026). These two overloads are the more specific match for a
+    /// class-typed optional, so they are taken instead.
+    @inline(__always)
+    public static func isTruthy<T: AnyObject>(_ value: T?) -> Bool {
+        value != nil
+    }
+
+    /// The class types that can stand for an array hole keep their meaning: a hole is not truthy.
+    @inline(__always)
+    public static func isTruthy<T: AnyObject & JsArrayHole>(_ value: T?) -> Bool {
+        guard let value else { return false }
+        return !value.isJsHole
+    }
+
     public static func isTruthy(_ value: Any?) -> Bool {
         guard let v = unwrapAny(value) else {
             return false
